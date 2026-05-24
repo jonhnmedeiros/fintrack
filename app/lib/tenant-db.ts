@@ -74,6 +74,8 @@ export async function userDb() {
     notification: {
       findMany: (args?: Parameters<typeof prisma.notification.findMany>[0]) =>
         prisma.notification.findMany({ ...args, where: { userId, ...args?.where } }),
+      create: (args: Parameters<typeof prisma.notification.create>[0]) =>
+        prisma.notification.create({ ...args, data: { ...args.data, userId } }),
       update: (args: Parameters<typeof prisma.notification.update>[0]) =>
         prisma.notification.update(args),
     },
