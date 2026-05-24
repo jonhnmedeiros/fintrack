@@ -51,14 +51,30 @@ An Express server will be used to render the application on the server. The `ser
 
 We will use a PostgreSQL database to store all the data. The API will be a simple REST API built with Express. We will use Prisma as our ORM to interact with the database.
 
+**Data Models:**
+
+-   **User:** `id`, `email`, `password`
+-   **Transaction:** `id`, `userId`, `amount`, `description`, `categoryId`, `date`
+-   **Category:** `id`, `userId`, `name`
+-   **Investment:** `id`, `userId`, `name`, `quantity`, `purchasePrice`, `purchaseDate`
+
+**API Endpoints:**
+
+-   `POST /api/auth/signup`
+-   `POST /api/auth/login`
+-   `GET /api/transactions`
+-   `POST /api/transactions`
+-   `GET /api/investments`
+-   `POST /api/investments`
+
 ## 9. User Authentication
 
-User authentication will be handled using JWTs (JSON Web Tokens). Users will be able to sign up and log in with their email and password. The JWT will be stored in an `httpOnly` cookie to prevent XSS attacks.
+User authentication will be handled using JWTs (JSON Web Tokens). Users will be able to sign up and log in with their email and password. The JWT will be stored in an `httpOnly` cookie to prevent XSS attacks. We will use bcrypt to hash passwords. We will also implement CSRF protection using the `csurf` library.
 
 ## 10. Testing Strategy
 
 We will use a combination of unit, integration, and end-to-end tests.
-- **Unit Tests:** Jest and React Testing Library will be used for unit tests.
-- **Integration Tests:** We will use Vitest for integration tests.
-- **End-to-End Tests:** We will use Playwright for end-to-end tests.
+- **Unit & Integration Tests:** Vitest will be used for both unit and integration tests.
+- **End-to-End Tests:** We will use Playwright for end-to-end tests. We will use a separate test database for end-to-end tests. We will mock external services and APIs using `msw`.
+
 
