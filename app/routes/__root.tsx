@@ -1,5 +1,6 @@
 import { createRootRoute, Outlet } from '@tanstack/start'
 import { auth } from '@/lib/auth'
+import { Layout } from '@/components/layout/Layout'
 
 export const Route = createRootRoute({
   beforeLoad: async () => {
@@ -7,8 +8,8 @@ export const Route = createRootRoute({
     return { user: session?.user }
   },
   component: () => (
-    <div className="min-h-screen">
+    <Layout>
       <Outlet />
-    </div>
+    </Layout>
   ),
 })
