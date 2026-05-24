@@ -1,7 +1,7 @@
 import { createAPIFileRoute } from '@tanstack/start'
 import * as categoriesApi from '@/features/finance/api/categories'
 
-export const APIRoute = createAPIFileRoute('/api/categories')({
+export const APIRoute = createAPIFileRoute('/api/categories/')({
   GET: async () => {
     const categories = await categoriesApi.listCategories()
     return Response.json(categories)

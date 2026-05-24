@@ -66,7 +66,9 @@
   "overrides": {
     "@tanstack/directive-functions-plugin": "1.120.17",
     "@tanstack/react-router": "1.120.20",
+    "@tanstack/react-start-client": "1.120.20",
     "@tanstack/react-start-plugin": "1.120.17",
+    "@tanstack/react-start-server": "1.120.20",
     "@tanstack/router-core": "1.120.19",
     "@tanstack/router-generator": "1.120.20",
     "@tanstack/router-plugin": "1.120.20",

@@ -1,7 +1,7 @@
 import { createAPIFileRoute } from '@tanstack/start'
 import * as transactionsApi from '@/features/finance/api/transactions'
 
-export const APIRoute = createAPIFileRoute('/api/transactions')({
+export const APIRoute = createAPIFileRoute('/api/transactions/')({
   GET: async ({ request }) => {
     const url = new URL(request.url)
     const filters = {

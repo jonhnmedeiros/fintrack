@@ -1,7 +1,7 @@
 import { createAPIFileRoute } from '@tanstack/start'
 import * as invTxApi from '@/features/investments/api/investment-transactions'
 
-export const APIRoute = createAPIFileRoute('/api/investment-transactions')({
+export const APIRoute = createAPIFileRoute('/api/investment-transactions/')({
   GET: async ({ request }) => {
     const url = new URL(request.url)
     const assetId = url.searchParams.get('assetId') || undefined

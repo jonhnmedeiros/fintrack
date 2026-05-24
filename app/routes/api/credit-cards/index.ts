@@ -1,7 +1,7 @@
 import { createAPIFileRoute } from '@tanstack/start'
 import * as creditCardsApi from '@/features/finance/api/credit-cards'
 
-export const APIRoute = createAPIFileRoute('/api/credit-cards')({
+export const APIRoute = createAPIFileRoute('/api/credit-cards/')({
   GET: async () => {
     const cards = await creditCardsApi.listCreditCards()
     return Response.json(cards)
