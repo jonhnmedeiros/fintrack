@@ -45,4 +45,20 @@ Tailwind CSS will be used for styling. A simple design system will be created wi
 
 ## 7. SSR
 
-An Express server will be used to render the application on the server. The `server.js` file will handle the SSR logic.
+An Express server will be used to render the application on the server. The `server.js` file will handle the SSR logic. We will use `react-dom/server` to render the React components to a string and then send that string to the client. The initial data will be fetched on the server and passed to the client through a `window.__INITIAL_DATA__` object.
+
+## 8. Data Persistence & API Layer
+
+We will use a PostgreSQL database to store all the data. The API will be a simple REST API built with Express. We will use Prisma as our ORM to interact with the database.
+
+## 9. User Authentication
+
+User authentication will be handled using JWTs (JSON Web Tokens). Users will be able to sign up and log in with their email and password. The JWT will be stored in an `httpOnly` cookie to prevent XSS attacks.
+
+## 10. Testing Strategy
+
+We will use a combination of unit, integration, and end-to-end tests.
+- **Unit Tests:** Jest and React Testing Library will be used for unit tests.
+- **Integration Tests:** We will use Vitest for integration tests.
+- **End-to-End Tests:** We will use Playwright for end-to-end tests.
+
