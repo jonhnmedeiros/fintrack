@@ -34,24 +34,34 @@ export async function userDb() {
         prisma.creditCard.findMany({ ...args, where: { userId, ...args?.where } }),
       create: (args: Parameters<typeof prisma.creditCard.create>[0]) =>
         prisma.creditCard.create({ ...args, data: { ...args.data, userId } }),
+      delete: (args: Parameters<typeof prisma.creditCard.delete>[0]) =>
+        prisma.creditCard.delete(args),
     },
     budget: {
       findMany: (args?: Parameters<typeof prisma.budget.findMany>[0]) =>
         prisma.budget.findMany({ ...args, where: { userId, ...args?.where } }),
       create: (args: Parameters<typeof prisma.budget.create>[0]) =>
         prisma.budget.create({ ...args, data: { ...args.data, userId } }),
+      upsert: (args: Parameters<typeof prisma.budget.upsert>[0]) =>
+        prisma.budget.upsert(args),
+      delete: (args: Parameters<typeof prisma.budget.delete>[0]) =>
+        prisma.budget.delete(args),
     },
     asset: {
       findMany: (args?: Parameters<typeof prisma.asset.findMany>[0]) =>
         prisma.asset.findMany({ ...args, where: { userId, ...args?.where } }),
       create: (args: Parameters<typeof prisma.asset.create>[0]) =>
         prisma.asset.create({ ...args, data: { ...args.data, userId } }),
+      delete: (args: Parameters<typeof prisma.asset.delete>[0]) =>
+        prisma.asset.delete(args),
     },
     investmentTransaction: {
       findMany: (args?: Parameters<typeof prisma.investmentTransaction.findMany>[0]) =>
         prisma.investmentTransaction.findMany({ ...args, where: { userId, ...args?.where } }),
       create: (args: Parameters<typeof prisma.investmentTransaction.create>[0]) =>
         prisma.investmentTransaction.create({ ...args, data: { ...args.data, userId } }),
+      delete: (args: Parameters<typeof prisma.investmentTransaction.delete>[0]) =>
+        prisma.investmentTransaction.delete(args),
     },
     alert: {
       findMany: (args?: Parameters<typeof prisma.alert.findMany>[0]) =>
