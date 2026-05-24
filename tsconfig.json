@@ -17,9 +17,9 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./app/*"]
     }
   },
-  "include": ["src"],
+  "include": ["app", ".vinxi/types/router.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
