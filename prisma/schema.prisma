@@ -1,0 +1,193 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  accounts      Account[]
+  sessions      Session[]
+  categories    Category[]
+  transactions  Transaction[]
+  creditCards   CreditCard[]
+  budgets       Budget[]
+  assets        Asset[]
+  investmentTransactions InvestmentTransaction[]
+  alerts        Alert[]
+  notifications Notification[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+model Category {
+  id          String       @id @default(cuid())
+  name        String
+  type        CategoryType
+  color       String?
+  icon        String?
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets     Budget[]
+  @@unique([userId, id])
+  @@unique([userId, name, type])
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+model Transaction {
+  id                String       @id @default(cuid())
+  type              TransactionType
+  amount            Decimal
+  description       String?
+  date              DateTime
+  categoryId        String?
+  category          Category?    @relation(fields: [categoryId], references: [id])
+  creditCardId      String?
+  creditCard        CreditCard?  @relation(fields: [creditCardId], references: [id])
+  installmentNumber Int?
+  totalInstallments Int?
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CreditCard {
+  id          String       @id @default(cuid())
+  name        String
+  billingDay  Int?
+  closingDay  Int?
+  limit       Decimal?
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model Budget {
+  id         String   @id @default(cuid())
+  categoryId String
+  amount     Decimal
+  month      Int
+  year       Int
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id])
+  @@unique([userId, categoryId, month, year])
+}
+
+enum AssetType {
+  STOCK
+  ETF
+  CRYPTO
+  FIIS
+  BOND
+  OTHER
+}
+
+model Asset {
+  id          String    @id @default(cuid())
+  ticker      String
+  name        String?
+  type        AssetType
+  market      String?
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions InvestmentTransaction[]
+  alerts      Alert[]
+  @@unique([userId, ticker])
+}
+
+enum InvTransactionType {
+  BUY
+  SELL
+  DIVIDEND
+  TAX
+}
+
+model InvestmentTransaction {
+  id        String          @id @default(cuid())
+  type      InvTransactionType
+  quantity  Decimal
+  price     Decimal
+  fees      Decimal?        @default(0)
+  taxes     Decimal?        @default(0)
+  date      DateTime
+  assetId   String
+  asset     Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum AlertType {
+  PRICE
+  VOLUME
+  DIVIDEND
+  OTHER
+}
+
+model Alert {
+  id          String    @id @default(cuid())
+  type        AlertType
+  targetPrice Decimal?
+  message     String
+  active      Boolean   @default(true)
+  assetId     String?
+  asset       Asset?    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id     String   @id @default(cuid())
+  title  String
+  body   String
+  read   Boolean  @default(false)
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
