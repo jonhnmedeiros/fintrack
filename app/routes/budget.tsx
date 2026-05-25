@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/start'
+import { createFileRoute } from '@tanstack/react-router'
 import { useBudgets } from '@/features/finance/hooks/useBudgets'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils'

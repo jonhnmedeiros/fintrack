@@ -1,12 +1,12 @@
 import { StartClient } from '@tanstack/start'
-import { createRouter } from '@tanstack/start'
+import { createRouter } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { routeTree } from './routeTree.gen'
 import './globals.css'
 
 const router = createRouter({ routeTree })
 
-declare module '@tanstack/start' {
+declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router
   }

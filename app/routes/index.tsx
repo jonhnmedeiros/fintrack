@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/start'
+import { createFileRoute } from '@tanstack/react-router'
 import { SummaryCards } from '@/features/dashboard/components/SummaryCards'
 import { CashFlowChart } from '@/features/dashboard/components/CashFlowChart'
 import { ExpenseByCategoryChart } from '@/features/dashboard/components/ExpenseByCategoryChart'

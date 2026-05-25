@@ -1,9 +1,13 @@
-import { createAPIFileRoute } from '@tanstack/start'
-import * as budgetsApi from '@/features/finance/api/budgets'
+import { createFileRoute } from '@tanstack/react-router'
+import { createAPIFileRoute } from '@tanstack/start/api'
+
+export const Route = createFileRoute('/api/budgets/$id')({})
 
 export const APIRoute = createAPIFileRoute('/api/budgets/$id')({
   DELETE: async ({ params }) => {
-    await budgetsApi.deleteBudget(params.id)
+    const { deleteBudget } = await import('@/features/finance/api/budgets')
+    await deleteBudget(params.id)
     return new Response(null, { status: 204 })
   },
 })
+

@@ -1,5 +1,7 @@
-import { createAPIFileRoute } from '@tanstack/start'
-import * as transactionsApi from '@/features/finance/api/transactions'
+import { createFileRoute } from '@tanstack/react-router'
+import { createAPIFileRoute } from '@tanstack/start/api'
+
+export const Route = createFileRoute('/api/transactions/')({})
 
 export const APIRoute = createAPIFileRoute('/api/transactions/')({
   GET: async ({ request }) => {
@@ -10,12 +12,15 @@ export const APIRoute = createAPIFileRoute('/api/transactions/')({
       startDate: url.searchParams.get('startDate') || undefined,
       endDate: url.searchParams.get('endDate') || undefined,
     }
-    const transactions = await transactionsApi.listTransactions(filters)
+    const { listTransactions } = await import('@/features/finance/api/transactions')
+    const transactions = await listTransactions(filters)
     return Response.json(transactions)
   },
   POST: async ({ request }) => {
     const body = await request.json()
-    const transaction = await transactionsApi.createTransaction(body)
+    const { createTransaction } = await import('@/features/finance/api/transactions')
+    const transaction = await createTransaction(body)
     return Response.json(transaction)
   },
 })
+

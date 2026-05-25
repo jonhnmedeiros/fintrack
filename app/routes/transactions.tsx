@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/start'
+import { createFileRoute } from '@tanstack/react-router'
 import { TransactionTable } from '@/features/finance/components/TransactionTable'
 import { TransactionForm } from '@/features/finance/components/TransactionForm'
 import { useTransactions } from '@/features/finance/hooks/useTransactions'

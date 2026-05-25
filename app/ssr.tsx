@@ -1,12 +1,16 @@
-import { createStartHandler, defaultStreamHandler } from '@tanstack/start'
-import { createRouter } from '@tanstack/start'
-import { getRouterManifest } from '@tanstack/start/server'
+import { createStartHandler, defaultStreamHandler } from '@tanstack/start/server'
+import { createRouter as createTanStackRouter } from '@tanstack/react-router'
+import { getRouterManifest } from '@tanstack/react-start-router-manifest'
 import { routeTree } from './routeTree.gen'
 
-const handler = createStartHandler({
+function createRouter() {
+  return createTanStackRouter({
+    routeTree,
+    defaultPreload: 'intent',
+  })
+}
+
+export default createStartHandler({
   createRouter,
   getRouterManifest,
-  routeTree,
-})
-
-export default defaultStreamHandler(handler)
+})(defaultStreamHandler)
