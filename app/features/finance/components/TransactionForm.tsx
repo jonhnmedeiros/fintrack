@@ -36,7 +36,7 @@ const transactionSchema = z.object({
 type TransactionForm = z.infer<typeof transactionSchema>
 
 export function TransactionForm() {
-  const { register, handleSubmit, formState: { errors }, watch, reset } = useForm<TransactionForm>({
+  const { handleSubmit, formState: { errors }, watch, reset, setValue } = useForm<TransactionForm>({
     resolver: zodResolver(transactionSchema),
     defaultValues: { date: new Date().toISOString().split('T')[0] },
   })
@@ -49,8 +49,15 @@ export function TransactionForm() {
   const creditCardId = watch('creditCardId')
 
   const onSubmit = async (data: TransactionForm) => {
-    await createMutation.mutateAsync(data)
+    const payload = {
+      ...data,
+      categoryId: data.categoryId || undefined,
+      creditCardId: data.creditCardId || undefined,
+      totalInstallments: data.totalInstallments || undefined,
+    }
+    await createMutation.mutateAsync(payload)
     reset()
+    setValue('date', new Date().toISOString().split('T')[0])
   }
 
   const filteredCategories = categories?.filter((c: { type: string }) =>
@@ -70,9 +77,9 @@ export function TransactionForm() {
           <DialogTitle>Nova Transação</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
+          <div className="space-y-2">
             <Label>Tipo</Label>
-            <Select onValueChange={(v) => register('type').onChange({ target: { value: v } })}>
+            <Select value={watch('type') || ''} onValueChange={(v) => setValue('type', v as any)}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="INCOME">Receita</SelectItem>
@@ -81,18 +88,21 @@ export function TransactionForm() {
               </SelectContent>
             </Select>
           </div>
-          <div>
+
+          <div className="space-y-2">
             <Label>Valor</Label>
-            <Input type="number" step="0.01" {...register('amount', { valueAsNumber: true })} />
+            <Input type="number" step="0.01" placeholder="0,00" onChange={(e) => setValue('amount', parseFloat(e.target.value) || 0)} value={watch('amount') || ''} />
             {errors.amount && <p className="text-red-500 text-sm">{errors.amount.message}</p>}
           </div>
-          <div>
+
+          <div className="space-y-2">
             <Label>Descrição</Label>
-            <Input {...register('description')} />
+            <Input value={watch('description') || ''} onChange={(e) => setValue('description', e.target.value)} placeholder="Descrição da transação" />
           </div>
-          <div>
+
+          <div className="space-y-2">
             <Label>Categoria</Label>
-            <Select onValueChange={(v) => register('categoryId').onChange({ target: { value: v } })}>
+            <Select value={watch('categoryId') || ''} onValueChange={(v) => setValue('categoryId', v)}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 {filteredCategories?.map((c: { id: string; name: string }) => (
@@ -101,18 +111,20 @@ export function TransactionForm() {
               </SelectContent>
             </Select>
           </div>
-          <div>
+
+          <div className="space-y-2">
             <Label>Data</Label>
-            <Input type="date" {...register('date')} />
+            <Input type="date" value={watch('date') || ''} onChange={(e) => setValue('date', e.target.value)} />
           </div>
+
           {type === 'EXPENSE' && (
             <>
-              <div>
+              <div className="space-y-2">
                 <Label>Cartão de Crédito</Label>
-                <Select onValueChange={(v) => register('creditCardId').onChange({ target: { value: v } })}>
+                <Select value={watch('creditCardId') || '__none__'} onValueChange={(v) => setValue('creditCardId', v === '__none__' ? '' : v)}>
                   <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nenhum</SelectItem>
+                    <SelectItem value="__none__">Nenhum</SelectItem>
                     {creditCards?.map((c: { id: string; name: string }) => (
                       <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                     ))}
@@ -120,13 +132,14 @@ export function TransactionForm() {
                 </Select>
               </div>
               {creditCardId && (
-                <div>
+                <div className="space-y-2">
                   <Label>Parcelas</Label>
-                  <Input type="number" min="1" max="48" {...register('totalInstallments', { valueAsNumber: true })} />
+                  <Input type="number" min="1" max="48" placeholder="1" value={watch('totalInstallments') || ''} onChange={(e) => setValue('totalInstallments', parseInt(e.target.value) || undefined)} />
                 </div>
               )}
             </>
           )}
+
           <Button type="submit" className="w-full" disabled={createMutation.isPending}>
             {createMutation.isPending ? 'Salvando...' : 'Salvar'}
           </Button>

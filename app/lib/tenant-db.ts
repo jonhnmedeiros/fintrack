@@ -1,12 +1,6 @@
 import { prisma } from './db'
-import { auth } from './auth'
 
-export async function userDb() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    throw new Error('Unauthorized: no user session')
-  }
-  const userId = session.user.id
+export function userDb(userId: string) {
 
   return {
     transaction: {

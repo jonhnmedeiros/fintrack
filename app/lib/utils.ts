@@ -18,9 +18,10 @@ export function formatPercent(value: number, decimals = 2): string {
 }
 
 export function formatDate(date: string): string {
+  const normalized = date.includes('T') ? date : date + 'T00:00:00'
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
-  }).format(new Date(date + 'T00:00:00'))
+  }).format(new Date(normalized))
 }

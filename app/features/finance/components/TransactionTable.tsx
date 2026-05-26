@@ -46,11 +46,11 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
     },
     {
       id: 'actions',
-      cell: ({ row }: { row: { id: string } }) => (
+      cell: ({ row }: { row: { original: { id: string } } }) => (
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => deleteMutation.mutate(row.id)}
+          onClick={() => deleteMutation.mutate(row.original.id)}
           disabled={deleteMutation.isPending}
         >
           <Trash2 className="h-4 w-4 text-red-500" />

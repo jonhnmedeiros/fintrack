@@ -1,14 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { createAPIFileRoute } from '@tanstack/start/api'
-
 export const Route = createFileRoute('/api/transactions/$id')({})
 
-export const APIRoute = createAPIFileRoute('/api/transactions/$id')({
-  DELETE: async ({ params }) => {
-    const { userDb } = await import('@/lib/tenant-db')
-    const db = await userDb()
-    await db.transaction.delete({ where: { id: params.id } })
-    return new Response(null, { status: 204 })
+export const APIRoute = {
+  path: '/api/transactions/$id',
+  methods: {
+    DELETE: async ({ request, params }) => {
+      const { auth } = await import('@/lib/auth')
+      const session = await auth(request)
+      if (!session?.user?.id) return new Response('Unauthorized', { status: 401 })
+      const { deleteTransaction } = await import('@/features/finance/api/transactions')
+      await deleteTransaction(session.user.id, params.id)
+      return new Response(null, { status: 204 })
+    },
   },
-})
+}
 

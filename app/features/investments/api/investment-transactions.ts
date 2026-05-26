@@ -1,8 +1,8 @@
 import { userDb } from '@/lib/tenant-db'
 import { createInvestmentTransactionSchema } from '../schemas'
 
-export async function listInvestmentTransactions(assetId?: string) {
-  const db = await userDb()
+export async function listInvestmentTransactions(userId: string, assetId?: string) {
+  const db = userDb(userId)
   const where: Record<string, unknown> = {}
   if (assetId) where.assetId = assetId
   return db.investmentTransaction.findMany({
@@ -12,13 +12,13 @@ export async function listInvestmentTransactions(assetId?: string) {
   })
 }
 
-export async function createInvestmentTransaction(data: unknown) {
+export async function createInvestmentTransaction(userId: string, data: unknown) {
   const validated = createInvestmentTransactionSchema.parse(data)
-  const db = await userDb()
+  const db = userDb(userId)
   return db.investmentTransaction.create({ data: validated })
 }
 
-export async function deleteInvestmentTransaction(id: string) {
-  const db = await userDb()
+export async function deleteInvestmentTransaction(userId: string, id: string) {
+  const db = userDb(userId)
   return db.investmentTransaction.delete({ where: { id } })
 }

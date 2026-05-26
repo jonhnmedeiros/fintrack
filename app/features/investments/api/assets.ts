@@ -1,8 +1,8 @@
 import { userDb } from '@/lib/tenant-db'
 import { createAssetSchema } from '../schemas'
 
-export async function listAssets() {
-  const db = await userDb()
+export async function listAssets(userId: string) {
+  const db = userDb(userId)
   return db.asset.findMany({
     orderBy: { ticker: 'asc' },
     include: {
@@ -12,14 +12,14 @@ export async function listAssets() {
   })
 }
 
-export async function createAsset(data: unknown) {
+export async function createAsset(userId: string, data: unknown) {
   const validated = createAssetSchema.parse(data)
-  const db = await userDb()
+  const db = userDb(userId)
   return db.asset.create({ data: validated })
 }
 
-export async function deleteAsset(id: string) {
-  const db = await userDb()
+export async function deleteAsset(userId: string, id: string) {
+  const db = userDb(userId)
   return db.asset.delete({ where: { id } })
 }
 

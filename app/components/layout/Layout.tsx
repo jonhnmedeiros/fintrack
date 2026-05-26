@@ -1,7 +1,15 @@
+import { useLocation } from '@tanstack/react-router'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const location = useLocation()
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register'
+
+  if (isAuthPage) {
+    return <>{children}</>
+  }
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />

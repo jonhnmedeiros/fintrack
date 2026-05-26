@@ -1,13 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { createAPIFileRoute } from '@tanstack/start/api'
-
 export const Route = createFileRoute('/api/assets/$id')({})
 
-export const APIRoute = createAPIFileRoute('/api/assets/$id')({
-  DELETE: async ({ params }) => {
-    const { deleteAsset } = await import('@/features/investments/api/assets')
-    await deleteAsset(params.id)
-    return new Response(null, { status: 204 })
+export const APIRoute = {
+  path: '/api/assets/$id',
+  methods: {
+    DELETE: async ({ request, params }) => {
+      const { auth } = await import('@/lib/auth')
+      const session = await auth(request)
+      if (!session?.user?.id) return new Response('Unauthorized', { status: 401 })
+      const { deleteAsset } = await import('@/features/investments/api/assets')
+      await deleteAsset(session.user.id, params.id)
+      return new Response(null, { status: 204 })
+    },
   },
-})
+}
 

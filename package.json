@@ -64,13 +64,15 @@
     "vite": "^5.3.4",
     "vitest": "^4.1.7"
   },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  },
   "overrides": {
     "@tanstack/directive-functions-plugin": "1.120.17",
     "@tanstack/react-start-client": "1.120.20",
     "@tanstack/react-start-plugin": "1.120.17",
     "@tanstack/react-start-server": "1.120.20",
     "@tanstack/router-core": "1.130.17",
-    "@tanstack/start-client-core": "1.131.50",
     "@tanstack/router-generator": "1.120.20",
     "@tanstack/router-utils": "1.120.17",
     "@tanstack/server-functions-plugin": "1.120.17",

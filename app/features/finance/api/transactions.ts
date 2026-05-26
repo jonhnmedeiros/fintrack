@@ -2,13 +2,16 @@ import { userDb } from '@/lib/tenant-db'
 import { createTransactionSchema } from '../schemas'
 import { prisma } from '@/lib/db'
 
-export async function listTransactions(filters?: {
-  type?: string
-  categoryId?: string
-  startDate?: string
-  endDate?: string
-}) {
-  const db = await userDb()
+export async function listTransactions(
+  userId: string,
+  filters?: {
+    type?: string
+    categoryId?: string
+    startDate?: string
+    endDate?: string
+  }
+) {
+  const db = userDb(userId)
   const where: Record<string, unknown> = {}
   if (filters?.type) where.type = filters.type
   if (filters?.categoryId) where.categoryId = filters.categoryId
@@ -24,9 +27,9 @@ export async function listTransactions(filters?: {
   })
 }
 
-export async function createTransaction(data: unknown) {
+export async function createTransaction(userId: string, data: unknown) {
   const validated = createTransactionSchema.parse(data)
-  const db = await userDb()
+  const db = userDb(userId)
 
   if (validated.creditCardId && validated.totalInstallments && validated.totalInstallments > 1) {
     const installmentAmount = validated.amount / validated.totalInstallments
@@ -51,7 +54,7 @@ export async function createTransaction(data: unknown) {
   return db.transaction.create({ data: validated })
 }
 
-export async function deleteTransaction(id: string) {
-  const db = await userDb()
+export async function deleteTransaction(userId: string, id: string) {
+  const db = userDb(userId)
   return db.transaction.delete({ where: { id } })
 }

@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as TransactionsImport } from './routes/transactions'
 import { Route as SettingsImport } from './routes/settings'
+import { Route as RegisterImport } from './routes/register'
 import { Route as LoginImport } from './routes/login'
 import { Route as GoalsImport } from './routes/goals'
 import { Route as BudgetImport } from './routes/budget'
@@ -30,6 +31,7 @@ import { Route as ApiNotificationsIdImport } from './routes/api/notifications/$i
 import { Route as ApiCreditCardsIdImport } from './routes/api/credit-cards/$id'
 import { Route as ApiCategoriesIdImport } from './routes/api/categories/$id'
 import { Route as ApiBudgetsIdImport } from './routes/api/budgets/$id'
+import { Route as ApiAuthRegisterImport } from './routes/api/auth/register'
 import { Route as ApiAuthSplatImport } from './routes/api/auth/$'
 import { Route as ApiAssetsIdImport } from './routes/api/assets/$id'
 import { Route as ApiAlertsIdImport } from './routes/api/alerts/$id'
@@ -45,6 +47,12 @@ const TransactionsRoute = TransactionsImport.update({
 const SettingsRoute = SettingsImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const RegisterRoute = RegisterImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -151,6 +159,12 @@ const ApiBudgetsIdRoute = ApiBudgetsIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ApiAuthRegisterRoute = ApiAuthRegisterImport.update({
+  id: '/api/auth/register',
+  path: '/api/auth/register',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ApiAuthSplatRoute = ApiAuthSplatImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -201,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterImport
+      parentRoute: typeof rootRoute
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -234,6 +255,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatImport
+      parentRoute: typeof rootRoute
+    }
+    '/api/auth/register': {
+      id: '/api/auth/register'
+      path: '/api/auth/register'
+      fullPath: '/api/auth/register'
+      preLoaderRoute: typeof ApiAuthRegisterImport
       parentRoute: typeof rootRoute
     }
     '/api/budgets/$id': {
@@ -337,11 +365,13 @@ export interface FileRoutesByFullPath {
   '/budget': typeof BudgetRoute
   '/goals': typeof GoalsRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
   '/api/alerts/$id': typeof ApiAlertsIdRoute
   '/api/assets/$id': typeof ApiAssetsIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/register': typeof ApiAuthRegisterRoute
   '/api/budgets/$id': typeof ApiBudgetsIdRoute
   '/api/categories/$id': typeof ApiCategoriesIdRoute
   '/api/credit-cards/$id': typeof ApiCreditCardsIdRoute
@@ -362,11 +392,13 @@ export interface FileRoutesByTo {
   '/budget': typeof BudgetRoute
   '/goals': typeof GoalsRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
   '/api/alerts/$id': typeof ApiAlertsIdRoute
   '/api/assets/$id': typeof ApiAssetsIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/register': typeof ApiAuthRegisterRoute
   '/api/budgets/$id': typeof ApiBudgetsIdRoute
   '/api/categories/$id': typeof ApiCategoriesIdRoute
   '/api/credit-cards/$id': typeof ApiCreditCardsIdRoute
@@ -388,11 +420,13 @@ export interface FileRoutesById {
   '/budget': typeof BudgetRoute
   '/goals': typeof GoalsRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
   '/api/alerts/$id': typeof ApiAlertsIdRoute
   '/api/assets/$id': typeof ApiAssetsIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/register': typeof ApiAuthRegisterRoute
   '/api/budgets/$id': typeof ApiBudgetsIdRoute
   '/api/categories/$id': typeof ApiCategoriesIdRoute
   '/api/credit-cards/$id': typeof ApiCreditCardsIdRoute
@@ -415,11 +449,13 @@ export interface FileRouteTypes {
     | '/budget'
     | '/goals'
     | '/login'
+    | '/register'
     | '/settings'
     | '/transactions'
     | '/api/alerts/$id'
     | '/api/assets/$id'
     | '/api/auth/$'
+    | '/api/auth/register'
     | '/api/budgets/$id'
     | '/api/categories/$id'
     | '/api/credit-cards/$id'
@@ -439,11 +475,13 @@ export interface FileRouteTypes {
     | '/budget'
     | '/goals'
     | '/login'
+    | '/register'
     | '/settings'
     | '/transactions'
     | '/api/alerts/$id'
     | '/api/assets/$id'
     | '/api/auth/$'
+    | '/api/auth/register'
     | '/api/budgets/$id'
     | '/api/categories/$id'
     | '/api/credit-cards/$id'
@@ -463,11 +501,13 @@ export interface FileRouteTypes {
     | '/budget'
     | '/goals'
     | '/login'
+    | '/register'
     | '/settings'
     | '/transactions'
     | '/api/alerts/$id'
     | '/api/assets/$id'
     | '/api/auth/$'
+    | '/api/auth/register'
     | '/api/budgets/$id'
     | '/api/categories/$id'
     | '/api/credit-cards/$id'
@@ -489,11 +529,13 @@ export interface RootRouteChildren {
   BudgetRoute: typeof BudgetRoute
   GoalsRoute: typeof GoalsRoute
   LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
   SettingsRoute: typeof SettingsRoute
   TransactionsRoute: typeof TransactionsRoute
   ApiAlertsIdRoute: typeof ApiAlertsIdRoute
   ApiAssetsIdRoute: typeof ApiAssetsIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiAuthRegisterRoute: typeof ApiAuthRegisterRoute
   ApiBudgetsIdRoute: typeof ApiBudgetsIdRoute
   ApiCategoriesIdRoute: typeof ApiCategoriesIdRoute
   ApiCreditCardsIdRoute: typeof ApiCreditCardsIdRoute
@@ -514,11 +556,13 @@ const rootRouteChildren: RootRouteChildren = {
   BudgetRoute: BudgetRoute,
   GoalsRoute: GoalsRoute,
   LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
   SettingsRoute: SettingsRoute,
   TransactionsRoute: TransactionsRoute,
   ApiAlertsIdRoute: ApiAlertsIdRoute,
   ApiAssetsIdRoute: ApiAssetsIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiAuthRegisterRoute: ApiAuthRegisterRoute,
   ApiBudgetsIdRoute: ApiBudgetsIdRoute,
   ApiCategoriesIdRoute: ApiCategoriesIdRoute,
   ApiCreditCardsIdRoute: ApiCreditCardsIdRoute,
@@ -548,11 +592,13 @@ export const routeTree = rootRoute
         "/budget",
         "/goals",
         "/login",
+        "/register",
         "/settings",
         "/transactions",
         "/api/alerts/$id",
         "/api/assets/$id",
         "/api/auth/$",
+        "/api/auth/register",
         "/api/budgets/$id",
         "/api/categories/$id",
         "/api/credit-cards/$id",
@@ -580,6 +626,9 @@ export const routeTree = rootRoute
     "/login": {
       "filePath": "login.tsx"
     },
+    "/register": {
+      "filePath": "register.tsx"
+    },
     "/settings": {
       "filePath": "settings.tsx"
     },
@@ -594,6 +643,9 @@ export const routeTree = rootRoute
     },
     "/api/auth/$": {
       "filePath": "api/auth/$.tsx"
+    },
+    "/api/auth/register": {
+      "filePath": "api/auth/register.ts"
     },
     "/api/budgets/$id": {
       "filePath": "api/budgets/$id.ts"

@@ -7,25 +7,37 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Link } from '@tanstack/react-router'
 import { signIn } from 'next-auth/react'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 
-const loginSchema = z.object({
+const registerSchema = z.object({
   email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Mínimo 6 caracteres'),
+  password: z.string().min(6, 'Mínimo 6 caracteres').max(128, 'Máximo 128 caracteres'),
 })
 
-type LoginFormData = z.infer<typeof loginSchema>
+type RegisterFormData = z.infer<typeof registerSchema>
 
-export function LoginForm() {
-  const [error, setError] = useState<string | null>(null)
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+export function RegisterForm() {
+  const [error, setError] = useState<ReactNode | null>(null)
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
   })
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: RegisterFormData) => {
     setError(null)
 
     try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+
+      if (!res.ok) {
+        const text = await res.text()
+        setError(text)
+        return
+      }
+
       const result = await signIn('credentials', {
         email: data.email,
         password: data.password,
@@ -33,7 +45,14 @@ export function LoginForm() {
       })
 
       if (result?.error) {
-        setError('Email ou senha incorretos')
+        setError(
+          <>
+            Conta criada, mas erro ao autenticar.{' '}
+            <Link to="/login" className="underline">
+              Tente fazer login
+            </Link>
+          </>
+        )
         return
       }
 
@@ -46,7 +65,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md mx-auto mt-8">
       <CardHeader>
-        <CardTitle>Entrar no FinTrack</CardTitle>
+        <CardTitle>Criar conta no FinTrack</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -62,15 +81,15 @@ export function LoginForm() {
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Entrando...' : 'Entrar'}
+            {isSubmitting ? 'Criando conta...' : 'Criar conta'}
           </Button>
         </form>
       </CardContent>
       <CardFooter className="justify-center">
         <p className="text-sm text-muted-foreground">
-          Não tem conta?{' '}
-          <Link to="/register" className="text-primary hover:underline">
-            Cadastre-se
+          Já tem conta?{' '}
+          <Link to="/login" className="text-primary hover:underline">
+            Entrar
           </Link>
         </p>
       </CardFooter>

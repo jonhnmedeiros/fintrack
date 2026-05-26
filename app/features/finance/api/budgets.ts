@@ -1,21 +1,18 @@
 import { userDb } from '@/lib/tenant-db'
-import { auth } from '@/lib/auth'
 import { createBudgetSchema } from '../schemas'
-import { prisma } from '@/lib/db'
 
-export async function listBudgets(year?: number, month?: number) {
-  const db = await userDb()
+export async function listBudgets(userId: string, year?: number, month?: number) {
+  const db = userDb(userId)
   const where: Record<string, unknown> = {}
   if (year) where.year = year
   if (month) where.month = month
   return db.budget.findMany({ where, include: { category: true } })
 }
 
-export async function createOrUpdateBudget(data: unknown) {
+export async function createOrUpdateBudget(userId: string, data: unknown) {
   const validated = createBudgetSchema.parse(data)
-  const session = await auth()
-  const userId = session!.user!.id
-  return prisma.budget.upsert({
+  const db = userDb(userId)
+  return db.budget.upsert({
     where: {
       userId_categoryId_month_year: {
         userId,
@@ -29,7 +26,7 @@ export async function createOrUpdateBudget(data: unknown) {
   })
 }
 
-export async function deleteBudget(id: string) {
-  const db = await userDb()
+export async function deleteBudget(userId: string, id: string) {
+  const db = userDb(userId)
   return db.budget.delete({ where: { id } })
 }
