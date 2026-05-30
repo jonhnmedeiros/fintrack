@@ -35,17 +35,34 @@ const nextAuthOptions = {
 
         if (!isValid) return null
 
-        return { id: user.id, email: user.email, name: user.name }
+        return { id: user.id, email: user.email, name: user.name, role: user.role }
       },
     }),
   ],
   session: { strategy: 'jwt' },
   callbacks: {
+    jwt: async ({ token, user }) => {
+      if (user) {
+        token.role = (user as any).role
+        token.viewerOfId = (user as any).viewerOfId
+      }
+      const dbUser = await prisma.user.findUnique({
+        where: { id: token.sub as string },
+        select: { role: true, viewerOfId: true },
+      })
+      if (dbUser) {
+        token.role = dbUser.role
+        token.viewerOfId = dbUser.viewerOfId
+      }
+      return token
+    },
     session: ({ session, token }) => ({
       ...session,
       user: {
         ...session.user,
         id: token.sub as string,
+        role: token.role as string,
+        viewerOfId: token.viewerOfId as string | undefined,
       },
     }),
   },
@@ -93,6 +110,8 @@ export async function auth(request?: Request) {
         id: token.sub,
         email: (token as any).email as string | undefined,
         name: (token as any).name as string | undefined,
+        role: (token as any).role as string | undefined,
+        viewerOfId: (token as any).viewerOfId as string | undefined,
       },
     }
   } catch {

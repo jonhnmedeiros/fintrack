@@ -13,13 +13,20 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as TransactionsImport } from './routes/transactions'
 import { Route as SettingsImport } from './routes/settings'
+import { Route as ReportsImport } from './routes/reports'
 import { Route as RegisterImport } from './routes/register'
 import { Route as LoginImport } from './routes/login'
+import { Route as InvestmentsImport } from './routes/investments'
 import { Route as GoalsImport } from './routes/goals'
+import { Route as CreditCardsImport } from './routes/credit-cards'
+import { Route as CategoriesImport } from './routes/categories'
 import { Route as BudgetImport } from './routes/budget'
 import { Route as IndexImport } from './routes/index'
+import { Route as InvitesAcceptImport } from './routes/invites.accept'
+import { Route as ApiRegisterImport } from './routes/api/register'
 import { Route as ApiTransactionsIndexImport } from './routes/api/transactions/index'
 import { Route as ApiNotificationsIndexImport } from './routes/api/notifications/index'
+import { Route as ApiInvitesIndexImport } from './routes/api/invites/index'
 import { Route as ApiInvestmentTransactionsIndexImport } from './routes/api/investment-transactions/index'
 import { Route as ApiCreditCardsIndexImport } from './routes/api/credit-cards/index'
 import { Route as ApiCategoriesIndexImport } from './routes/api/categories/index'
@@ -28,10 +35,15 @@ import { Route as ApiAssetsIndexImport } from './routes/api/assets/index'
 import { Route as ApiAlertsIndexImport } from './routes/api/alerts/index'
 import { Route as ApiTransactionsIdImport } from './routes/api/transactions/$id'
 import { Route as ApiNotificationsIdImport } from './routes/api/notifications/$id'
+import { Route as ApiInvitesAcceptImport } from './routes/api/invites/accept'
+import { Route as ApiInvestmentsProfitabilityImport } from './routes/api/investments/profitability'
+import { Route as ApiInvestmentsExportImport } from './routes/api/investments/export'
+import { Route as ApiInvestmentTransactionsIdImport } from './routes/api/investment-transactions/$id'
 import { Route as ApiCreditCardsIdImport } from './routes/api/credit-cards/$id'
 import { Route as ApiCategoriesIdImport } from './routes/api/categories/$id'
 import { Route as ApiBudgetsIdImport } from './routes/api/budgets/$id'
-import { Route as ApiAuthRegisterImport } from './routes/api/auth/register'
+import { Route as ApiBrokerageNotesParseImport } from './routes/api/brokerage-notes/parse'
+import { Route as ApiBrokerageNotesImportImport } from './routes/api/brokerage-notes/import'
 import { Route as ApiAuthSplatImport } from './routes/api/auth/$'
 import { Route as ApiAssetsIdImport } from './routes/api/assets/$id'
 import { Route as ApiAlertsIdImport } from './routes/api/alerts/$id'
@@ -50,6 +62,12 @@ const SettingsRoute = SettingsImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ReportsRoute = ReportsImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const RegisterRoute = RegisterImport.update({
   id: '/register',
   path: '/register',
@@ -62,9 +80,27 @@ const LoginRoute = LoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const InvestmentsRoute = InvestmentsImport.update({
+  id: '/investments',
+  path: '/investments',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const GoalsRoute = GoalsImport.update({
   id: '/goals',
   path: '/goals',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CreditCardsRoute = CreditCardsImport.update({
+  id: '/credit-cards',
+  path: '/credit-cards',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CategoriesRoute = CategoriesImport.update({
+  id: '/categories',
+  path: '/categories',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -80,6 +116,18 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const InvitesAcceptRoute = InvitesAcceptImport.update({
+  id: '/invites/accept',
+  path: '/invites/accept',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ApiRegisterRoute = ApiRegisterImport.update({
+  id: '/api/register',
+  path: '/api/register',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ApiTransactionsIndexRoute = ApiTransactionsIndexImport.update({
   id: '/api/transactions/',
   path: '/api/transactions/',
@@ -89,6 +137,12 @@ const ApiTransactionsIndexRoute = ApiTransactionsIndexImport.update({
 const ApiNotificationsIndexRoute = ApiNotificationsIndexImport.update({
   id: '/api/notifications/',
   path: '/api/notifications/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ApiInvitesIndexRoute = ApiInvitesIndexImport.update({
+  id: '/api/invites/',
+  path: '/api/invites/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -141,6 +195,32 @@ const ApiNotificationsIdRoute = ApiNotificationsIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ApiInvitesAcceptRoute = ApiInvitesAcceptImport.update({
+  id: '/api/invites/accept',
+  path: '/api/invites/accept',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ApiInvestmentsProfitabilityRoute =
+  ApiInvestmentsProfitabilityImport.update({
+    id: '/api/investments/profitability',
+    path: '/api/investments/profitability',
+    getParentRoute: () => rootRoute,
+  } as any)
+
+const ApiInvestmentsExportRoute = ApiInvestmentsExportImport.update({
+  id: '/api/investments/export',
+  path: '/api/investments/export',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ApiInvestmentTransactionsIdRoute =
+  ApiInvestmentTransactionsIdImport.update({
+    id: '/api/investment-transactions/$id',
+    path: '/api/investment-transactions/$id',
+    getParentRoute: () => rootRoute,
+  } as any)
+
 const ApiCreditCardsIdRoute = ApiCreditCardsIdImport.update({
   id: '/api/credit-cards/$id',
   path: '/api/credit-cards/$id',
@@ -159,9 +239,15 @@ const ApiBudgetsIdRoute = ApiBudgetsIdImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const ApiAuthRegisterRoute = ApiAuthRegisterImport.update({
-  id: '/api/auth/register',
-  path: '/api/auth/register',
+const ApiBrokerageNotesParseRoute = ApiBrokerageNotesParseImport.update({
+  id: '/api/brokerage-notes/parse',
+  path: '/api/brokerage-notes/parse',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ApiBrokerageNotesImportRoute = ApiBrokerageNotesImportImport.update({
+  id: '/api/brokerage-notes/import',
+  path: '/api/brokerage-notes/import',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -201,11 +287,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BudgetImport
       parentRoute: typeof rootRoute
     }
+    '/categories': {
+      id: '/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof CategoriesImport
+      parentRoute: typeof rootRoute
+    }
+    '/credit-cards': {
+      id: '/credit-cards'
+      path: '/credit-cards'
+      fullPath: '/credit-cards'
+      preLoaderRoute: typeof CreditCardsImport
+      parentRoute: typeof rootRoute
+    }
     '/goals': {
       id: '/goals'
       path: '/goals'
       fullPath: '/goals'
       preLoaderRoute: typeof GoalsImport
+      parentRoute: typeof rootRoute
+    }
+    '/investments': {
+      id: '/investments'
+      path: '/investments'
+      fullPath: '/investments'
+      preLoaderRoute: typeof InvestmentsImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -222,6 +329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterImport
       parentRoute: typeof rootRoute
     }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsImport
+      parentRoute: typeof rootRoute
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -234,6 +348,20 @@ declare module '@tanstack/react-router' {
       path: '/transactions'
       fullPath: '/transactions'
       preLoaderRoute: typeof TransactionsImport
+      parentRoute: typeof rootRoute
+    }
+    '/api/register': {
+      id: '/api/register'
+      path: '/api/register'
+      fullPath: '/api/register'
+      preLoaderRoute: typeof ApiRegisterImport
+      parentRoute: typeof rootRoute
+    }
+    '/invites/accept': {
+      id: '/invites/accept'
+      path: '/invites/accept'
+      fullPath: '/invites/accept'
+      preLoaderRoute: typeof InvitesAcceptImport
       parentRoute: typeof rootRoute
     }
     '/api/alerts/$id': {
@@ -257,11 +385,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatImport
       parentRoute: typeof rootRoute
     }
-    '/api/auth/register': {
-      id: '/api/auth/register'
-      path: '/api/auth/register'
-      fullPath: '/api/auth/register'
-      preLoaderRoute: typeof ApiAuthRegisterImport
+    '/api/brokerage-notes/import': {
+      id: '/api/brokerage-notes/import'
+      path: '/api/brokerage-notes/import'
+      fullPath: '/api/brokerage-notes/import'
+      preLoaderRoute: typeof ApiBrokerageNotesImportImport
+      parentRoute: typeof rootRoute
+    }
+    '/api/brokerage-notes/parse': {
+      id: '/api/brokerage-notes/parse'
+      path: '/api/brokerage-notes/parse'
+      fullPath: '/api/brokerage-notes/parse'
+      preLoaderRoute: typeof ApiBrokerageNotesParseImport
       parentRoute: typeof rootRoute
     }
     '/api/budgets/$id': {
@@ -283,6 +418,34 @@ declare module '@tanstack/react-router' {
       path: '/api/credit-cards/$id'
       fullPath: '/api/credit-cards/$id'
       preLoaderRoute: typeof ApiCreditCardsIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/api/investment-transactions/$id': {
+      id: '/api/investment-transactions/$id'
+      path: '/api/investment-transactions/$id'
+      fullPath: '/api/investment-transactions/$id'
+      preLoaderRoute: typeof ApiInvestmentTransactionsIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/api/investments/export': {
+      id: '/api/investments/export'
+      path: '/api/investments/export'
+      fullPath: '/api/investments/export'
+      preLoaderRoute: typeof ApiInvestmentsExportImport
+      parentRoute: typeof rootRoute
+    }
+    '/api/investments/profitability': {
+      id: '/api/investments/profitability'
+      path: '/api/investments/profitability'
+      fullPath: '/api/investments/profitability'
+      preLoaderRoute: typeof ApiInvestmentsProfitabilityImport
+      parentRoute: typeof rootRoute
+    }
+    '/api/invites/accept': {
+      id: '/api/invites/accept'
+      path: '/api/invites/accept'
+      fullPath: '/api/invites/accept'
+      preLoaderRoute: typeof ApiInvitesAcceptImport
       parentRoute: typeof rootRoute
     }
     '/api/notifications/$id': {
@@ -341,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiInvestmentTransactionsIndexImport
       parentRoute: typeof rootRoute
     }
+    '/api/invites/': {
+      id: '/api/invites/'
+      path: '/api/invites'
+      fullPath: '/api/invites'
+      preLoaderRoute: typeof ApiInvitesIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/api/notifications/': {
       id: '/api/notifications/'
       path: '/api/notifications'
@@ -363,18 +533,29 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/budget': typeof BudgetRoute
+  '/categories': typeof CategoriesRoute
+  '/credit-cards': typeof CreditCardsRoute
   '/goals': typeof GoalsRoute
+  '/investments': typeof InvestmentsRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
+  '/api/register': typeof ApiRegisterRoute
+  '/invites/accept': typeof InvitesAcceptRoute
   '/api/alerts/$id': typeof ApiAlertsIdRoute
   '/api/assets/$id': typeof ApiAssetsIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/auth/register': typeof ApiAuthRegisterRoute
+  '/api/brokerage-notes/import': typeof ApiBrokerageNotesImportRoute
+  '/api/brokerage-notes/parse': typeof ApiBrokerageNotesParseRoute
   '/api/budgets/$id': typeof ApiBudgetsIdRoute
   '/api/categories/$id': typeof ApiCategoriesIdRoute
   '/api/credit-cards/$id': typeof ApiCreditCardsIdRoute
+  '/api/investment-transactions/$id': typeof ApiInvestmentTransactionsIdRoute
+  '/api/investments/export': typeof ApiInvestmentsExportRoute
+  '/api/investments/profitability': typeof ApiInvestmentsProfitabilityRoute
+  '/api/invites/accept': typeof ApiInvitesAcceptRoute
   '/api/notifications/$id': typeof ApiNotificationsIdRoute
   '/api/transactions/$id': typeof ApiTransactionsIdRoute
   '/api/alerts': typeof ApiAlertsIndexRoute
@@ -383,6 +564,7 @@ export interface FileRoutesByFullPath {
   '/api/categories': typeof ApiCategoriesIndexRoute
   '/api/credit-cards': typeof ApiCreditCardsIndexRoute
   '/api/investment-transactions': typeof ApiInvestmentTransactionsIndexRoute
+  '/api/invites': typeof ApiInvitesIndexRoute
   '/api/notifications': typeof ApiNotificationsIndexRoute
   '/api/transactions': typeof ApiTransactionsIndexRoute
 }
@@ -390,18 +572,29 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/budget': typeof BudgetRoute
+  '/categories': typeof CategoriesRoute
+  '/credit-cards': typeof CreditCardsRoute
   '/goals': typeof GoalsRoute
+  '/investments': typeof InvestmentsRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
+  '/api/register': typeof ApiRegisterRoute
+  '/invites/accept': typeof InvitesAcceptRoute
   '/api/alerts/$id': typeof ApiAlertsIdRoute
   '/api/assets/$id': typeof ApiAssetsIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/auth/register': typeof ApiAuthRegisterRoute
+  '/api/brokerage-notes/import': typeof ApiBrokerageNotesImportRoute
+  '/api/brokerage-notes/parse': typeof ApiBrokerageNotesParseRoute
   '/api/budgets/$id': typeof ApiBudgetsIdRoute
   '/api/categories/$id': typeof ApiCategoriesIdRoute
   '/api/credit-cards/$id': typeof ApiCreditCardsIdRoute
+  '/api/investment-transactions/$id': typeof ApiInvestmentTransactionsIdRoute
+  '/api/investments/export': typeof ApiInvestmentsExportRoute
+  '/api/investments/profitability': typeof ApiInvestmentsProfitabilityRoute
+  '/api/invites/accept': typeof ApiInvitesAcceptRoute
   '/api/notifications/$id': typeof ApiNotificationsIdRoute
   '/api/transactions/$id': typeof ApiTransactionsIdRoute
   '/api/alerts': typeof ApiAlertsIndexRoute
@@ -410,6 +603,7 @@ export interface FileRoutesByTo {
   '/api/categories': typeof ApiCategoriesIndexRoute
   '/api/credit-cards': typeof ApiCreditCardsIndexRoute
   '/api/investment-transactions': typeof ApiInvestmentTransactionsIndexRoute
+  '/api/invites': typeof ApiInvitesIndexRoute
   '/api/notifications': typeof ApiNotificationsIndexRoute
   '/api/transactions': typeof ApiTransactionsIndexRoute
 }
@@ -418,18 +612,29 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/budget': typeof BudgetRoute
+  '/categories': typeof CategoriesRoute
+  '/credit-cards': typeof CreditCardsRoute
   '/goals': typeof GoalsRoute
+  '/investments': typeof InvestmentsRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
+  '/api/register': typeof ApiRegisterRoute
+  '/invites/accept': typeof InvitesAcceptRoute
   '/api/alerts/$id': typeof ApiAlertsIdRoute
   '/api/assets/$id': typeof ApiAssetsIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/auth/register': typeof ApiAuthRegisterRoute
+  '/api/brokerage-notes/import': typeof ApiBrokerageNotesImportRoute
+  '/api/brokerage-notes/parse': typeof ApiBrokerageNotesParseRoute
   '/api/budgets/$id': typeof ApiBudgetsIdRoute
   '/api/categories/$id': typeof ApiCategoriesIdRoute
   '/api/credit-cards/$id': typeof ApiCreditCardsIdRoute
+  '/api/investment-transactions/$id': typeof ApiInvestmentTransactionsIdRoute
+  '/api/investments/export': typeof ApiInvestmentsExportRoute
+  '/api/investments/profitability': typeof ApiInvestmentsProfitabilityRoute
+  '/api/invites/accept': typeof ApiInvitesAcceptRoute
   '/api/notifications/$id': typeof ApiNotificationsIdRoute
   '/api/transactions/$id': typeof ApiTransactionsIdRoute
   '/api/alerts/': typeof ApiAlertsIndexRoute
@@ -438,6 +643,7 @@ export interface FileRoutesById {
   '/api/categories/': typeof ApiCategoriesIndexRoute
   '/api/credit-cards/': typeof ApiCreditCardsIndexRoute
   '/api/investment-transactions/': typeof ApiInvestmentTransactionsIndexRoute
+  '/api/invites/': typeof ApiInvitesIndexRoute
   '/api/notifications/': typeof ApiNotificationsIndexRoute
   '/api/transactions/': typeof ApiTransactionsIndexRoute
 }
@@ -447,18 +653,29 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/budget'
+    | '/categories'
+    | '/credit-cards'
     | '/goals'
+    | '/investments'
     | '/login'
     | '/register'
+    | '/reports'
     | '/settings'
     | '/transactions'
+    | '/api/register'
+    | '/invites/accept'
     | '/api/alerts/$id'
     | '/api/assets/$id'
     | '/api/auth/$'
-    | '/api/auth/register'
+    | '/api/brokerage-notes/import'
+    | '/api/brokerage-notes/parse'
     | '/api/budgets/$id'
     | '/api/categories/$id'
     | '/api/credit-cards/$id'
+    | '/api/investment-transactions/$id'
+    | '/api/investments/export'
+    | '/api/investments/profitability'
+    | '/api/invites/accept'
     | '/api/notifications/$id'
     | '/api/transactions/$id'
     | '/api/alerts'
@@ -467,24 +684,36 @@ export interface FileRouteTypes {
     | '/api/categories'
     | '/api/credit-cards'
     | '/api/investment-transactions'
+    | '/api/invites'
     | '/api/notifications'
     | '/api/transactions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/budget'
+    | '/categories'
+    | '/credit-cards'
     | '/goals'
+    | '/investments'
     | '/login'
     | '/register'
+    | '/reports'
     | '/settings'
     | '/transactions'
+    | '/api/register'
+    | '/invites/accept'
     | '/api/alerts/$id'
     | '/api/assets/$id'
     | '/api/auth/$'
-    | '/api/auth/register'
+    | '/api/brokerage-notes/import'
+    | '/api/brokerage-notes/parse'
     | '/api/budgets/$id'
     | '/api/categories/$id'
     | '/api/credit-cards/$id'
+    | '/api/investment-transactions/$id'
+    | '/api/investments/export'
+    | '/api/investments/profitability'
+    | '/api/invites/accept'
     | '/api/notifications/$id'
     | '/api/transactions/$id'
     | '/api/alerts'
@@ -493,24 +722,36 @@ export interface FileRouteTypes {
     | '/api/categories'
     | '/api/credit-cards'
     | '/api/investment-transactions'
+    | '/api/invites'
     | '/api/notifications'
     | '/api/transactions'
   id:
     | '__root__'
     | '/'
     | '/budget'
+    | '/categories'
+    | '/credit-cards'
     | '/goals'
+    | '/investments'
     | '/login'
     | '/register'
+    | '/reports'
     | '/settings'
     | '/transactions'
+    | '/api/register'
+    | '/invites/accept'
     | '/api/alerts/$id'
     | '/api/assets/$id'
     | '/api/auth/$'
-    | '/api/auth/register'
+    | '/api/brokerage-notes/import'
+    | '/api/brokerage-notes/parse'
     | '/api/budgets/$id'
     | '/api/categories/$id'
     | '/api/credit-cards/$id'
+    | '/api/investment-transactions/$id'
+    | '/api/investments/export'
+    | '/api/investments/profitability'
+    | '/api/invites/accept'
     | '/api/notifications/$id'
     | '/api/transactions/$id'
     | '/api/alerts/'
@@ -519,6 +760,7 @@ export interface FileRouteTypes {
     | '/api/categories/'
     | '/api/credit-cards/'
     | '/api/investment-transactions/'
+    | '/api/invites/'
     | '/api/notifications/'
     | '/api/transactions/'
   fileRoutesById: FileRoutesById
@@ -527,18 +769,29 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BudgetRoute: typeof BudgetRoute
+  CategoriesRoute: typeof CategoriesRoute
+  CreditCardsRoute: typeof CreditCardsRoute
   GoalsRoute: typeof GoalsRoute
+  InvestmentsRoute: typeof InvestmentsRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   TransactionsRoute: typeof TransactionsRoute
+  ApiRegisterRoute: typeof ApiRegisterRoute
+  InvitesAcceptRoute: typeof InvitesAcceptRoute
   ApiAlertsIdRoute: typeof ApiAlertsIdRoute
   ApiAssetsIdRoute: typeof ApiAssetsIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiAuthRegisterRoute: typeof ApiAuthRegisterRoute
+  ApiBrokerageNotesImportRoute: typeof ApiBrokerageNotesImportRoute
+  ApiBrokerageNotesParseRoute: typeof ApiBrokerageNotesParseRoute
   ApiBudgetsIdRoute: typeof ApiBudgetsIdRoute
   ApiCategoriesIdRoute: typeof ApiCategoriesIdRoute
   ApiCreditCardsIdRoute: typeof ApiCreditCardsIdRoute
+  ApiInvestmentTransactionsIdRoute: typeof ApiInvestmentTransactionsIdRoute
+  ApiInvestmentsExportRoute: typeof ApiInvestmentsExportRoute
+  ApiInvestmentsProfitabilityRoute: typeof ApiInvestmentsProfitabilityRoute
+  ApiInvitesAcceptRoute: typeof ApiInvitesAcceptRoute
   ApiNotificationsIdRoute: typeof ApiNotificationsIdRoute
   ApiTransactionsIdRoute: typeof ApiTransactionsIdRoute
   ApiAlertsIndexRoute: typeof ApiAlertsIndexRoute
@@ -547,6 +800,7 @@ export interface RootRouteChildren {
   ApiCategoriesIndexRoute: typeof ApiCategoriesIndexRoute
   ApiCreditCardsIndexRoute: typeof ApiCreditCardsIndexRoute
   ApiInvestmentTransactionsIndexRoute: typeof ApiInvestmentTransactionsIndexRoute
+  ApiInvitesIndexRoute: typeof ApiInvitesIndexRoute
   ApiNotificationsIndexRoute: typeof ApiNotificationsIndexRoute
   ApiTransactionsIndexRoute: typeof ApiTransactionsIndexRoute
 }
@@ -554,18 +808,29 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BudgetRoute: BudgetRoute,
+  CategoriesRoute: CategoriesRoute,
+  CreditCardsRoute: CreditCardsRoute,
   GoalsRoute: GoalsRoute,
+  InvestmentsRoute: InvestmentsRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   TransactionsRoute: TransactionsRoute,
+  ApiRegisterRoute: ApiRegisterRoute,
+  InvitesAcceptRoute: InvitesAcceptRoute,
   ApiAlertsIdRoute: ApiAlertsIdRoute,
   ApiAssetsIdRoute: ApiAssetsIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiAuthRegisterRoute: ApiAuthRegisterRoute,
+  ApiBrokerageNotesImportRoute: ApiBrokerageNotesImportRoute,
+  ApiBrokerageNotesParseRoute: ApiBrokerageNotesParseRoute,
   ApiBudgetsIdRoute: ApiBudgetsIdRoute,
   ApiCategoriesIdRoute: ApiCategoriesIdRoute,
   ApiCreditCardsIdRoute: ApiCreditCardsIdRoute,
+  ApiInvestmentTransactionsIdRoute: ApiInvestmentTransactionsIdRoute,
+  ApiInvestmentsExportRoute: ApiInvestmentsExportRoute,
+  ApiInvestmentsProfitabilityRoute: ApiInvestmentsProfitabilityRoute,
+  ApiInvitesAcceptRoute: ApiInvitesAcceptRoute,
   ApiNotificationsIdRoute: ApiNotificationsIdRoute,
   ApiTransactionsIdRoute: ApiTransactionsIdRoute,
   ApiAlertsIndexRoute: ApiAlertsIndexRoute,
@@ -574,6 +839,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCategoriesIndexRoute: ApiCategoriesIndexRoute,
   ApiCreditCardsIndexRoute: ApiCreditCardsIndexRoute,
   ApiInvestmentTransactionsIndexRoute: ApiInvestmentTransactionsIndexRoute,
+  ApiInvitesIndexRoute: ApiInvitesIndexRoute,
   ApiNotificationsIndexRoute: ApiNotificationsIndexRoute,
   ApiTransactionsIndexRoute: ApiTransactionsIndexRoute,
 }
@@ -590,18 +856,29 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/budget",
+        "/categories",
+        "/credit-cards",
         "/goals",
+        "/investments",
         "/login",
         "/register",
+        "/reports",
         "/settings",
         "/transactions",
+        "/api/register",
+        "/invites/accept",
         "/api/alerts/$id",
         "/api/assets/$id",
         "/api/auth/$",
-        "/api/auth/register",
+        "/api/brokerage-notes/import",
+        "/api/brokerage-notes/parse",
         "/api/budgets/$id",
         "/api/categories/$id",
         "/api/credit-cards/$id",
+        "/api/investment-transactions/$id",
+        "/api/investments/export",
+        "/api/investments/profitability",
+        "/api/invites/accept",
         "/api/notifications/$id",
         "/api/transactions/$id",
         "/api/alerts/",
@@ -610,6 +887,7 @@ export const routeTree = rootRoute
         "/api/categories/",
         "/api/credit-cards/",
         "/api/investment-transactions/",
+        "/api/invites/",
         "/api/notifications/",
         "/api/transactions/"
       ]
@@ -620,8 +898,17 @@ export const routeTree = rootRoute
     "/budget": {
       "filePath": "budget.tsx"
     },
+    "/categories": {
+      "filePath": "categories.tsx"
+    },
+    "/credit-cards": {
+      "filePath": "credit-cards.tsx"
+    },
     "/goals": {
       "filePath": "goals.tsx"
+    },
+    "/investments": {
+      "filePath": "investments.tsx"
     },
     "/login": {
       "filePath": "login.tsx"
@@ -629,11 +916,20 @@ export const routeTree = rootRoute
     "/register": {
       "filePath": "register.tsx"
     },
+    "/reports": {
+      "filePath": "reports.tsx"
+    },
     "/settings": {
       "filePath": "settings.tsx"
     },
     "/transactions": {
       "filePath": "transactions.tsx"
+    },
+    "/api/register": {
+      "filePath": "api/register.ts"
+    },
+    "/invites/accept": {
+      "filePath": "invites.accept.tsx"
     },
     "/api/alerts/$id": {
       "filePath": "api/alerts/$id.ts"
@@ -644,8 +940,11 @@ export const routeTree = rootRoute
     "/api/auth/$": {
       "filePath": "api/auth/$.tsx"
     },
-    "/api/auth/register": {
-      "filePath": "api/auth/register.ts"
+    "/api/brokerage-notes/import": {
+      "filePath": "api/brokerage-notes/import.ts"
+    },
+    "/api/brokerage-notes/parse": {
+      "filePath": "api/brokerage-notes/parse.ts"
     },
     "/api/budgets/$id": {
       "filePath": "api/budgets/$id.ts"
@@ -655,6 +954,18 @@ export const routeTree = rootRoute
     },
     "/api/credit-cards/$id": {
       "filePath": "api/credit-cards/$id.ts"
+    },
+    "/api/investment-transactions/$id": {
+      "filePath": "api/investment-transactions/$id.ts"
+    },
+    "/api/investments/export": {
+      "filePath": "api/investments/export.ts"
+    },
+    "/api/investments/profitability": {
+      "filePath": "api/investments/profitability.ts"
+    },
+    "/api/invites/accept": {
+      "filePath": "api/invites/accept.ts"
     },
     "/api/notifications/$id": {
       "filePath": "api/notifications/$id.ts"
@@ -679,6 +990,9 @@ export const routeTree = rootRoute
     },
     "/api/investment-transactions/": {
       "filePath": "api/investment-transactions/index.ts"
+    },
+    "/api/invites/": {
+      "filePath": "api/invites/index.ts"
     },
     "/api/notifications/": {
       "filePath": "api/notifications/index.ts"

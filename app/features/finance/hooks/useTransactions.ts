@@ -21,7 +21,13 @@ export function useCreateTransaction() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      }).then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({ error: 'Erro ao criar transação' }))
+          throw new Error(err.error || 'Erro ao criar transação')
+        }
+        return r.json()
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['transactions'] }),
   })
 }
@@ -29,7 +35,13 @@ export function useCreateTransaction() {
 export function useDeleteTransaction() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => fetch(`/api/transactions/${id}`, { method: 'DELETE' }),
+    mutationFn: (id: string) =>
+      fetch(`/api/transactions/${id}`, { method: 'DELETE' }).then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({ error: 'Erro ao excluir transação' }))
+          throw new Error(err.error || 'Erro ao excluir transação')
+        }
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['transactions'] }),
   })
 }

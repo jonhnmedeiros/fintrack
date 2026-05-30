@@ -9,12 +9,10 @@ describe('useCategories hook (basic)', () => {
   })
 
   it('should return an object from useQuery', () => {
-    const wrapper = () => ({ children }: { children: React.ReactNode }) => (
-      <TestQueryClientWrapper>
-        {children}
-      </TestQueryClientWrapper>
-    )
-    
+    function wrapper({ children }: { children: React.ReactNode }) {
+      return <TestQueryClientWrapper>{children}</TestQueryClientWrapper>
+    }
+
     const { result } = renderHook(() => useCategories(), { wrapper })
     
     // useQuery should return an object with these properties

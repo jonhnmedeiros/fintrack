@@ -60,7 +60,8 @@ export async function mockNextAuthHandler(request: Request): Promise<Response> {
   }
 
   const { handlers } = await import('@/lib/auth')
-  await handlers.GET(req as any, res as any)
+  const methodHandler = request.method === 'POST' ? handlers.POST : handlers.GET
+  await methodHandler(req as any, res as any)
 
   if (statusCode === 302 && responseHeaders['Location']) {
     return new Response(null, { status: 302, headers: responseHeaders as any })

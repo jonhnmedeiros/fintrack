@@ -1,0 +1,73 @@
+# generated: 2026-05-26
+# last_updated: 2026-05-27
+# project: FinTrack
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: /Users/jonathanmedeiros/www/fintrack/_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+generated: 2026-05-26
+last_updated: 2026-05-28
+project: FinTrack
+project_key: NOKEY
+tracking_system: file-system
+story_location: /Users/jonathanmedeiros/www/fintrack/_bmad-output/implementation-artifacts
+
+development_status:
+  # Epic 1: Autenticação e Conta
+  epic-1: done
+  1-1-cadastro-de-usuario: done
+  1-2-login-e-sessao: done
+  1-3-layout-fundacional-e-navegacao: done
+  epic-1-retrospective: optional
+
+  # Epic 2: Gestão Financeira
+  epic-2: done
+  2-1-gerenciar-categorias: done
+  2-2-gerenciar-cartoes-de-credito: done
+  2-3-criar-transacoes-com-parcelamento: done
+  2-4-listar-e-filtrar-transacoes: done
+  2-5-excluir-transacao: done
+  2-6-gerenciar-orcamentos: done
+  epic-2-retrospective: optional
+
+  # Epic 3: Dashboard e Visão Geral
+  epic-3: done
+  3-1-summary-cards-e-transacoes-recentes: done
+  3-2-graficos-da-dashboard: done
+  epic-3-retrospective: optional
+
+  # Epic 4: Investimentos
+  epic-4: done
+  4-1-schema-e-infra-de-cotacoes: done
+  4-2-gerenciar-ativos: done
+  4-3-registrar-transacoes-de-investimento: done
+  4-4-visualizar-carteira-de-investimentos: done
+  4-5-importar-nota-de-corretagem: done
+  4-6-grafico-de-rentabilidade: done
+  4-7-exportar-dados: done
+  4-8-alertas-e-notificacoes: done
+  epic-4-retrospective: optional
+
+  # Epic 5: Multiusuário
+  epic-5: done
+  5-1-convidar-visualizador: done
+  5-2-compartilhar-dados-visualizador: done
+  epic-5-retrospective: optional

@@ -15,7 +15,13 @@ export function useCreateAlert() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      }).then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({ error: 'Erro ao criar alerta' }))
+          throw new Error(err.error || 'Erro ao criar alerta')
+        }
+        return r.json()
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['alerts'] }),
   })
 }
@@ -23,7 +29,13 @@ export function useCreateAlert() {
 export function useDeleteAlert() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => fetch(`/api/alerts/${id}`, { method: 'DELETE' }),
+    mutationFn: (id: string) =>
+      fetch(`/api/alerts/${id}`, { method: 'DELETE' }).then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({ error: 'Erro ao excluir alerta' }))
+          throw new Error(err.error || 'Erro ao excluir alerta')
+        }
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['alerts'] }),
   })
 }

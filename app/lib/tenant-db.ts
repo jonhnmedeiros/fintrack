@@ -73,5 +73,30 @@ export function userDb(userId: string) {
       update: (args: Parameters<typeof prisma.notification.update>[0]) =>
         prisma.notification.update(args),
     },
+    invite: {
+      create: (args: Parameters<typeof prisma.invite.create>[0]) =>
+        prisma.invite.create({ ...args, data: { ...args.data, invitedById: userId } }),
+      findMany: (args?: Parameters<typeof prisma.invite.findMany>[0]) =>
+        prisma.invite.findMany({ ...args, where: { invitedById: userId, ...args?.where } }),
+      update: (args: Parameters<typeof prisma.invite.update>[0]) =>
+        prisma.invite.update(args),
+    },
+  }
+}
+
+export function getEffectiveUserId(user: { viewerOfId?: string | null; id: string }): string {
+  return user.viewerOfId ?? user.id
+}
+
+/** @deprecated Use `getEffectiveUserId(session.user)` instead — it doesn't need a DB call */
+export function viewerDb(userId: string) {
+  return {
+    findEffectiveUserId: async () => {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { viewerOfId: true },
+      })
+      return user?.viewerOfId || userId
+    },
   }
 }

@@ -7,7 +7,7 @@ const registerSchema = z.object({
   password: z.string().min(6, 'Mínimo 6 caracteres').max(128, 'Máximo 128 caracteres'),
 })
 
-export async function registerUser(email: string, password: string) {
+export async function registerUser(email: string, password: string, inviteToken?: string) {
   const validated = registerSchema.parse({ email, password })
   const normalizedEmail = validated.email.toLowerCase().trim()
 
@@ -20,12 +20,36 @@ export async function registerUser(email: string, password: string) {
 
   const hashedPassword = await bcrypt.hash(validated.password, 10)
 
+  let role: 'TITULAR' | 'VISUALIZADOR' = 'TITULAR'
+  let viewerOfId: string | undefined
+
+  if (inviteToken) {
+    const invite = await prisma.invite.findUnique({ where: { token: inviteToken } })
+    if (invite && invite.status === 'PENDING' && invite.expiresAt > new Date()) {
+      role = 'VISUALIZADOR'
+      viewerOfId = invite.invitedById
+    }
+  }
+
   const user = await prisma.user.create({
     data: {
       email: normalizedEmail,
       password: hashedPassword,
+      role,
+      viewerOfId,
     },
   })
+
+  if (inviteToken && viewerOfId) {
+    await prisma.invite.update({
+      where: { token: inviteToken },
+      data: {
+        status: 'ACCEPTED',
+        acceptedAt: new Date(),
+        inviteeId: user.id,
+      },
+    })
+  }
 
   return Response.json({ id: user.id, email: user.email })
 }

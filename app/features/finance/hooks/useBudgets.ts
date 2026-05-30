@@ -19,7 +19,13 @@ export function useCreateOrUpdateBudget() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-      }).then((r) => r.json()),
+      }).then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({ error: 'Erro ao salvar orçamento' }))
+          throw new Error(err.error || 'Erro ao salvar orçamento')
+        }
+        return r.json()
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['budgets'] }),
   })
 }
@@ -27,7 +33,13 @@ export function useCreateOrUpdateBudget() {
 export function useDeleteBudget() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => fetch(`/api/budgets/${id}`, { method: 'DELETE' }),
+    mutationFn: (id: string) =>
+      fetch(`/api/budgets/${id}`, { method: 'DELETE' }).then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({ error: 'Erro ao excluir orçamento' }))
+          throw new Error(err.error || 'Erro ao excluir orçamento')
+        }
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['budgets'] }),
   })
 }

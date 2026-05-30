@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useSearch } from '@tanstack/react-router'
 import { RegisterForm } from '@/features/auth/components/RegisterForm'
 
 export const Route = createFileRoute('/register')({
@@ -6,9 +6,12 @@ export const Route = createFileRoute('/register')({
 })
 
 function RegisterPage() {
+  const search = useSearch({ from: '/register' })
+  const inviteToken = (search as { invite?: string }).invite
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40">
-      <RegisterForm />
+      <RegisterForm inviteToken={inviteToken} />
     </div>
   )
 }

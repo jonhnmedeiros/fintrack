@@ -2,6 +2,7 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { SessionProvider } from 'next-auth/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from 'sonner'
 import { Layout } from '@/components/layout/Layout'
 import appCss from '../globals.css?url'
 
@@ -33,6 +34,7 @@ export const Route = createRootRoute({
             </QueryClientProvider>
           </SessionProvider>
         </div>
+        <Toaster richColors position="top-right" />
         <Scripts />
       </body>
     </html>

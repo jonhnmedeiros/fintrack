@@ -16,7 +16,7 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>
 
-export function RegisterForm() {
+export function RegisterForm({ inviteToken }: { inviteToken?: string }) {
   const [error, setError] = useState<ReactNode | null>(null)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -26,10 +26,10 @@ export function RegisterForm() {
     setError(null)
 
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, inviteToken }),
       })
 
       if (!res.ok) {

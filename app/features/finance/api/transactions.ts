@@ -31,19 +31,24 @@ export async function createTransaction(userId: string, data: unknown) {
   const validated = createTransactionSchema.parse(data)
   const db = userDb(userId)
 
-  if (validated.creditCardId && validated.totalInstallments && validated.totalInstallments > 1) {
-    const installmentAmount = validated.amount / validated.totalInstallments
+  const txData = {
+    ...validated,
+    date: new Date(validated.date),
+  }
+
+  if (txData.creditCardId && txData.totalInstallments && txData.totalInstallments > 1) {
+    const installmentAmount = txData.amount / txData.totalInstallments
     const transactions = []
-    for (let i = 1; i <= validated.totalInstallments; i++) {
-      const installmentDate = new Date(validated.date)
+    for (let i = 1; i <= txData.totalInstallments; i++) {
+      const installmentDate = new Date(txData.date)
       installmentDate.setMonth(installmentDate.getMonth() + i - 1)
       transactions.push(
         db.transaction.create({
           data: {
-            ...validated,
+            ...txData,
             amount: installmentAmount,
             installmentNumber: i,
-            date: installmentDate.toISOString(),
+            date: installmentDate,
           },
         })
       )
@@ -51,7 +56,7 @@ export async function createTransaction(userId: string, data: unknown) {
     return prisma.$transaction(transactions)
   }
 
-  return db.transaction.create({ data: validated })
+  return db.transaction.create({ data: txData })
 }
 
 export async function deleteTransaction(userId: string, id: string) {

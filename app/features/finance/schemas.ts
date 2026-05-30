@@ -18,7 +18,7 @@ export const transactionSchema = z.object({
   categoryId: z.string().optional(),
   creditCardId: z.string().optional(),
   installmentNumber: z.number().optional(),
-  totalInstallments: z.number().optional(),
+  totalInstallments: z.number().int().min(1).max(48).optional(),
   userId: z.string(),
 })
 

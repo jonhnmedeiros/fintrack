@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,61 +20,64 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { createTransactionSchema } from '../schemas'
 import { useCreateTransaction } from '../hooks/useTransactions'
 import { useCategories } from '../hooks/useCategories'
 import { useCreditCards } from '../hooks/useCreditCards'
 import { Plus } from 'lucide-react'
 
-const transactionSchema = z.object({
-  type: z.enum(['INCOME', 'EXPENSE', 'TRANSFER']),
-  amount: z.number().positive('Valor deve ser positivo'),
-  description: z.string().optional(),
-  categoryId: z.string().optional(),
-  date: z.string(),
-  creditCardId: z.string().optional(),
-  totalInstallments: z.number().int().min(1).optional(),
-})
+const DAY = new Date().toISOString().split('T')[0]
 
-type TransactionForm = z.infer<typeof transactionSchema>
+type TransactionForm = z.infer<typeof createTransactionSchema>
 
 export function TransactionForm() {
+  const [open, setOpen] = useState(false)
+  const [formKey, setFormKey] = useState(0)
   const { handleSubmit, formState: { errors }, watch, reset, setValue } = useForm<TransactionForm>({
-    resolver: zodResolver(transactionSchema),
-    defaultValues: { date: new Date().toISOString().split('T')[0] },
+    resolver: zodResolver(createTransactionSchema),
+    defaultValues: { date: DAY },
   })
 
   const createMutation = useCreateTransaction()
-  const { data: categories } = useCategories()
-  const { data: creditCards } = useCreditCards()
+  const { data: categories, isError: catError } = useCategories()
+  const { data: creditCards, isError: ccError } = useCreditCards()
 
   const type = watch('type')
   const creditCardId = watch('creditCardId')
 
   const onSubmit = async (data: TransactionForm) => {
-    const payload = {
-      ...data,
-      categoryId: data.categoryId || undefined,
-      creditCardId: data.creditCardId || undefined,
-      totalInstallments: data.totalInstallments || undefined,
+    try {
+      const payload = {
+        ...data,
+        categoryId: data.categoryId || undefined,
+        creditCardId: data.creditCardId || undefined,
+        totalInstallments: data.totalInstallments || undefined,
+        amount: data.amount,
+      }
+      await createMutation.mutateAsync(payload)
+      toast.success('Transação criada com sucesso')
+      reset()
+      setValue('date', DAY)
+      setOpen(false)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro inesperado'
+      toast.error(message)
     }
-    await createMutation.mutateAsync(payload)
-    reset()
-    setValue('date', new Date().toISOString().split('T')[0])
   }
 
-  const filteredCategories = categories?.filter((c: { type: string }) =>
+  const filteredCategories = !type ? [] : categories?.filter((c: { type: string }) =>
     type === 'INCOME' ? c.type === 'INCOME' : c.type === 'EXPENSE'
   )
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) setFormKey(k => k + 1) }}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
           Nova Transação
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent key={formKey}>
         <DialogHeader>
           <DialogTitle>Nova Transação</DialogTitle>
         </DialogHeader>
@@ -87,11 +92,12 @@ export function TransactionForm() {
                 <SelectItem value="TRANSFER">Transferência</SelectItem>
               </SelectContent>
             </Select>
+            {errors.type && <p className="text-red-500 text-sm">{errors.type.message}</p>}
           </div>
 
           <div className="space-y-2">
             <Label>Valor</Label>
-            <Input type="number" step="0.01" placeholder="0,00" onChange={(e) => setValue('amount', parseFloat(e.target.value) || 0)} value={watch('amount') || ''} />
+            <Input type="number" step="0.01" placeholder="0,00" onChange={(e) => setValue('amount', parseFloat(e.target.value.replace(/\./g, '').replace(',', '.')) || 0)} value={watch('amount') ?? ''} />
             {errors.amount && <p className="text-red-500 text-sm">{errors.amount.message}</p>}
           </div>
 
@@ -102,6 +108,7 @@ export function TransactionForm() {
 
           <div className="space-y-2">
             <Label>Categoria</Label>
+            {catError && <p className="text-red-500 text-xs">Erro ao carregar categorias</p>}
             <Select value={watch('categoryId') || ''} onValueChange={(v) => setValue('categoryId', v)}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
@@ -115,12 +122,14 @@ export function TransactionForm() {
           <div className="space-y-2">
             <Label>Data</Label>
             <Input type="date" value={watch('date') || ''} onChange={(e) => setValue('date', e.target.value)} />
+            {errors.date && <p className="text-red-500 text-sm">{errors.date.message}</p>}
           </div>
 
           {type === 'EXPENSE' && (
             <>
               <div className="space-y-2">
                 <Label>Cartão de Crédito</Label>
+                {ccError && <p className="text-red-500 text-xs">Erro ao carregar cartões</p>}
                 <Select value={watch('creditCardId') || '__none__'} onValueChange={(v) => setValue('creditCardId', v === '__none__' ? '' : v)}>
                   <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
@@ -134,7 +143,8 @@ export function TransactionForm() {
               {creditCardId && (
                 <div className="space-y-2">
                   <Label>Parcelas</Label>
-                  <Input type="number" min="1" max="48" placeholder="1" value={watch('totalInstallments') || ''} onChange={(e) => setValue('totalInstallments', parseInt(e.target.value) || undefined)} />
+                  <Input type="number" min="1" max="48" placeholder="1" value={watch('totalInstallments') ?? ''} onChange={(e) => setValue('totalInstallments', isNaN(parseInt(e.target.value)) ? undefined : parseInt(e.target.value))} />
+                  {errors.totalInstallments && <p className="text-red-500 text-sm">{errors.totalInstallments.message}</p>}
                 </div>
               )}
             </>

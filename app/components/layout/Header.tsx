@@ -23,7 +23,14 @@ export function Header() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>{session?.user?.email}</DropdownMenuItem>
+            <DropdownMenuItem className="flex items-center gap-2">
+              {session?.user?.email}
+              {session?.user?.role === 'VISUALIZADOR' && (
+                <span className="text-[10px] bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-full font-medium">
+                  VISUALIZADOR
+                </span>
+              )}
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })}>
               Sair
             </DropdownMenuItem>

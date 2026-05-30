@@ -1,29 +1,24 @@
-import { renderHook, act } from '@testing-library/react'
+import { renderHook, act, waitFor } from '@testing-library/react'
 import { TestQueryClientWrapper } from './test-utils'
 import { useCategories, useCreateCategory, useDeleteCategory } from '@/features/finance/hooks/useCategories'
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import * as React from 'react'
 
-// Mock API handlers
 const handlers = [
-  rest.get('/api/categories', (req, res, ctx) => {
-    return res(
-      ctx.json([
-        { id: '1', name: 'Salary', type: 'INCOME', userId: 'test-user-id' },
-        { id: '2', name: 'Groceries', type: 'EXPENSE', userId: 'test-user-id' }
-      ])
-    )
+  http.get('/api/categories', () => {
+    return HttpResponse.json([
+      { id: '1', name: 'Salary', type: 'INCOME', userId: 'test-user-id' },
+      { id: '2', name: 'Groceries', type: 'EXPENSE', userId: 'test-user-id' },
+    ])
   }),
-  rest.post('/api/categories', async (req, res, ctx) => {
-    const body = await req.json()
-    return res(
-      ctx.json({ ...body, id: '3', userId: 'test-user-id' })
-    )
+  http.post('/api/categories', async ({ request }) => {
+    const body = await request.json()
+    return HttpResponse.json({ ...body as object, id: '3', userId: 'test-user-id' })
   }),
-  rest.delete('/api/categories/:id', (req, res, ctx) => {
-    return res(ctx.status(204))
-  })
+  http.delete('/api/categories/:id', () => {
+    return HttpResponse.json(null, { status: 204 })
+  }),
 ]
 
 const server = setupServer(...handlers)
@@ -32,48 +27,47 @@ beforeAll(() => server.listen())
 afterEach(() => server.resetHandlers())
 afterAll(() => server.close())
 
-// Wrapper for our hooks that provides necessary providers
-const createWrapper = () => {
-  return ({ children }: { children: React.ReactNode }) => (
-    <TestQueryClientWrapper>
-      {children}
-    </TestQueryClientWrapper>
-  )
+function wrapper({ children }: { children: React.ReactNode }) {
+  return <TestQueryClientWrapper>{children}</TestQueryClientWrapper>
 }
 
 describe('useCategories hook', () => {
   it('should fetch categories', async () => {
-    const wrapper = createWrapper()
-    const { result, waitForNextUpdate } = renderHook(() => useCategories(), { wrapper })
-    
-    await waitForNextUpdate()
-    
-    expect(result.isSuccess).toBe(true)
-    expect(result.data).toHaveLength(2)
-    expect(result.data[0].name).toBe('Salary')
-    expect(result.data[1].name).toBe('Groceries')
+    const { result } = renderHook(() => useCategories(), { wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true)
+    })
+
+    const data = result.current.data as Array<{ name: string }>
+    expect(data).toHaveLength(2)
+    expect(data[0].name).toBe('Salary')
+    expect(data[1].name).toBe('Groceries')
   })
 
   it('should create a category', async () => {
-    const wrapper = createWrapper()
     const { result } = renderHook(() => useCreateCategory(), { wrapper })
-    
+
     await act(async () => {
-      result.mutate({ name: 'Bonus', type: 'INCOME' })
+      result.current.mutate({ name: 'Bonus', type: 'INCOME' })
     })
-    
-    expect(result.isSuccess).toBe(true)
-    expect(result.data?.name).toBe('Bonus')
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true)
+    })
+
+    expect((result.current.data as { name: string })?.name).toBe('Bonus')
   })
 
   it('should delete a category', async () => {
-    const wrapper = createWrapper()
-    const { result: deleteResult } = renderHook(() => useDeleteCategory(), { wrapper })
-    
+    const { result } = renderHook(() => useDeleteCategory(), { wrapper })
+
     await act(async () => {
-      deleteResult.mutate('1')
+      result.current.mutate('1')
     })
-    
-    expect(deleteResult.isSuccess).toBe(true)
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true)
+    })
   })
 })

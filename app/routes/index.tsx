@@ -10,21 +10,52 @@ export const Route = createFileRoute('/')({
 })
 
 function DashboardPage() {
-  const { transactions, assets, budgets } = useDashboardData()
-
-  if (transactions.isLoading || assets.isLoading) {
-    return <div className="p-6">Carregando...</div>
-  }
+  const { currentMonthTransactions, last6MonthsTransactions, assets } = useDashboardData()
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
-      <SummaryCards transactions={transactions.data || []} assets={assets.data || []} />
+
+      {currentMonthTransactions.isError ? (
+        <div className="rounded-xl border-2 border-dashed border-red-200 p-12 text-center text-red-500">
+          <p className="text-lg font-medium">Erro ao carregar dados</p>
+          <p className="text-sm">Tente novamente mais tarde.</p>
+        </div>
+      ) : (
+        <SummaryCards
+          transactions={currentMonthTransactions.data || []}
+          assets={assets.data || []}
+          isLoading={currentMonthTransactions.isLoading || assets.isLoading}
+        />
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CashFlowChart transactions={transactions.data || []} />
-        <ExpenseByCategoryChart transactions={transactions.data || []} />
+        {last6MonthsTransactions.isError ? (
+          <div className="rounded-xl border-2 border-dashed border-red-200 p-12 text-center text-red-500">
+            <p className="text-lg font-medium">Erro ao carregar gráficos</p>
+          </div>
+        ) : (
+          <CashFlowChart
+            transactions={last6MonthsTransactions.data || []}
+            isLoading={last6MonthsTransactions.isLoading}
+          />
+        )}
+        {currentMonthTransactions.isError ? (
+          <div className="rounded-xl border-2 border-dashed border-red-200 p-12 text-center text-red-500">
+            <p className="text-lg font-medium">Erro ao carregar gráficos</p>
+          </div>
+        ) : (
+          <ExpenseByCategoryChart
+            transactions={currentMonthTransactions.data || []}
+            isLoading={currentMonthTransactions.isLoading}
+          />
+        )}
       </div>
-      <RecentTransactions transactions={transactions.data || []} />
+
+      <RecentTransactions
+        transactions={currentMonthTransactions.data || []}
+        isLoading={currentMonthTransactions.isLoading}
+      />
     </div>
   )
 }

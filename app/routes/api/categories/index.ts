@@ -8,19 +8,30 @@ export const APIRoute = {
       const { auth } = await import('@/lib/auth')
       const session = await auth(request)
       if (!session?.user?.id) return new Response('Unauthorized', { status: 401 })
+      const { getEffectiveUserId } = await import('@/lib/tenant-db')
+      const effectiveUserId = getEffectiveUserId(session.user)
       const { listCategories } = await import('@/features/finance/api/categories')
-      const categories = await listCategories(session.user.id)
+      const categories = await listCategories(effectiveUserId)
       return Response.json(categories)
     },
     POST: async ({ request }) => {
       const { auth } = await import('@/lib/auth')
       const session = await auth(request)
       if (!session?.user?.id) return new Response('Unauthorized', { status: 401 })
+      if (session.user.role === 'VISUALIZADOR') {
+        return Response.json({ error: 'Acesso negado' }, { status: 403 })
+      }
       const body = await request.json()
       const { createCategory } = await import('@/features/finance/api/categories')
-      const category = await createCategory(session.user.id, body)
-      return Response.json(category)
+      try {
+        const category = await createCategory(session.user.id, body)
+        return Response.json(category)
+      } catch (err: any) {
+        if (err?.code === 'P2002') {
+          return Response.json({ error: 'Já existe uma categoria com este nome' }, { status: 409 })
+        }
+        return Response.json({ error: 'Erro ao criar categoria' }, { status: 500 })
+      }
     },
   },
 }
-

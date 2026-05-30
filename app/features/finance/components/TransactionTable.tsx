@@ -1,21 +1,37 @@
+import { useState } from 'react'
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { useDeleteTransaction } from '../hooks/useTransactions'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 
-interface TransactionTableProps {
-  transactions: Array<{
-    id: string
-    type: string
-    description: string | null
-    amount: number
-    date: string
-    category: { name: string } | null
-  }>
+interface TransactionType {
+  id: string
+  type: string
+  description: string | null
+  amount: number
+  date: string
+  category: { name: string } | null
+  installmentNumber: number | null
+  totalInstallments: number | null
 }
 
-export function TransactionTable({ transactions }: TransactionTableProps) {
+interface TransactionTableProps {
+  transactions: TransactionType[]
+  showActions?: boolean
+}
+
+export function TransactionTable({ transactions, showActions = true }: TransactionTableProps) {
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const deleteMutation = useDeleteTransaction()
 
   const columns = [
@@ -27,7 +43,19 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
     {
       accessorKey: 'description',
       header: 'Descrição',
-      cell: ({ getValue }: { getValue: () => string | null }) => getValue() || '-',
+      cell: ({ row }: { row: { original: TransactionType } }) => {
+        const { description, installmentNumber, totalInstallments } = row.original
+        return (
+          <span>
+            {description || '-'}
+            {installmentNumber != null && totalInstallments && totalInstallments > 1 && (
+              <span className="ml-2 text-xs text-muted-foreground border rounded px-1">
+                {installmentNumber}/{totalInstallments}
+              </span>
+            )}
+          </span>
+        )
+      },
     },
     {
       accessorKey: 'category',
@@ -44,19 +72,19 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
         return <span className={`font-semibold ${color}`}>{sign} {formatCurrency(Number(amount))}</span>
       },
     },
-    {
+    ...(showActions ? [{
       id: 'actions',
       cell: ({ row }: { row: { original: { id: string } } }) => (
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => deleteMutation.mutate(row.original.id)}
+          onClick={() => setPendingDeleteId(row.original.id)}
           disabled={deleteMutation.isPending}
         >
           <Trash2 className="h-4 w-4 text-red-500" />
         </Button>
       ),
-    },
+    }] : []),
   ]
 
   const table = useReactTable({
@@ -65,8 +93,41 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
     getCoreRowModel: getCoreRowModel(),
   })
 
+  function handleDeleteConfirm() {
+    if (!pendingDeleteId) return
+    deleteMutation.mutate(pendingDeleteId, {
+      onSuccess: () => {
+        toast.success('Transação excluída')
+        setPendingDeleteId(null)
+      },
+      onError: (err) => {
+        toast.error(err instanceof Error ? err.message : 'Erro ao excluir transação')
+      },
+    })
+  }
+
   return (
-    <div className="rounded-md border">
+    <>
+      <Dialog open={!!pendingDeleteId} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir transação</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingDeleteId(null)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? 'Excluindo...' : 'Excluir'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+    <div className="rounded-md border overflow-x-auto">
       <table className="w-full">
         <thead className="bg-muted">
           {table.getHeaderGroups().map((hg) => (
@@ -92,5 +153,6 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
         </tbody>
       </table>
     </div>
+    </>
   )
 }

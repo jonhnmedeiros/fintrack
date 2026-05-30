@@ -1,5 +1,6 @@
 import { useLocation } from '@tanstack/react-router'
 import { Sidebar } from './Sidebar'
+import { BottomTabBar } from './BottomTabBar'
 import { Header } from './Header'
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -15,10 +16,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-8 max-sm:p-4 pb-20 sm:pb-0">
           {children}
         </main>
       </div>
+      <BottomTabBar />
     </div>
   )
 }

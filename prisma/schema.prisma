@@ -20,6 +20,9 @@ model User {
   image         String?
   role          UserRole  @default(TITULAR)
   password      String?
+  viewerOfId    String?
+  viewerOf      User?     @relation("ViewerOf", fields: [viewerOfId], references: [id])
+  viewers       User[]    @relation("ViewerOf")
   accounts      Account[]
   sessions      Session[]
   categories    Category[]
@@ -30,6 +33,8 @@ model User {
   investmentTransactions InvestmentTransaction[]
   alerts        Alert[]
   notifications Notification[]
+  invitesSent   Invite[]  @relation("Inviter")
+  invitesReceived Invite[] @relation("Invitee")
 }
 
 model Account {
@@ -96,9 +101,9 @@ model Transaction {
   description       String?
   date              DateTime
   categoryId        String?
-  category          Category?    @relation(fields: [categoryId], references: [id])
+  category          Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   creditCardId      String?
-  creditCard        CreditCard?  @relation(fields: [creditCardId], references: [id])
+  creditCard        CreditCard?  @relation(fields: [creditCardId], references: [id], onDelete: SetNull)
   installmentNumber Int?
   totalInstallments Int?
   userId            String
@@ -124,7 +129,7 @@ model Budget {
   year       Int
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category   Category @relation(fields: [categoryId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   @@unique([userId, categoryId, month, year])
 }
 
@@ -197,4 +202,25 @@ model Notification {
   read   Boolean  @default(false)
   userId String
   user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Invite {
+  id          String       @id @default(cuid())
+  email       String
+  token       String       @unique
+  status      InviteStatus @default(PENDING)
+  invitedById String
+  invitedBy   User         @relation("Inviter", fields: [invitedById], references: [id], onDelete: Cascade)
+  inviteeId   String?
+  invitee     User?        @relation("Invitee", fields: [inviteeId], references: [id], onDelete: SetNull)
+  expiresAt   DateTime
+  createdAt   DateTime     @default(now())
+  acceptedAt  DateTime?
+  @@unique([invitedById, email])
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
 }

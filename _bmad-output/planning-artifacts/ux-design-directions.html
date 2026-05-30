@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinTrack — Design Direction</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-50: #e8f4fd;
+    --primary-100: #b8e0fa;
+    --primary-200: #86cbf6;
+    --primary-300: #56b6f2;
+    --primary-400: #2ea5ef;
+    --primary-500: #0d94ec;
+    --primary-600: #0a7dcc;
+    --primary-700: #0766ab;
+    --primary-800: #054f8a;
+    --primary-900: #033869;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --error: #dc2626;
+    --surface: #ffffff;
+    --surface-secondary: #f8fafc;
+    --border: #e2e8f0;
+    --font-primary: #0f172a;
+    --font-secondary: #64748b;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: var(--surface-secondary);
+    color: var(--font-primary);
+    line-height: 1.6;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+    color: white;
+    padding: 48px 32px;
+    text-align: center;
+  }
+  .header h1 { font-size: 36px; font-weight: 600; margin-bottom: 8px; }
+  .header p { font-size: 16px; opacity: 0.9; font-weight: 300; }
+
+  /* Section */
+  .section { margin: 48px 0; }
+  .section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--font-primary);
+    margin-bottom: 24px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary-200);
+  }
+
+  /* Colors */
+  .color-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+  .color-swatch {
+    width: 80px; height: 80px;
+    border-radius: 12px;
+    display: flex; align-items: flex-end;
+    padding: 8px;
+    font-size: 11px;
+    color: white;
+    font-weight: 500;
+    box-shadow: var(--shadow);
+  }
+  .color-swatch.dark-text { color: var(--font-primary); }
+  .color-swatch span { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; }
+  .color-swatch.dark-text span { background: rgba(255,255,255,0.7); color: var(--font-primary); }
+
+  /* Typography samples */
+  .typo-sample { margin: 16px 0; }
+  .typo-sample .label { font-size: 12px; color: var(--font-secondary); margin-bottom: 4px; }
+  .display-1 { font-size: 48px; font-weight: 700; line-height: 1.2; }
+  .display-2 { font-size: 36px; font-weight: 600; line-height: 1.3; }
+  .heading-1 { font-size: 28px; font-weight: 600; line-height: 1.3; }
+  .heading-2 { font-size: 22px; font-weight: 500; line-height: 1.4; }
+  .heading-3 { font-size: 18px; font-weight: 500; line-height: 1.4; }
+  .body-large { font-size: 16px; font-weight: 400; line-height: 1.6; }
+  .body { font-size: 14px; font-weight: 400; line-height: 1.6; }
+  .body-small { font-size: 12px; font-weight: 400; line-height: 1.5; }
+
+  /* Cards */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .card-label { font-size: 13px; color: var(--font-secondary); margin-bottom: 4px; }
+  .card-value { font-size: 28px; font-weight: 700; color: var(--font-primary); }
+  .card-change { font-size: 13px; margin-top: 8px; }
+  .card-change.positive { color: var(--success); }
+  .card-change.negative { color: var(--error); }
+
+  /* Buttons */
+  .button-group { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn {
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .btn-primary {
+    background: var(--primary-500);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--primary-600); }
+  .btn-outline {
+    background: transparent;
+    color: var(--primary-500);
+    border: 1.5px solid var(--primary-200);
+  }
+  .btn-outline:hover {
+    background: var(--primary-50);
+    border-color: var(--primary-400);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--font-secondary);
+  }
+  .btn-ghost:hover { background: var(--surface-secondary); color: var(--font-primary); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-danger { background: var(--error); color: white; }
+  .btn-sm { padding: 6px 14px; font-size: 13px; }
+
+  /* Dashboard Mockup */
+  .mockup-dashboard {
+    background: var(--surface);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .mockup-nav {
+    display: flex; align-items: center; gap: 24px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .mockup-logo { font-size: 18px; font-weight: 700; color: var(--primary-500); }
+  .mockup-nav-items { display: flex; gap: 20px; }
+  .mockup-nav-item { font-size: 14px; color: var(--font-secondary); cursor: pointer; padding: 4px 0; }
+  .mockup-nav-item.active { color: var(--primary-500); font-weight: 500; border-bottom: 2px solid var(--primary-500); }
+  .mockup-content { padding: 32px; }
+  .mockup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .mockup-title { font-size: 22px; font-weight: 600; }
+  .mockup-subtitle { font-size: 14px; color: var(--font-secondary); }
+  .mockup-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .mockup-card {
+    background: var(--surface-secondary);
+    border-radius: 14px;
+    padding: 20px;
+    border: 1px solid var(--border);
+  }
+  .mockup-card .label { font-size: 12px; color: var(--font-secondary); margin-bottom: 4px; }
+  .mockup-card .value { font-size: 24px; font-weight: 700; }
+  .mockup-card .change { font-size: 12px; margin-top: 4px; }
+  .mockup-row { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  .mockup-chart {
+    background: var(--surface-secondary);
+    border-radius: 14px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    min-height: 200px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .mockup-chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; margin-top: 16px; }
+  .mockup-bar {
+    flex: 1;
+    border-radius: 4px 4px 0 0;
+    min-height: 16px;
+  }
+  .mockup-bar.income { background: var(--success); opacity: 0.7; }
+  .mockup-bar.expense { background: var(--primary-400); }
+  .mockup-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .mockup-list-item {
+    display: flex; justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .mockup-list-item:last-child { border-bottom: none; }
+  .mockup-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .mockup-tag.income { background: #dcfce7; color: #166534; }
+  .mockup-tag.expense { background: #dbeafe; color: #1e40af; }
+
+  /* Form elements */
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 13px; font-weight: 500; color: var(--font-primary); margin-bottom: 6px; }
+  .form-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  .form-input:focus { border-color: var(--primary-400); box-shadow: 0 0 0 3px var(--primary-100); }
+  .form-select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    background: white;
+  }
+
+  /* Alerts */
+  .alert {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .alert-info { background: var(--primary-50); color: var(--primary-800); border: 1px solid var(--primary-200); }
+  .alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+  .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+  .alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+  .flex-row { display: flex; gap: 24px; flex-wrap: wrap; }
+  .flex-1 { flex: 1; min-width: 280px; }
+
+  @media (max-width: 768px) {
+    .container { padding: 16px; }
+    .mockup-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FinTrack</h1>
+  <p>Direção de Design — Azul Claro Vibrante · Roboto · Layout Arejado</p>
+</div>
+
+<div class="container">
+
+  <!-- Color System -->
+  <div class="section">
+    <h2 class="section-title">Sistema de Cores</h2>
+    <div class="color-grid">
+      <div class="color-swatch dark-text" style="background:var(--primary-50);"><span>50</span></div>
+      <div class="color-swatch dark-text" style="background:var(--primary-100);"><span>100</span></div>
+      <div class="color-swatch dark-text" style="background:var(--primary-200);"><span>200</span></div>
+      <div class="color-swatch dark-text" style="background:var(--primary-300);"><span>300</span></div>
+      <div class="color-swatch" style="background:var(--primary-400);"><span>400</span></div>
+      <div class="color-swatch" style="background:var(--primary-500);"><span>500</span></div>
+      <div class="color-swatch" style="background:var(--primary-600);"><span>600</span></div>
+      <div class="color-swatch" style="background:var(--primary-700);"><span>700</span></div>
+      <div class="color-swatch" style="background:var(--primary-800);"><span>800</span></div>
+      <div class="color-swatch" style="background:var(--primary-900);"><span>900</span></div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:16px;">
+      <div class="color-swatch" style="background:var(--success);"><span>success</span></div>
+      <div class="color-swatch" style="background:var(--warning);"><span>warning</span></div>
+      <div class="color-swatch" style="background:var(--error);"><span>error</span></div>
+    </div>
+  </div>
+
+  <!-- Typography -->
+  <div class="section">
+    <h2 class="section-title">Tipografia — Roboto</h2>
+    <div class="typo-sample"><div class="label">Display 1 — 48px, Bold</div><div class="display-1">Olá, Jonathan</div></div>
+    <div class="typo-sample"><div class="label">Heading 1 — 28px, SemiBold</div><div class="heading-1">Suas finanças em um só lugar</div></div>
+    <div class="typo-sample"><div class="label">Heading 2 — 22px, Medium</div><div class="heading-2">Resumo do Mês</div></div>
+    <div class="typo-sample"><div class="label">Body — 14px, Regular</div><div class="body">Acompanhe seus gastos, receitas e investimentos com clareza e tranquilidade.</div></div>
+    <div class="typo-sample"><div class="label">Body Small — 12px, Regular</div><div class="body-small">Última atualização: hoje às 14:30</div></div>
+  </div>
+
+  <!-- Cards -->
+  <div class="section">
+    <h2 class="section-title">Cards de Resumo</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label">Saldo Atual</div>
+        <div class="card-value">R$ 12.458,32</div>
+        <div class="card-change positive">+ R$ 1.240,00 este mês</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Receitas do Período</div>
+        <div class="card-value">R$ 8.320,00</div>
+        <div class="card-change positive">+12% vs. mês anterior</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Despesas do Período</div>
+        <div class="card-value">R$ 5.210,00</div>
+        <div class="card-change negative">+8% vs. mês anterior</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Total Investido</div>
+        <div class="card-value">R$ 47.890,00</div>
+        <div class="card-change positive">+R$ 2.340,00 em valorização</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="section">
+    <h2 class="section-title">Botões</h2>
+    <div class="button-group">
+      <button class="btn btn-primary">Nova Transação</button>
+      <button class="btn btn-outline">Filtrar</button>
+      <button class="btn btn-ghost">Cancelar</button>
+      <button class="btn btn-success btn-sm">Confirmar</button>
+      <button class="btn btn-danger btn-sm">Excluir</button>
+      <button class="btn btn-primary btn-sm">+ Ação Rápida</button>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="section">
+    <h2 class="section-title">Formulários</h2>
+    <div class="flex-row">
+      <div class="flex-1">
+        <div class="form-group">
+          <label class="form-label">Valor</label>
+          <input class="form-input" type="text" placeholder="R$ 0,00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descrição</label>
+          <input class="form-input" type="text" placeholder="Ex: Supermercado">
+        </div>
+      </div>
+      <div class="flex-1">
+        <div class="form-group">
+          <label class="form-label">Categoria</label>
+          <select class="form-select">
+            <option>Alimentação</option>
+            <option>Transporte</option>
+            <option>Moradia</option>
+            <option>Saúde</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data</label>
+          <input class="form-input" type="date" value="2026-05-25">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="section">
+    <h2 class="section-title">Mensagens</h2>
+    <div class="alert alert-info">📌 Nota de corretagem importada com sucesso! 3 operações registradas.</div>
+    <div class="alert alert-success">✅ Transação salva com sucesso. Seu saldo foi atualizado.</div>
+    <div class="alert alert-warning">⚠️ Você está próximo do limite do orçamento de Alimentação (85%).</div>
+    <div class="alert alert-error">❌ Não foi possível importar o PDF. Verifique se o arquivo é uma nota de corretagem válida.</div>
+  </div>
+
+  <!-- Dashboard Mockup -->
+  <div class="section">
+    <h2 class="section-title">Dashboard — Layout Arejado</h2>
+    <div class="mockup-dashboard">
+      <div class="mockup-nav">
+        <div class="mockup-logo">FinTrack</div>
+        <div class="mockup-nav-items">
+          <span class="mockup-nav-item active">Dashboard</span>
+          <span class="mockup-nav-item">Transações</span>
+          <span class="mockup-nav-item">Investimentos</span>
+          <span class="mockup-nav-item">Orçamentos</span>
+        </div>
+        <div style="flex:1;"></div>
+        <button class="btn btn-primary btn-sm">+ Nova Transação</button>
+      </div>
+      <div class="mockup-content">
+        <div class="mockup-header">
+          <div>
+            <div class="mockup-title">Dashboard</div>
+            <div class="mockup-subtitle">Resumo financeiro de Maio 2026</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-outline btn-sm">Mês</button>
+            <button class="btn btn-primary btn-sm">Período</button>
+          </div>
+        </div>
+        <div class="mockup-cards">
+          <div class="mockup-card">
+            <div class="label">Saldo</div>
+            <div class="value">R$ 12.458</div>
+            <div class="change" style="color:var(--success);">+ R$ 1.240</div>
+          </div>
+          <div class="mockup-card">
+            <div class="label">Receitas</div>
+            <div class="value">R$ 8.320</div>
+            <div class="change" style="color:var(--success);">+12%</div>
+          </div>
+          <div class="mockup-card">
+            <div class="label">Despesas</div>
+            <div class="value">R$ 5.210</div>
+            <div class="change" style="color:var(--error);">-8%</div>
+          </div>
+          <div class="mockup-card">
+            <div class="label">Investido</div>
+            <div class="value">R$ 47.890</div>
+            <div class="change" style="color:var(--success);">+R$ 2.340</div>
+          </div>
+        </div>
+        <div class="mockup-row">
+          <div class="mockup-chart">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div><div class="label">Fluxo de Caixa</div><div style="font-size:13px;color:var(--font-secondary);">Receitas vs Despesas (6 meses)</div></div>
+              <div style="display:flex;gap:12px;font-size:12px;">
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--success);opacity:0.7;"></span> Receitas</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--primary-400);"></span> Despesas</span>
+              </div>
+            </div>
+            <div class="mockup-chart-bars">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div class="mockup-bar income" style="height:80px;"></div>
+                <div class="mockup-bar expense" style="height:60px;"></div>
+                <span style="font-size:10px;color:var(--font-secondary);">Dez</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div class="mockup-bar income" style="height:70px;"></div>
+                <div class="mockup-bar expense" style="height:65px;"></div>
+                <span style="font-size:10px;color:var(--font-secondary);">Jan</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div class="mockup-bar income" style="height:90px;"></div>
+                <div class="mockup-bar expense" style="height:55px;"></div>
+                <span style="font-size:10px;color:var(--font-secondary);">Fev</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div class="mockup-bar income" style="height:75px;"></div>
+                <div class="mockup-bar expense" style="height:70px;"></div>
+                <span style="font-size:10px;color:var(--font-secondary);">Mar</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div class="mockup-bar income" style="height:85px;"></div>
+                <div class="mockup-bar expense" style="height:50px;"></div>
+                <span style="font-size:10px;color:var(--font-secondary);">Abr</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div class="mockup-bar income" style="height:95px;"></div>
+                <div class="mockup-bar expense" style="height:75px;"></div>
+                <span style="font-size:10px;color:var(--font-secondary);">Mai</span>
+              </div>
+            </div>
+          </div>
+          <div class="mockup-chart">
+            <div class="label">Transações Recentes</div>
+            <div class="mockup-list">
+              <div class="mockup-list-item">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span class="mockup-tag expense">Alimentação</span>
+                  <span style="font-size:13px;">Supermercado</span>
+                </div>
+                <span style="font-weight:500;color:var(--error);">-R$ 358,90</span>
+              </div>
+              <div class="mockup-list-item">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span class="mockup-tag income">Salário</span>
+                  <span style="font-size:13px;">Salário Maio</span>
+                </div>
+                <span style="font-weight:500;color:var(--success);">+R$ 8.320,00</span>
+              </div>
+              <div class="mockup-list-item">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span class="mockup-tag expense">Transporte</span>
+                  <span style="font-size:13px;">Uber</span>
+                </div>
+                <span style="font-weight:500;color:var(--error);">-R$ 24,50</span>
+              </div>
+              <div class="mockup-list-item">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span class="mockup-tag expense">Moradia</span>
+                  <span style="font-size:13px;">Aluguel</span>
+                </div>
+                <span style="font-weight:500;color:var(--error);">-R$ 1.800,00</span>
+              </div>
+              <div class="mockup-list-item">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span class="mockup-tag expense">Saúde</span>
+                  <span style="font-size:13px;">Farmácia</span>
+                </div>
+                <span style="font-weight:500;color:var(--error);">-R$ 89,90</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spacing reference -->
+  <div class="section">
+    <h2 class="section-title">Referência de Espaçamento</h2>
+    <p class="body" style="color:var(--font-secondary);margin-bottom:16px;">
+      Base 4px (Tailwind). Layout arejado: padding página 32px, gap entre cards 24px, padding cards 24px.
+    </p>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <span style="background:var(--primary-200);width:4px;height:24px;border-radius:2px;"></span>
+      <span style="background:var(--primary-300);width:8px;height:24px;border-radius:2px;"></span>
+      <span style="background:var(--primary-400);width:12px;height:24px;border-radius:2px;"></span>
+      <span style="background:var(--primary-500);width:16px;height:24px;border-radius:2px;"></span>
+      <span style="background:var(--primary-500);width:24px;height:24px;border-radius:2px;"></span>
+      <span style="background:var(--primary-600);width:32px;height:24px;border-radius:2px;"></span>
+      <span style="background:var(--primary-700);width:48px;height:24px;border-radius:2px;"></span>
+    </div>
+    <div style="display:flex;gap:4px;margin-top:4px;">
+      <span style="font-size:10px;color:var(--font-secondary);width:4px;text-align:center;">4</span>
+      <span style="font-size:10px;color:var(--font-secondary);width:8px;text-align:center;">8</span>
+      <span style="font-size:10px;color:var(--font-secondary);width:12px;text-align:center;">12</span>
+      <span style="font-size:10px;color:var(--font-secondary);width:16px;text-align:center;">16</span>
+      <span style="font-size:10px;color:var(--font-secondary);width:24px;text-align:center;">24</span>
+      <span style="font-size:10px;color:var(--font-secondary);width:32px;text-align:center;">32</span>
+      <span style="font-size:10px;color:var(--font-secondary);width:48px;text-align:center;">48</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
