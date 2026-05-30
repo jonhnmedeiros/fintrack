@@ -1,131 +1,136 @@
-# FinTrack — Controle Financeiro & Investimentos
+# FinTrack
 
-Aplicação moderna de controle financeiro pessoal construída com React 18, TanStack Start (SSR), Tailwind CSS e Prisma.
+**Controle financeiro pessoal com módulo de investimentos e suporte multi-usuário.**
 
-## 🚀 Tech Stack
+Aplicação SSR construída com TanStack Start, PostgreSQL e autenticação via NextAuth.js.
 
-| Biblioteca | Versão | Uso |
-|---|---|---|
-| **React** | 18 | UI Framework |
-| **TanStack Start** | v1 | SSR, rotas e API routes |
-| **TanStack Router** | v1 | Roteamento type-safe |
-| **TanStack Query** | v5 | Server state & cache |
-| **TanStack Table** | v8 | Tabelas com sorting, filtros e paginação |
-| **Zustand** | v4 | Estado global persistido |
-| **Recharts** | v2 | Gráficos (área, pizza, barras) |
-| **Tailwind CSS** | v3 | Estilização utilitária |
-| **date-fns** | v3 | Manipulação de datas |
-| **Lucide React** | — | Ícones |
-| **Prisma** | ORM | Banco de dados PostgreSQL |
-| **Auth.js (NextAuth)** | v4 | Autenticação com credenciais |
-| **TypeScript** | v5 | Tipagem estática |
+## Stack
 
-## 📦 Instalação
+| Camada | Tecnologia |
+|---|---|
+| **Framework** | TanStack Start (SSR) + React 18 |
+| **Roteamento** | TanStack Router (type-safe, file-based) |
+| **Estado servidor** | TanStack Query (v5) |
+| **ORM** | Prisma + PostgreSQL |
+| **Autenticação** | NextAuth v4 (Credentials, JWT) |
+| **UI** | Tailwind CSS + shadcn/ui |
+| **Tabelas** | TanStack Table (v8) |
+| **Gráficos** | Recharts |
+| **Ícones** | Lucide React |
+| **Formulários** | React Hook Form + Zod |
+| **Testes** | Vitest + Testing Library + MSW |
+| **E2E** | Playwright |
+
+## Funcionalidades
+
+### Módulo Financeiro
+- **Dashboard** com saldo total, receitas/despesas do mês, fluxo de caixa (6 meses), pizza de despesas por categoria e transações recentes
+- **Transações** com CRUD completo, busca full-text, filtros por tipo/data/categoria, parcelamento em cartão de crédito e ordenação por coluna
+- **Categorias** personalizáveis por tipo (receita/despesa)
+- **Cartões de Crédito** com limite, dia de fechamento e faturamento
+- **Orçamento mensal** por categoria com progresso visual e alertas
+
+### Investimentos
+- **Carteira completa** com suporte a ações, ETFs, FIIs, Tesouro Direto, CDB e criptomoedas
+- **Preço médio** e resultado por ativo (valor atual vs. custo total)
+- **Nota de corretagem** — parser de PDF (BTG / Inter) com extração automática de operações
+- **Gráfico de rentabilidade** comparando saldo acumulado vs. valor investido
+- **Alertas** configuráveis por ativo (preço alvo, variação)
+- **Exportação** de dados da carteira
+- Posição calculada automaticamente (FIFO para cálculo de preço médio)
+
+### Multi-usuário
+- Convite por email (via Resend) com token de 7 dias
+- Papel **Visualizador** — acesso somente leitura a dados financeiros
+- Compartilhamento de dados entre titular e visualizadores
+- Geração de relatórios
+
+### Infraestrutura
+- Proteção de rotas com middleware de autenticação
+- Isolamento de dados por usuário (multi-tenancy)
+- Geração de senha aleatória para visualizadores
+- Tratamento de erros em formulários e loading states com skeleton/spinner
+
+## Começando
+
+### Pré-requisitos
+
+- Node.js 20+
+- PostgreSQL rodando localmente (porta 5432)
+
+### Instalação
 
 ```bash
+# Clonar
+git clone https://github.com/seu-usuario/fintrack.git
+cd fintrack
+
+# Dependências
 npm install
+
+# Configurar variáveis de ambiente
+cp .env.example .env
+# Editar .env com suas configurações de banco e email
+
+# Migrations + seed
+npx prisma migrate dev
+npx prisma db seed
+
+# Iniciar dev server
 npm run dev
 ```
 
-Acesse: http://localhost:3000
+Acesse `http://localhost:3000`. Usuário de teste: `teste@teste.com` / `123456`.
 
-## 🏗️ Estrutura do Projeto
+### Scripts
+
+| Comando | Descrição |
+|---|---|
+| `npm run dev` | Servidor de desenvolvimento (vinxi) |
+| `npm run build` | Build de produção |
+| `npm run start` | Servidor de produção |
+| `npm test` | Testes unitários (Vitest) |
+| `npm run test:e2e` | Testes E2E (Playwright) |
+| `npm run lint` | ESLint |
+| `npx prisma studio` | Interface do banco de dados |
+
+## Estrutura
 
 ```
 app/
 ├── components/
-│   ├── layout/
-│   │   └── Layout.tsx          # Sidebar + navegação
-│   └── ui/                     # shadcn/ui components
+│   ├── layout/           # Sidebar, Header, BottomTabBar
+│   └── ui/               # shadcn/ui primitives
 ├── features/
-│   ├── finance/                # Módulo financeiro
-│   │   ├── api/                # API routes (via TanStack Start)
-│   │   ├── hooks/              # TanStack Query hooks
-│   │   └── schemas/            # Zod schemas
-│   └── investments/            # Módulo de investimentos
+│   ├── auth/             # Login, registro, hooks
+│   ├── finance/          # Transações, categorias, cartões, orçamento
+│   ├── dashboard/        # Home page com gráficos e resumo
+│   ├── investments/      # Carteira, notas, rentabilidade, alertas
+│   └── settings/         # Convites, perfil
 ├── lib/
-│   ├── auth.ts                 # Auth.js configuration
-│   ├── db.ts                   # Prisma client
-│   ├── tenant-db.ts            # Multi-tenant database helper
-│   └── utils.ts                # Utilitários (formatação, helpers)
-├── routes/                     # TanStack Start routes
-│   ├── api/                    # API endpoints
-│   ├── __root.tsx              # Root route with auth guard
-│   ├── index.tsx               # Dashboard page
-│   ├── login.tsx               # Login page
-│   └── ...                     # Other pages
-├── prisma/                     # Prisma schema and migrations
-│   └── schema.prisma
-└── ...                         # Configuration files
+│   ├── auth.ts           # Configuração NextAuth
+│   ├── auth-handler.ts   # Adaptador NextAuth para TanStack Start
+│   ├── db.ts             # Prisma client singleton
+│   ├── tenant-db.ts      # Helpers de multi-tenancy
+│   └── email.ts          # Resend integration
+├── routes/               # File-based TanStack Router
+│   └── api/              # API endpoints
+└── types/                # Augmentação de tipos NextAuth
+
+prisma/
+├── schema.prisma         # Modelo de dados (13 models)
+└── migrations/           # Migrations versionadas
 ```
 
-## 📱 Funcionalidades
+## Modelo de Dados
 
-### Autenticação
-- Login com email e senha (Auth.js/Credentials)
-- Proteção de rotas com middleware
-- Isolamento de dados por usuário (multi-tenancy)
+13 modelos Prisma: `User`, `Account`, `Session`, `Category`, `Transaction`, `CreditCard`, `Budget`, `Asset`, `InvestmentTransaction`, `Alert`, `Notification`, `Invite`, `PriceHistory`.
 
-### Dashboard
-- Saldo total de todas as contas
-- Receitas e despesas do mês
-- Gráfico de fluxo de caixa (6 meses)
-- Pizza de despesas por categoria
-- Transações recentes
+- Categorias e orçamentos são exclusivos por usuário
+- Transações vinculadas a categorias e cartões de crédito
+- Ativos com cotação e posição calculada por preço médio
+- Convites expiram em 7 dias; visualizadores têm acesso read-only
 
-### Transações
-- Tabela com **TanStack Table** (sorting, filtros, paginação)
-- Filtro por tipo (Receita / Despesa / Transferência)
-- Busca full-text
-- Deletar transação
-- Cores por categoria
-- Suporte a parcelamento de cartão de crédito
+## Licença
 
-### Cartões de Crédito
-- Cadastro e gerenciamento de cartões
-- Visualização de limite e faturamento
-- Integração com transações (parcelamento)
-
-### Orçamento
-- Limite mensal por categoria
-- Barra de progresso com alertas (atenção / excedido)
-- Visão geral do mês
-
-### Investimentos
-- Portfolio completo (ações, ETFs, FIIs, Tesouro, CDB, cripto)
-- Resultado por ativo (valor atual vs preço médio)
-- Gráfico de alocação por tipo
-- Ordenação por qualquer coluna
-- Alertas de preço e volume
-
-### Metas
-- Progresso visual com cor customizada
-- Prazo com contagem regressiva
-- Status (concluída / urgente)
-
-### Notificações
-- Sistema de notificações no app
-- Marcar como lido/notificado
-
-## 🔧 Próximos Passos
-
-1. **Testes**: Implementar testes unitários e E2E com Vitest e Playwright
-2. **CI/CD**: Configurar GitHub Actions para testes e builds automáticos
-3. **Documentação**: Expandir esta documentação com mais detalhes
-4. **Melhorias de UX**: Adicionar animações, loading states e tratamento de erros
-5. **Importação de Dados**: Permitir importação de extratos bancários e corretoras
-
-## 📄 Scripts
-
-```bash
-npm run dev      # Servidor de desenvolvimento com vinxi
-npm run build    # Build de produção
-npm run start    # Iniciar servidor de produção
-npm run test     # Executar testes Vitest
-npm run test:e2e # Executar testes E2E Playwright
-npm run lint     # Executar ESLint
-```
-
-## 📄 Licença
-
-Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+MIT
