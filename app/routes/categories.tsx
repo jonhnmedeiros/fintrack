@@ -62,22 +62,23 @@ interface Category {
   userId: string
 }
 
-const EMOJIS = [
-  '🍕','🛒','🥡','🍔','🌮','🥗','🍣','🍜','🍝','🍰','🍩','🍪','🍫','🍿','🥤','☕','🍺','🍷','🥂','🧊',
-  '🏠','💡','📡','🔧','🪴','🖼️','🛋️','🚿','🛁','🧹','🔑','🔒','🗝️','🧰','🪣',
-  '🚗','🚌','⛽','🚕','🚙','🚐','🏍️','✈️','🚂','🚢','🛴','🅿️','🚲','🛵','🚁','🚀',
-  '🎬','🎮','🎯','🎪','🎭','🎨','🎵','🎸','🎹','🎧','📷','🎥','🎪','🎤','🎼','🎲',
-  '👕','👗','👔','👟','👠','👒','👜','💼','🧢','👖','👙','👘','🧤','🧣','👞',
-  '💊','🏥','💉','🩺','❤️','💪','🦷','👁️','🧠','🫀','🩸','🦴','👂','👃',
-  '🐾','🐶','🐱','🐼','🐸','🦊','🐻','🐨','🐝','🌻','🌸','🌺','🌿','🌵','🍀','🐟','🐠','🦋','🐞',
-  '💻','📱','🖥️','⌚','📸','🎧','🕹️','⌨️','🖱️','📀','💾','📷','📹','☎️',
-  '🏋️','⚽','🏀','⚾','🎾','🏐','🏓','⛳','🏄','🚴','🥊','🤸','🎿','🏊','🤿',
-  '✈️','🗺️','🧳','🏖️','🏔️','🏝️','🗽','🗼','⛺','🌋','🏯','🎡','🏰','🌉',
-  '💰','💳','💵','💴','💶','💷','💎','📊','📈','💹','🏦','🧾','📉',
-  '🎁','🎉','🎊','🎀','📚','✏️','📌','🕐','📅','📋','✂️','📎','📮','📦','🎈',
+const EMOJI_CATEGORIES = [
+  { label: '🍕', name: 'Comida', emojis: ['🍕','🛒','🥡','🍔','🌮','🥗','🍣','🍜','🍝','🍰','🍩','🍪','🍫','🍿','🥤','☕','🍺','🍷','🥂','🧊'] },
+  { label: '🏠', name: 'Casa', emojis: ['🏠','💡','📡','🔧','🪴','🖼️','🛋️','🚿','🛁','🧹','🔑','🔒','🗝️','🧰','🪣'] },
+  { label: '🚗', name: 'Transporte', emojis: ['🚗','🚌','⛽','🚕','🚙','🚐','🏍️','✈️','🚂','🚢','🛴','🅿️','🚲','🛵','🚁','🚀'] },
+  { label: '🎬', name: 'Lazer', emojis: ['🎬','🎮','🎯','🎪','🎭','🎨','🎵','🎸','🎹','🎧','📷','🎥','🎤','🎼','🎲'] },
+  { label: '👕', name: 'Roupas', emojis: ['👕','👗','👔','👟','👠','👒','👜','💼','🧢','👖','👙','👘','🧤','🧣','👞'] },
+  { label: '💊', name: 'Saúde', emojis: ['💊','🏥','💉','🩺','❤️','💪','🦷','👁️','🧠','🫀','🩸','🦴','👂','👃'] },
+  { label: '🐾', name: 'Natureza', emojis: ['🐾','🐶','🐱','🐼','🐸','🦊','🐻','🐨','🐝','🌻','🌸','🌺','🌿','🌵','🍀','🐟','🐠','🦋','🐞'] },
+  { label: '💻', name: 'Tecnologia', emojis: ['💻','📱','🖥️','⌚','📸','🎧','🕹️','⌨️','🖱️','📀','💾','📷','📹','☎️'] },
+  { label: '🏋️', name: 'Esportes', emojis: ['🏋️','⚽','🏀','⚾','🎾','🏐','🏓','⛳','🏄','🚴','🥊','🤸','🎿','🏊','🤿'] },
+  { label: '✈️', name: 'Viagem', emojis: ['✈️','🗺️','🧳','🏖️','🏔️','🏝️','🗽','🗼','⛺','🌋','🏯','🎡','🏰','🌉'] },
+  { label: '💰', name: 'Finanças', emojis: ['💰','💳','💵','💴','💶','💷','💎','📊','📈','💹','🏦','🧾','📉'] },
+  { label: '🎁', name: 'Objetos', emojis: ['🎁','🎉','🎊','🎀','📚','✏️','📌','🕐','📅','📋','✂️','📎','📮','📦','🎈'] },
 ]
 
 function EmojiPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [tab, setTab] = useState(0)
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -91,20 +92,37 @@ function EmojiPicker({ value, onChange }: { value: string; onChange: (v: string)
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72">
-        <div className="flex flex-wrap gap-1">
-          {EMOJIS.map(emoji => (
-            <button
-              key={emoji}
-              type="button"
-              onClick={() => onChange(value === emoji ? '' : emoji)}
-              className={`h-9 w-9 rounded-lg text-lg flex items-center justify-center transition-all hover:bg-accent ${
-                value === emoji ? 'bg-accent ring-2 ring-ring' : ''
-              }`}
-            >
-              {emoji}
-            </button>
-          ))}
+      <PopoverContent className="w-80">
+        <div className="space-y-2">
+          <div className="flex gap-0.5 overflow-x-auto pb-1 border-b">
+            {EMOJI_CATEGORIES.map((cat, i) => (
+              <button
+                key={cat.name}
+                type="button"
+                onClick={() => setTab(i)}
+                className={`shrink-0 px-2 py-1 rounded text-sm transition-colors ${
+                  tab === i ? 'bg-accent font-medium' : 'text-muted-foreground hover:text-foreground'
+                }`}
+                title={cat.name}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {EMOJI_CATEGORIES[tab].emojis.map(emoji => (
+              <button
+                key={emoji}
+                type="button"
+                onClick={() => onChange(value === emoji ? '' : emoji)}
+                className={`h-9 w-9 rounded-lg text-lg flex items-center justify-center transition-all hover:bg-accent ${
+                  value === emoji ? 'bg-accent ring-2 ring-ring' : ''
+                }`}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
         </div>
       </PopoverContent>
     </Popover>
