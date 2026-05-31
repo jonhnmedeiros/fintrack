@@ -3,6 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { formatCurrency } from '@/lib/utils'
 
 interface CashFlowChartProps {
   transactions: Array<{ type: string; amount: number; date: string }>
@@ -50,8 +51,16 @@ export function CashFlowChart({ transactions, isLoading }: CashFlowChartProps) {
             <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="label" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              {/* <YAxis tick={{ fontSize: 12 }} /> */}
+              <ChartTooltip content={<ChartTooltipContent formatter={(value: number, name: string) => {
+                const labels: Record<string, string> = { income: 'Receitas', expense: 'Despesas' }
+                return (
+                  <div className="flex w-full items-center justify-between gap-4">
+                    <span className="text-muted-foreground">{labels[name] || name}</span>
+                    <span className="font-mono font-medium tabular-nums text-foreground">{formatCurrency(value)}</span>
+                  </div>
+                )
+              }} />} />
               <Area type="monotone" dataKey="income" stackId="1" stroke="var(--color-income)" fill="var(--color-income)" fillOpacity={0.3} />
               <Area type="monotone" dataKey="expense" stackId="2" stroke="var(--color-expense)" fill="var(--color-expense)" fillOpacity={0.3} />
             </AreaChart>

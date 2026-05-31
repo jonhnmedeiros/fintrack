@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PieChart, Pie, Cell } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart'
 import type { ChartConfig } from '@/components/ui/chart'
+import { formatCurrency } from '@/lib/utils'
 
 interface ExpenseByCategoryChartProps {
   transactions: Array<{ type: string; amount: number; category: { name: string } | null }>
@@ -54,7 +55,15 @@ export function ExpenseByCategoryChart({ transactions, isLoading }: ExpenseByCat
                   <Cell key={entry.name} fill={`var(--color-${entry.name})`} />
                 ))}
               </Pie>
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip content={<ChartTooltipContent formatter={(value: number, name: string) => {
+                const label = chartConfig[name]?.label || name
+                return (
+                  <div className="flex w-full items-center justify-between gap-4">
+                    <span className="text-muted-foreground">{label}</span>
+                    <span className="font-mono font-medium tabular-nums text-foreground">{formatCurrency(value)}</span>
+                  </div>
+                )
+              }} />} />
               <ChartLegend content={<ChartLegendContent className="flex-wrap justify-start gap-2" />} />
             </PieChart>
           </ChartContainer>
