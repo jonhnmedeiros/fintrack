@@ -4,10 +4,15 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Tag, Plus, Pencil, Trash2, CircleX, CircleCheck } from 'lucide-react'
+import { Tag, Plus, Pencil, Trash2, CircleX, CircleCheck, Smile } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -74,20 +79,35 @@ const EMOJIS = [
 
 function EmojiPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className="flex flex-wrap gap-1.5">
-      {EMOJIS.map(emoji => (
-        <button
-          key={emoji}
-          type="button"
-          onClick={() => onChange(emoji === value ? '' : emoji)}
-          className={`h-9 w-9 rounded-lg text-lg flex items-center justify-center border transition-all ${
-            value === emoji ? 'border-foreground bg-accent scale-110' : 'border-transparent hover:bg-accent'
-          }`}
-        >
-          {emoji}
-        </button>
-      ))}
-    </div>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="w-full justify-start text-left font-normal h-10">
+          {value ? (
+            <span className="text-lg">{value}</span>
+          ) : (
+            <span className="text-muted-foreground flex items-center gap-2">
+              <Smile className="h-4 w-4" /> Selecione
+            </span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72">
+        <div className="flex flex-wrap gap-1">
+          {EMOJIS.map(emoji => (
+            <button
+              key={emoji}
+              type="button"
+              onClick={() => onChange(value === emoji ? '' : emoji)}
+              className={`h-9 w-9 rounded-lg text-lg flex items-center justify-center transition-all hover:bg-accent ${
+                value === emoji ? 'bg-accent ring-2 ring-ring' : ''
+              }`}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
 
