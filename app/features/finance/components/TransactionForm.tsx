@@ -27,7 +27,12 @@ import { createTransactionSchema } from '../schemas'
 import { useCreateTransaction } from '../hooks/useTransactions'
 import { useCategories, useCreateCategory } from '../hooks/useCategories'
 import { useCreditCards } from '../hooks/useCreditCards'
-import { Plus } from 'lucide-react'
+import { Plus, Smile } from 'lucide-react'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 
 const CATEGORY_COLORS = [
   '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4',
@@ -294,14 +299,35 @@ export function TransactionForm() {
 
               <div className="space-y-2">
                 <Label>Ícone (opcional)</Label>
-                <Select value={newCatIcon} onValueChange={setNewCatIcon}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>
-                    {EMOJIS.map(emoji => (
-                      <SelectItem key={emoji} value={emoji}>{emoji}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal h-10">
+                      {newCatIcon ? (
+                        <span className="text-lg">{newCatIcon}</span>
+                      ) : (
+                        <span className="text-muted-foreground flex items-center gap-2">
+                          <Smile className="h-4 w-4" /> Selecione
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72">
+                    <div className="flex flex-wrap gap-1">
+                      {EMOJIS.map(emoji => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => setNewCatIcon(newCatIcon === emoji ? '' : emoji)}
+                          className={`h-9 w-9 rounded-lg text-lg flex items-center justify-center transition-all hover:bg-accent ${
+                            newCatIcon === emoji ? 'bg-accent ring-2 ring-ring' : ''
+                          }`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="space-y-2">
