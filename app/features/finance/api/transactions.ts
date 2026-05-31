@@ -14,7 +14,14 @@ export async function listTransactions(
   const db = userDb(userId)
   const where: Record<string, unknown> = {}
   if (filters?.type) where.type = filters.type
-  if (filters?.categoryId) where.categoryId = filters.categoryId
+  if (filters?.categoryId) {
+    where.category = {
+      OR: [
+        { id: filters.categoryId },
+        { parentId: filters.categoryId },
+      ],
+    }
+  }
   if (filters?.startDate || filters?.endDate) {
     ;(where.date as Record<string, unknown>) = {}
     if (filters.startDate) (where.date as Record<string, unknown>).gte = new Date(filters.startDate)
