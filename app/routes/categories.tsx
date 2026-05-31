@@ -37,6 +37,14 @@ const categoryFormSchema = z.object({
 
 type CategoryFormData = z.infer<typeof categoryFormSchema>
 
+const CATEGORY_COLORS = [
+  '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4',
+  '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#84cc16',
+  '#f43f5e', '#d946ef', '#0ea5e9', '#10b981', '#f59e0b',
+]
+
+const randomColor = () => CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)]
+
 interface Category {
   id: string
   name: string
@@ -62,8 +70,8 @@ function CategoryDialog({
   const { handleSubmit, formState: { errors }, watch, setValue, reset } = useForm<CategoryFormData>({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: editCategory
-      ? { name: editCategory.name, type: editCategory.type, color: editCategory.color || '#3b82f6' }
-      : { name: '', type: undefined, color: '#3b82f6' },
+      ? { name: editCategory.name, type: editCategory.type, color: editCategory.color || randomColor() }
+      : { name: '', type: undefined, color: randomColor() },
   })
 
   const onSubmit = async (data: CategoryFormData) => {
@@ -123,16 +131,20 @@ function CategoryDialog({
 
           <div className="space-y-2">
             <Label>Cor</Label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={watch('color') || '#3b82f6'}
-                onChange={(e) => setValue('color', e.target.value)}
-                className="h-10 w-16 rounded-md border border-input bg-background px-1 cursor-pointer"
-              />
-              <span className="text-sm text-muted-foreground">
-                {watch('color') || '#3b82f6'}
-              </span>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORY_COLORS.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => setValue('color', color)}
+                  className={`h-8 w-8 rounded-full border-2 transition-all ${
+                    (watch('color') || CATEGORY_COLORS[0]) === color
+                      ? 'border-foreground scale-110 ring-2 ring-offset-1 ring-foreground/30'
+                      : 'border-transparent hover:scale-110'
+                  }`}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
             </div>
           </div>
 

@@ -22,9 +22,17 @@ import {
 } from '@/components/ui/dialog'
 import { createTransactionSchema } from '../schemas'
 import { useCreateTransaction } from '../hooks/useTransactions'
-import { useCategories } from '../hooks/useCategories'
+import { useCategories, useCreateCategory } from '../hooks/useCategories'
 import { useCreditCards } from '../hooks/useCreditCards'
 import { Plus } from 'lucide-react'
+
+const CATEGORY_COLORS = [
+  '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4',
+  '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#84cc16',
+  '#f43f5e', '#d946ef', '#0ea5e9', '#10b981', '#f59e0b',
+]
+
+const randomColor = () => CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)]
 
 const DAY = new Date().toISOString().split('T')[0]
 
@@ -42,8 +50,30 @@ export function TransactionForm() {
   const { data: categories, isError: catError } = useCategories()
   const { data: creditCards, isError: ccError } = useCreditCards()
 
+  const createCategory = useCreateCategory()
+  const [showNewCategory, setShowNewCategory] = useState(false)
+  const [newCatName, setNewCatName] = useState('')
+
   const type = watch('type')
   const creditCardId = watch('creditCardId')
+
+  const handleCreateCategory = async () => {
+    if (!newCatName.trim() || !type) return
+    try {
+      const cat = await createCategory.mutateAsync({
+        name: newCatName.trim(),
+        type,
+        color: randomColor(),
+      })
+      setValue('categoryId', (cat as { id: string }).id)
+      setShowNewCategory(false)
+      setNewCatName('')
+      toast.success('Categoria criada')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao criar categoria'
+      toast.error(message)
+    }
+  }
 
   const onSubmit = async (data: TransactionForm) => {
     try {
@@ -109,14 +139,23 @@ export function TransactionForm() {
           <div className="space-y-2">
             <Label>Categoria</Label>
             {catError && <p className="text-red-500 text-xs">Erro ao carregar categorias</p>}
-            <Select value={watch('categoryId') || ''} onValueChange={(v) => setValue('categoryId', v)}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {filteredCategories?.map((c: { id: string; name: string }) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Select value={watch('categoryId') || ''} onValueChange={(v) => setValue('categoryId', v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {filteredCategories?.map((c: { id: string; name: string }) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {type && (
+                <Button type="button" variant="outline" size="icon" onClick={() => setShowNewCategory(true)} title="Nova categoria" className="shrink-0">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -154,6 +193,28 @@ export function TransactionForm() {
             {createMutation.isPending ? 'Salvando...' : 'Salvar'}
           </Button>
         </form>
+
+        <Dialog open={showNewCategory} onOpenChange={setShowNewCategory}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Nova Categoria</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Nome</Label>
+                <Input
+                  value={newCatName}
+                  onChange={(e) => setNewCatName(e.target.value)}
+                  placeholder="Nome da categoria"
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateCategory() } }}
+                />
+              </div>
+              <Button type="button" className="w-full" onClick={handleCreateCategory} disabled={!newCatName.trim() || createCategory.isPending}>
+                {createCategory.isPending ? 'Criando...' : 'Criar'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   )
