@@ -5,7 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { TrendingUp, Plus, Trash2, Receipt, Bell, Upload, Download, PieChart as PieChartIcon } from 'lucide-react'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell } from 'recharts'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import type { ChartConfig } from '@/components/ui/chart'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -433,6 +435,16 @@ function InvestmentsPage() {
     return { totalInvested, allocation, assetCount }
   }, [assets])
 
+  const allocationChartConfig: ChartConfig = useMemo(() => {
+    return portfolio.allocation.reduce((acc, item, idx) => {
+      acc[item.name] = {
+        label: TYPE_LABELS[item.name] || item.name,
+        color: ALLOCATION_COLORS[idx % ALLOCATION_COLORS.length],
+      }
+      return acc
+    }, {} as ChartConfig)
+  }, [portfolio.allocation])
+
   const handleDeleteAsset = useCallback(async () => {
     if (!deleteAssetId) return
     try {
@@ -528,16 +540,16 @@ function InvestmentsPage() {
                 <PieChartIcon className="h-4 w-4 text-muted-foreground" />
                 Alocação por Tipo
               </h3>
-              <ResponsiveContainer width="100%" height={200}>
+              <ChartContainer config={allocationChartConfig} className="h-[200px] w-full">
                 <PieChart>
                   <Pie data={portfolio.allocation} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={50}>
-                    {portfolio.allocation.map((_e, i) => (
-                      <Cell key={i} fill={ALLOCATION_COLORS[i % ALLOCATION_COLORS.length]} />
+                    {portfolio.allocation.map((entry, i) => (
+                      <Cell key={entry.name} fill={ALLOCATION_COLORS[i % ALLOCATION_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                  <ChartTooltip content={<ChartTooltipContent formatter={(v: number) => formatCurrency(v)} />} />
                 </PieChart>
-              </ResponsiveContainer>
+              </ChartContainer>
               <div className="space-y-1.5 mt-2">
                 {portfolio.allocation.map((item, i) => {
                   const pct = ((item.value / portfolio.totalInvested) * 100).toFixed(1)

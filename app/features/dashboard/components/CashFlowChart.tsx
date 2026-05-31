@@ -1,11 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
 interface CashFlowChartProps {
   transactions: Array<{ type: string; amount: number; date: string }>
   isLoading?: boolean
+}
+
+const chartConfig = {
+  income: { label: 'Receitas', color: '#22c55e' },
+  expense: { label: 'Despesas', color: '#ef4444' },
 }
 
 export function CashFlowChart({ transactions, isLoading }: CashFlowChartProps) {
@@ -40,16 +46,16 @@ export function CashFlowChart({ transactions, isLoading }: CashFlowChartProps) {
             Nenhum dado disponível
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
             <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" />
-              <YAxis />
-              <Tooltip />
-              <Area type="monotone" dataKey="income" stackId="1" stroke="#22c55e" fill="#22c55e" fillOpacity={0.3} />
-              <Area type="monotone" dataKey="expense" stackId="2" stroke="#ef4444" fill="#ef4444" fillOpacity={0.3} />
+              <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Area type="monotone" dataKey="income" stackId="1" stroke="var(--color-income)" fill="var(--color-income)" fillOpacity={0.3} />
+              <Area type="monotone" dataKey="expense" stackId="2" stroke="var(--color-expense)" fill="var(--color-expense)" fillOpacity={0.3} />
             </AreaChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         )}
       </CardContent>
     </Card>

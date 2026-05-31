@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { PieChart, Pie, Cell } from 'recharts'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart'
+import type { ChartConfig } from '@/components/ui/chart'
 
 interface ExpenseByCategoryChartProps {
   transactions: Array<{ type: string; amount: number; category: { name: string } | null }>
@@ -19,6 +21,11 @@ export function ExpenseByCategoryChart({ transactions, isLoading }: ExpenseByCat
     }, {} as Record<string, { name: string; value: number }>)
 
   const data = Object.values(categoryData)
+
+  const chartConfig: ChartConfig = data.reduce((acc, item, idx) => {
+    acc[item.name] = { label: item.name, color: COLORS[idx % COLORS.length] }
+    return acc
+  }, {} as ChartConfig)
 
   if (isLoading) {
     return (
@@ -40,17 +47,17 @@ export function ExpenseByCategoryChart({ transactions, isLoading }: ExpenseByCat
             Nenhuma despesa neste mês
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
             <PieChart>
               <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100}>
-                {data.map((_entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                {data.map((entry) => (
+                  <Cell key={entry.name} fill={`var(--color-${entry.name})`} />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartLegend content={<ChartLegendContent />} />
             </PieChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         )}
       </CardContent>
     </Card>

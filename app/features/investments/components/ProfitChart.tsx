@@ -4,31 +4,17 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
   Legend,
 } from 'recharts'
 import { Card } from '@/components/ui/card'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { formatCurrency } from '@/lib/utils'
 import { useProfitability, type ProfitDataPoint } from '../hooks/useProfitability'
 import { TrendingUp } from 'lucide-react'
 
-function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number }[]; label?: string }) {
-  if (!active || !payload?.length) return null
-  const [month, year] = (label || '').split('-')
-  const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
-  const monthLabel = months[parseInt(month, 10) - 1] || month
-  return (
-    <div className="bg-popover border rounded-lg shadow-md p-3 text-xs space-y-1">
-      <p className="font-medium">{monthLabel}/{year}</p>
-      {payload.map((entry) => (
-        <div key={entry.name} className="flex justify-between gap-4">
-          <span>{entry.name === 'cost' ? 'Custo' : 'Mercado'}</span>
-          <span className="font-mono">{formatCurrency(entry.value)}</span>
-        </div>
-      ))}
-    </div>
-  )
+const chartConfig = {
+  cost: { label: 'Custo', color: '#3b82f6' },
+  marketValue: { label: 'Mercado', color: '#22c55e' },
 }
 
 export function ProfitChart() {
@@ -84,16 +70,16 @@ export function ProfitChart() {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={220}>
+      <ChartContainer config={chartConfig} className="h-[220px] w-full">
         <AreaChart data={points} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
           <defs>
             <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+              <stop offset="5%" stopColor="var(--color-cost)" stopOpacity={0.15} />
+              <stop offset="95%" stopColor="var(--color-cost)" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="colorMkt" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22c55e" stopOpacity={0.15} />
-              <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+              <stop offset="5%" stopColor="var(--color-marketValue)" stopOpacity={0.15} />
+              <stop offset="95%" stopColor="var(--color-marketValue)" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -107,15 +93,30 @@ export function ProfitChart() {
             }}
           />
           <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `R$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toFixed(0)}`} />
-          <Tooltip content={<CustomTooltip />} />
+          <ChartTooltip
+            content={
+              <ChartTooltipContent
+                labelFormatter={(label) => {
+                  const [m, y] = (label || '').split('-')
+                  const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+                  return `${months[parseInt(m, 10) - 1] || m}/${y}`
+                }}
+                formatter={(value: number) => (
+                  <span className="font-mono font-medium tabular-nums text-foreground">
+                    {formatCurrency(value)}
+                  </span>
+                )}
+              />
+            }
+          />
           <Legend
             formatter={(value) => (value === 'cost' ? 'Custo' : 'Mercado')}
             wrapperStyle={{ fontSize: 12 }}
           />
-          <Area type="monotone" dataKey="cost" stroke="#3b82f6" fill="url(#colorCost)" strokeWidth={2} name="cost" />
-          <Area type="monotone" dataKey="marketValue" stroke="#22c55e" fill="url(#colorMkt)" strokeWidth={2} name="marketValue" />
+          <Area type="monotone" dataKey="cost" stroke="var(--color-cost)" fill="url(#colorCost)" strokeWidth={2} />
+          <Area type="monotone" dataKey="marketValue" stroke="var(--color-marketValue)" fill="url(#colorMkt)" strokeWidth={2} />
         </AreaChart>
-      </ResponsiveContainer>
+      </ChartContainer>
     </Card>
   )
 }
