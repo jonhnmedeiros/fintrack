@@ -30,7 +30,8 @@ export const APIRoute = {
         if (err?.code === 'P2002') {
           return Response.json({ error: 'Já existe uma categoria com este nome' }, { status: 409 })
         }
-        return Response.json({ error: 'Erro ao criar categoria' }, { status: 500 })
+        const message = err?.issues ? err.issues.map((i: any) => i.message).join(', ') : err?.message || 'Erro ao criar categoria'
+        return Response.json({ error: message }, { status: 500 })
       }
     },
   },

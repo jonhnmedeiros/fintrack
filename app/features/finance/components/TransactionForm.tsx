@@ -131,7 +131,7 @@ export function TransactionForm() {
     try {
       const payload: Record<string, unknown> = {
         name: newCatName.trim(),
-        type,
+        type: type === 'TRANSFER' ? 'EXPENSE' : type,
         color: newCatColor,
       }
       if (newCatIcon) payload.icon = newCatIcon
