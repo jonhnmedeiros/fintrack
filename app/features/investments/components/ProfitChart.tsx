@@ -6,7 +6,7 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts'
-import { Card } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { formatCurrency } from '@/lib/utils'
 import { useProfitability, type ProfitDataPoint } from '../hooks/useProfitability'
@@ -59,16 +59,17 @@ export function ProfitChart() {
   const current = points[points.length - 1]
 
   return (
-    <Card className="p-4 space-y-3">
-      <div className="flex items-start justify-between">
-        <h3 className="text-sm font-medium">Rentabilidade</h3>
+    <Card>
+      <CardHeader className="flex-row items-start justify-between space-y-0 p-4">
+        <CardTitle className="text-sm font-medium">Rentabilidade</CardTitle>
         <div className="text-right text-xs">
           <div className={current.profit >= 0 ? 'text-green-500' : 'text-red-500'}>
             <span className="font-mono text-sm font-semibold">{formatCurrency(current.profit)}</span>
             <span className="ml-1">({current.profit >= 0 ? '+' : ''}{current.cost > 0 ? ((current.profit / current.cost) * 100).toFixed(1) : '0.0'}%)</span>
           </div>
         </div>
-      </div>
+      </CardHeader>
+      <CardContent className="p-4 pt-0">
 
       <ChartContainer config={chartConfig} className="h-[220px] w-full">
         <AreaChart data={points} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
@@ -101,10 +102,11 @@ export function ProfitChart() {
                   const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
                   return `${months[parseInt(m, 10) - 1] || m}/${y}`
                 }}
-                formatter={(value: number) => (
-                  <span className="font-mono font-medium tabular-nums text-foreground">
-                    {formatCurrency(value)}
-                  </span>
+                formatter={(value: number, name: string) => (
+                  <div className="flex w-full items-center justify-between gap-4">
+                    <span className="text-muted-foreground">{name === 'cost' ? 'Custo' : 'Mercado'}</span>
+                    <span className="font-mono font-medium tabular-nums text-foreground">{formatCurrency(value)}</span>
+                  </div>
                 )}
               />
             }
@@ -117,6 +119,7 @@ export function ProfitChart() {
           <Area type="monotone" dataKey="marketValue" stroke="var(--color-marketValue)" fill="url(#colorMkt)" strokeWidth={2} />
         </AreaChart>
       </ChartContainer>
+      </CardContent>
     </Card>
   )
 }

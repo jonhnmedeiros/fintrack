@@ -63,31 +63,31 @@ function EmojiGrid({ value, onChange }: { value: string; onChange: (v: string) =
     <div className="space-y-2">
       <div className="flex gap-0.5 overflow-x-auto pb-1 border-b">
         {EMOJI_CATEGORIES.map((cat, i) => (
-          <button
+          <Button
             key={cat.name}
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => setTab(i)}
-            className={`shrink-0 px-2 py-1 rounded text-sm transition-colors ${
-              tab === i ? 'bg-accent font-medium' : 'text-muted-foreground hover:text-foreground'
-            }`}
+            className={tab === i ? 'bg-accent font-medium' : 'text-muted-foreground hover:text-foreground'}
             title={cat.name}
           >
             {cat.label}
-          </button>
+          </Button>
         ))}
       </div>
       <div className="flex flex-wrap gap-1">
         {EMOJI_CATEGORIES[tab].emojis.map(emoji => (
-          <button
+          <Button
             key={emoji}
             type="button"
+            variant={value === emoji ? 'secondary' : 'ghost'}
+            size="icon"
             onClick={() => onChange(value === emoji ? '' : emoji)}
-            className={`h-9 w-9 rounded-lg text-lg flex items-center justify-center transition-all hover:bg-accent ${
-              value === emoji ? 'bg-accent ring-2 ring-ring' : ''
-            }`}
+            className="text-lg rounded-lg"
           >
             {emoji}
-          </button>
+          </Button>
         ))}
       </div>
     </div>
@@ -371,11 +371,13 @@ export function TransactionForm() {
                 <Label>Cor</Label>
                 <div className="flex flex-wrap gap-2">
                   {CATEGORY_COLORS.map((color) => (
-                    <button
+                    <Button
                       key={color}
                       type="button"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => setNewCatColor(color)}
-                      className={`h-7 w-7 rounded-full border-2 transition-all ${
+                      className={`h-7 w-7 rounded-full border-2 p-0 ${
                         newCatColor === color
                           ? 'border-foreground scale-110 ring-2 ring-offset-1 ring-foreground/30'
                           : 'border-transparent hover:scale-110'

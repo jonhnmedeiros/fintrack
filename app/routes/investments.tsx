@@ -24,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Card } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -535,11 +535,14 @@ function InvestmentsPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="p-4 lg:col-span-1">
-              <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
-                <PieChartIcon className="h-4 w-4 text-muted-foreground" />
-                Alocação por Tipo
-              </h3>
+            <Card className="lg:col-span-1">
+              <CardHeader className="p-4 pb-0">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <PieChartIcon className="h-4 w-4 text-muted-foreground" />
+                  Alocação por Tipo
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
               <ChartContainer config={allocationChartConfig} className="h-[200px] w-full">
                 <PieChart>
                   <Pie data={portfolio.allocation} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={50}>
@@ -547,7 +550,15 @@ function InvestmentsPage() {
                       <Cell key={entry.name} fill={ALLOCATION_COLORS[i % ALLOCATION_COLORS.length]} />
                     ))}
                   </Pie>
-                  <ChartTooltip content={<ChartTooltipContent formatter={(v: number) => formatCurrency(v)} />} />
+                  <ChartTooltip content={<ChartTooltipContent formatter={(v: number, name: string) => {
+                    const label = TYPE_LABELS[name] || name
+                    return (
+                      <div className="flex w-full items-center justify-between gap-4">
+                        <span className="text-muted-foreground">{label}</span>
+                        <span className="font-mono font-medium tabular-nums text-foreground">{formatCurrency(v)}</span>
+                      </div>
+                    )
+                  }} />} />
                 </PieChart>
               </ChartContainer>
               <div className="space-y-1.5 mt-2">
@@ -564,10 +575,13 @@ function InvestmentsPage() {
                   )
                 })}
               </div>
-            </Card>
+            </CardContent></Card>
 
-            <Card className="p-4 lg:col-span-2">
-              <h3 className="text-sm font-medium mb-3">Distribuição por Ativo</h3>
+            <Card className="lg:col-span-2">
+              <CardHeader className="p-4 pb-0">
+                <CardTitle className="text-sm font-medium">Distribuição por Ativo</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
               <div className="space-y-2">
                 {assets.filter((a) => calcPosition(a.transactions).quantity > 0).map((asset) => {
                   const pos = calcPosition(asset.transactions)
@@ -584,6 +598,7 @@ function InvestmentsPage() {
                   )
                 })}
               </div>
+              </CardContent>
             </Card>
           </div>
 

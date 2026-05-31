@@ -55,7 +55,7 @@ export function ExpenseByCategoryChart({ transactions, isLoading }: ExpenseByCat
                 ))}
               </Pie>
               <ChartTooltip content={<ChartTooltipContent />} />
-              <ChartLegend content={<ChartLegendContent />} />
+              <ChartLegend content={<ChartLegendContent className="flex-wrap justify-start gap-2" />} />
             </PieChart>
           </ChartContainer>
         )}

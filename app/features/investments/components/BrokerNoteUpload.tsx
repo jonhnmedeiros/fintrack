@@ -7,6 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/lib/utils'
 import { useParseBrokerNote, useImportBrokerNote } from '../hooks/useBrokerageNote'
 
@@ -107,12 +109,11 @@ export function BrokerNoteUpload({ open, onOpenChange }: BrokerNoteUploadProps) 
             </div>
 
             <div className="text-sm">
-              <label className="block font-medium mb-1">Data das operações</label>
-              <input
+              <Label className="block font-medium mb-1">Data das operações</Label>
+              <Input
                 type="date"
                 value={importDate}
                 onChange={(e) => setImportDate(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
               />
             </div>
 
