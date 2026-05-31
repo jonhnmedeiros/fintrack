@@ -42,6 +42,7 @@ export const budgetSchema = z.object({
 })
 
 export const createTransactionSchema = transactionSchema.omit({ id: true, userId: true })
+export const updateTransactionSchema = transactionSchema.omit({ id: true, userId: true })
 export const createCategorySchema = categorySchema.omit({ id: true, userId: true })
 export const createCreditCardSchema = creditCardSchema.omit({ id: true, userId: true })
 export const createBudgetSchema = budgetSchema.omit({ id: true, userId: true })

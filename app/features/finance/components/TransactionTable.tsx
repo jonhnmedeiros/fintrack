@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface TransactionType {
@@ -21,6 +21,8 @@ interface TransactionType {
   amount: number
   date: string
   category: { name: string } | null
+  categoryId: string | null
+  creditCardId: string | null
   installmentNumber: number | null
   totalInstallments: number | null
 }
@@ -28,9 +30,10 @@ interface TransactionType {
 interface TransactionTableProps {
   transactions: TransactionType[]
   showActions?: boolean
+  onEdit?: (tx: TransactionType) => void
 }
 
-export function TransactionTable({ transactions, showActions = true }: TransactionTableProps) {
+export function TransactionTable({ transactions, showActions = true, onEdit }: TransactionTableProps) {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const deleteMutation = useDeleteTransaction()
 
@@ -74,15 +77,24 @@ export function TransactionTable({ transactions, showActions = true }: Transacti
     },
     ...(showActions ? [{
       id: 'actions',
-      cell: ({ row }: { row: { original: { id: string } } }) => (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setPendingDeleteId(row.original.id)}
-          disabled={deleteMutation.isPending}
-        >
-          <Trash2 className="h-4 w-4 text-red-500" />
-        </Button>
+      cell: ({ row }: { row: { original: TransactionType } }) => (
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit?.(row.original)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setPendingDeleteId(row.original.id)}
+            disabled={deleteMutation.isPending}
+          >
+            <Trash2 className="h-4 w-4 text-red-500" />
+          </Button>
+        </div>
       ),
     }] : []),
   ]

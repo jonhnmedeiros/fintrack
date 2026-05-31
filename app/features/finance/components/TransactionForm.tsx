@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -24,7 +24,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { createTransactionSchema } from '../schemas'
-import { useCreateTransaction } from '../hooks/useTransactions'
+import { useCreateTransaction, useUpdateTransaction } from '../hooks/useTransactions'
 import { useCategories, useCreateCategory } from '../hooks/useCategories'
 import { useCreditCards } from '../hooks/useCreditCards'
 import { Plus, Smile } from 'lucide-react'
@@ -98,7 +98,25 @@ const DAY = new Date().toISOString().split('T')[0]
 
 type TransactionForm = z.infer<typeof createTransactionSchema>
 
-export function TransactionForm() {
+interface EditTransaction {
+  id: string
+  type: string
+  amount: number
+  description: string | null
+  date: string
+  categoryId: string | null
+  creditCardId: string | null
+  installmentNumber: number | null
+  totalInstallments: number | null
+}
+
+interface TransactionFormProps {
+  editTx?: EditTransaction | null
+  onEditDone?: () => void
+}
+
+export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
+  const isEditing = !!editTx
   const [open, setOpen] = useState(false)
   const [formKey, setFormKey] = useState(0)
   const { handleSubmit, formState: { errors }, watch, reset, setValue } = useForm<TransactionForm>({
@@ -106,7 +124,31 @@ export function TransactionForm() {
     defaultValues: { date: DAY },
   })
 
+  const [prevEditId, setPrevEditId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (editTx?.id && editTx.id !== prevEditId) {
+      setPrevEditId(editTx.id)
+      setOpen(true)
+      setFormKey(k => k + 1)
+      reset({
+        type: editTx.type as TransactionForm['type'],
+        amount: editTx.amount,
+        description: editTx.description || '',
+        date: editTx.date.split('T')[0],
+        categoryId: editTx.categoryId || '',
+        creditCardId: editTx.creditCardId || '',
+        totalInstallments: editTx.totalInstallments || undefined,
+      })
+      setAmountDisplay(Number(editTx.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }))
+    }
+    if (!editTx) {
+      setPrevEditId(null)
+    }
+  }, [editTx])
+
   const createMutation = useCreateTransaction()
+  const updateMutation = useUpdateTransaction()
   const { data: categories, isError: catError } = useCategories()
   const { data: creditCards, isError: ccError } = useCreditCards()
 
@@ -169,11 +211,17 @@ export function TransactionForm() {
         totalInstallments: data.totalInstallments || undefined,
         amount: data.amount,
       }
-      await createMutation.mutateAsync(payload)
-      toast.success('Transação criada com sucesso')
-      reset()
-      setValue('date', DAY)
-      setOpen(false)
+      if (isEditing) {
+        await updateMutation.mutateAsync({ id: editTx.id, data: payload })
+        toast.success('Transação atualizada com sucesso')
+        onEditDone?.()
+      } else {
+        await createMutation.mutateAsync(payload)
+        toast.success('Transação criada com sucesso')
+        reset()
+        setValue('date', DAY)
+        setOpen(false)
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro inesperado'
       toast.error(message)
@@ -195,16 +243,21 @@ export function TransactionForm() {
   }, [])
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) setFormKey(k => k + 1) }}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Transação
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isEditing ? open : open} onOpenChange={(v) => {
+      if (isEditing) { if (!v) { setOpen(false); onEditDone?.() } }
+      else { setOpen(v); if (v) setFormKey(k => k + 1) }
+    }}>
+      {!isEditing && (
+        <DialogTrigger asChild>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Transação
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent key={formKey}>
         <DialogHeader>
-          <DialogTitle>Nova Transação</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Transação' : 'Nova Transação'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
@@ -313,8 +366,8 @@ export function TransactionForm() {
             </>
           )}
 
-          <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-            {createMutation.isPending ? 'Salvando...' : 'Salvar'}
+          <Button type="submit" className="w-full" disabled={createMutation.isPending || updateMutation.isPending}>
+            {createMutation.isPending || updateMutation.isPending ? 'Salvando...' : isEditing ? 'Atualizar' : 'Salvar'}
           </Button>
         </form>
 

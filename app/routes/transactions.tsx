@@ -24,6 +24,17 @@ function TransactionsPage() {
   const [typeFilter, setTypeFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [monthFilter, setMonthFilter] = useState(new Date().toISOString().slice(0, 7))
+  const [editTx, setEditTx] = useState<{
+    id: string
+    type: string
+    amount: number
+    description: string | null
+    date: string
+    categoryId: string | null
+    creditCardId: string | null
+    installmentNumber: number | null
+    totalInstallments: number | null
+  } | null>(null)
 
   const filters: Record<string, string | undefined> = {}
   if (typeFilter && typeFilter !== '__all__') filters.type = typeFilter
@@ -82,7 +93,7 @@ function TransactionsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Transações</h1>
-        {!isVisualizador && <TransactionForm />}
+        {!isVisualizador && <TransactionForm editTx={editTx} onEditDone={() => setEditTx(null)} />}
       </div>
 
       <div className="flex gap-4 items-end flex-wrap">
@@ -138,7 +149,7 @@ function TransactionsPage() {
         </div>
       )}
 
-      {!isError && transactions.length > 0 && <TransactionTable transactions={transactions} showActions={!isVisualizador} />}
+      {!isError && transactions.length > 0 && <TransactionTable transactions={transactions} showActions={!isVisualizador} onEdit={setEditTx} />}
     </div>
   )
 }

@@ -93,7 +93,7 @@ export function ProfitChart() {
               return months[parseInt(m, 10) - 1] || m
             }}
           />
-          <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `R$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toFixed(0)}`} />
+          {/* <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `R$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toFixed(0)}`} /> */}
           <ChartTooltip
             content={
               <ChartTooltipContent

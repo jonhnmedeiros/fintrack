@@ -1,5 +1,5 @@
 import { userDb } from '@/lib/tenant-db'
-import { createTransactionSchema } from '../schemas'
+import { createTransactionSchema, updateTransactionSchema } from '../schemas'
 import { prisma } from '@/lib/db'
 
 export async function listTransactions(
@@ -69,4 +69,16 @@ export async function createTransaction(userId: string, data: unknown) {
 export async function deleteTransaction(userId: string, id: string) {
   const db = userDb(userId)
   return db.transaction.delete({ where: { id } })
+}
+
+export async function updateTransaction(userId: string, id: string, data: unknown) {
+  const validated = updateTransactionSchema.parse(data)
+  const db = userDb(userId)
+  return db.transaction.update({
+    where: { id },
+    data: {
+      ...validated,
+      date: new Date(validated.date),
+    },
+  })
 }

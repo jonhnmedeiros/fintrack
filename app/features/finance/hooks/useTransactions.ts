@@ -45,3 +45,22 @@ export function useDeleteTransaction() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['transactions'] }),
   })
 }
+
+export function useUpdateTransaction() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: unknown }) =>
+      fetch(`/api/transactions/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({ error: 'Erro ao atualizar transação' }))
+          throw new Error(err.error || 'Erro ao atualizar transação')
+        }
+        return r.json()
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['transactions'] }),
+  })
+}
