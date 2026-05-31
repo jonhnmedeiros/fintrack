@@ -35,6 +35,8 @@ const CATEGORY_COLORS = [
   '#f43f5e', '#d946ef', '#0ea5e9', '#10b981', '#f59e0b',
 ]
 
+const EMOJIS = ['🍕', '🛒', '🥡', '🏠', '💡', '📡', '⛽', '🚌', '🎬', '👕', '💊', '🐾', '📚', '💻', '🎮', '🏋️', '✈️', '🎁', '☕', '🍺']
+
 const randomColor = () => CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)]
 
 const DAY = new Date().toISOString().split('T')[0]
@@ -57,29 +59,50 @@ export function TransactionForm() {
   const queryClient = useQueryClient()
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCatName, setNewCatName] = useState('')
+  const [newCatIcon, setNewCatIcon] = useState('')
+  const [newCatParentId, setNewCatParentId] = useState('')
+  const [newCatColor, setNewCatColor] = useState(randomColor())
   const [amountDisplay, setAmountDisplay] = useState('')
 
   const type = watch('type')
   const creditCardId = watch('creditCardId')
 
+  const parentCategories = !type ? [] : (categories as any[] | undefined)?.filter(
+    (c: any) => c.type === type && !c.parentId
+  ) ?? []
+
   const handleCreateCategory = async () => {
     if (!newCatName.trim() || !type) return
     try {
-      const cat = await createCategory.mutateAsync({
+      const payload: Record<string, unknown> = {
         name: newCatName.trim(),
         type,
-        color: randomColor(),
-      })
+        color: newCatColor,
+      }
+      if (newCatIcon) payload.icon = newCatIcon
+      if (newCatParentId) payload.parentId = newCatParentId
+
+      const cat = await createCategory.mutateAsync(payload)
       const catId = (cat as { id: string }).id
       await queryClient.refetchQueries({ queryKey: ['categories'] })
       setValue('categoryId', catId)
       setShowNewCategory(false)
       setNewCatName('')
+      setNewCatIcon('')
+      setNewCatParentId('')
+      setNewCatColor(randomColor())
       toast.success('Categoria criada')
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao criar categoria'
       toast.error(message)
     }
+  }
+
+  const resetNewCategory = () => {
+    setNewCatName('')
+    setNewCatIcon('')
+    setNewCatParentId('')
+    setNewCatColor(randomColor())
   }
 
   const onSubmit = async (data: TransactionForm) => {
@@ -240,7 +263,7 @@ export function TransactionForm() {
           </Button>
         </form>
 
-        <Dialog open={showNewCategory} onOpenChange={setShowNewCategory}>
+        <Dialog open={showNewCategory} onOpenChange={(v) => { if (!v) resetNewCategory(); setShowNewCategory(v) }}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Nova Categoria</DialogTitle>
@@ -255,6 +278,51 @@ export function TransactionForm() {
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateCategory() } }}
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label>Categoria pai (opcional)</Label>
+                <Select value={newCatParentId} onValueChange={(v) => setNewCatParentId(v === '__none__' ? '' : v)}>
+                  <SelectTrigger><SelectValue placeholder="Nenhuma — criar categoria principal" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Nenhuma</SelectItem>
+                    {parentCategories.map((p: any) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Ícone (opcional)</Label>
+                <Select value={newCatIcon} onValueChange={setNewCatIcon}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {EMOJIS.map(emoji => (
+                      <SelectItem key={emoji} value={emoji}>{emoji}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Cor</Label>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORY_COLORS.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setNewCatColor(color)}
+                      className={`h-7 w-7 rounded-full border-2 transition-all ${
+                        newCatColor === color
+                          ? 'border-foreground scale-110 ring-2 ring-offset-1 ring-foreground/30'
+                          : 'border-transparent hover:scale-110'
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+              </div>
+
               <Button type="button" className="w-full" onClick={handleCreateCategory} disabled={!newCatName.trim() || createCategory.isPending}>
                 {createCategory.isPending ? 'Criando...' : 'Criar'}
               </Button>

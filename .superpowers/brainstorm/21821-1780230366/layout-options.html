@@ -1,0 +1,57 @@
+<h2>Dropdown de Categorias com Subcategorias</h2>
+<p class="subtitle">Como as subcategorias aparecem no formulário de transação</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">A: Lista indentada</div>
+    <div class="mockup-body" style="text-align:left;padding:16px;gap:4px;display:flex;flex-direction:column;">
+      <div style="font-size:13px;color:#666;padding:8px 4px 4px;font-weight:600;border-bottom:1px solid #eee;">Alimentação</div>
+      <div style="padding:8px 4px 8px 20px;border-radius:6px;background:#f5f5f5;">🍕 Restaurante</div>
+      <div style="padding:8px 4px 8px 20px;border-radius:6px;">🛒 Supermercado</div>
+      <div style="padding:8px 4px 8px 20px;border-radius:6px;">🥡 Ifood</div>
+      <div style="font-size:13px;color:#666;padding:12px 4px 4px;font-weight:600;border-bottom:1px solid #eee;">Moradia</div>
+      <div style="padding:8px 4px 8px 20px;border-radius:6px;">🏠 Aluguel</div>
+      <div style="padding:8px 4px 8px 20px;border-radius:6px;">💡 Luz</div>
+      <div style="padding:8px 4px 8px 20px;border-radius:6px;">📡 Internet</div>
+      <div style="font-size:13px;color:#666;padding:12px 4px 4px;font-weight:600;border-bottom:1px solid #eee;">Transporte</div>
+      <div style="padding:8px 4px 8px 20px;border-radius:6px;">⛽ Gasolina</div>
+      <div style="padding:8px 4px 8px 20px;border-radius:6px;">🚌 Ônibus</div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">B: Seletor em cascata</div>
+    <div class="mockup-body" style="text-align:left;padding:16px;gap:8px;display:flex;flex-direction:column;">
+      <div style="font-weight:500;font-size:13px;color:#333;">Categoria</div>
+      <div style="padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;color:#666;display:flex;justify-content:space-between;">
+        <span>Alimentação</span>
+        <span>▼</span>
+      </div>
+      <div style="font-weight:500;font-size:13px;color:#333;margin-top:8px;">Subcategoria</div>
+      <div style="padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;color:#666;display:flex;justify-content:space-between;">
+        <span>Selecione</span>
+        <span>▼</span>
+      </div>
+      <div style="margin-top:8px;padding:8px;background:#f9f9f9;border-radius:6px;font-size:12px;color:#999;">Escolha uma categoria primeiro para ver as subcategorias</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="options" style="margin-top:16px;">
+    <div class="option" data-choice="a" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Lista indentada</h3>
+        <p>Categorias pai aparecem como cabeçalho (não selecionável), subcategorias indentadas abaixo. Tudo em um Select.</p>
+      </div>
+    </div>
+    <div class="option" data-choice="b" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Seletor em cascata</h3>
+        <p>Dois selects: primeiro escolhe a categoria pai, segundo mostra só as subcategorias daquela categoria.</p>
+      </div>
+    </div>
+  </div>
+</div>
