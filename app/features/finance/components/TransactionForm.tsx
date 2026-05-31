@@ -24,7 +24,6 @@ import { createTransactionSchema } from '../schemas'
 import { useCreateTransaction } from '../hooks/useTransactions'
 import { useCategories, useCreateCategory } from '../hooks/useCategories'
 import { useCreditCards } from '../hooks/useCreditCards'
-import { useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 
 const CATEGORY_COLORS = [
@@ -52,7 +51,6 @@ export function TransactionForm() {
   const { data: creditCards, isError: ccError } = useCreditCards()
 
   const createCategory = useCreateCategory()
-  const queryClient = useQueryClient()
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCatName, setNewCatName] = useState('')
 
@@ -67,7 +65,6 @@ export function TransactionForm() {
         type,
         color: randomColor(),
       })
-      queryClient.setQueryData(['categories'], (old: any) => [...(old || []), cat])
       setValue('categoryId', (cat as { id: string }).id)
       setShowNewCategory(false)
       setNewCatName('')
