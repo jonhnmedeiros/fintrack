@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -51,6 +52,7 @@ export function TransactionForm() {
   const { data: creditCards, isError: ccError } = useCreditCards()
 
   const createCategory = useCreateCategory()
+  const queryClient = useQueryClient()
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCatName, setNewCatName] = useState('')
 
@@ -65,7 +67,9 @@ export function TransactionForm() {
         type,
         color: randomColor(),
       })
-      setValue('categoryId', (cat as { id: string }).id)
+      const catId = (cat as { id: string }).id
+      await queryClient.refetchQueries({ queryKey: ['categories'] })
+      setValue('categoryId', catId)
       setShowNewCategory(false)
       setNewCatName('')
       toast.success('Categoria criada')
