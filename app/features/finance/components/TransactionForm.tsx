@@ -10,7 +10,9 @@ import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
@@ -55,6 +57,7 @@ export function TransactionForm() {
   const queryClient = useQueryClient()
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCatName, setNewCatName] = useState('')
+  const [amountDisplay, setAmountDisplay] = useState('')
 
   const type = watch('type')
   const creditCardId = watch('creditCardId')
@@ -99,9 +102,19 @@ export function TransactionForm() {
     }
   }
 
-  const filteredCategories = !type ? [] : categories?.filter((c: { type: string }) =>
-    type === 'INCOME' ? c.type === 'INCOME' : c.type === 'EXPENSE'
-  )
+  const allCategories = !type ? [] : (categories as any[] | undefined)?.filter(
+    (c) => type === 'INCOME' ? c.type === 'INCOME' : c.type === 'EXPENSE'
+  ) ?? []
+
+  const grouped = allCategories.reduce<{ parent: { id: string; name: string; icon?: string }; children: { id: string; name: string; icon?: string }[] }[]>((acc, cat) => {
+    if (!cat.parentId) {
+      acc.push({ parent: cat, children: [] })
+    } else {
+      const group = acc.find(g => g.parent.id === cat.parentId)
+      if (group) group.children.push(cat)
+    }
+    return acc
+  }, [])
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) setFormKey(k => k + 1) }}>
@@ -131,7 +144,27 @@ export function TransactionForm() {
 
           <div className="space-y-2">
             <Label>Valor</Label>
-            <Input type="number" step="0.01" placeholder="0,00" onChange={(e) => setValue('amount', parseFloat(e.target.value.replace(/\./g, '').replace(',', '.')) || 0)} value={watch('amount') ?? ''} />
+            <Input
+              type="text"
+              inputMode="decimal"
+              placeholder="0,00"
+              value={amountDisplay}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/[^\d,]/g, '')
+                const parts = raw.split(',')
+                const cleaned = parts[0] + (parts.length > 1 ? ',' + parts.slice(1).join('') : '')
+                setAmountDisplay(cleaned)
+                setValue('amount', parseFloat(cleaned.replace(',', '.')) || 0)
+              }}
+              onFocus={() => {
+                const val = watch('amount')
+                setAmountDisplay(val != null ? String(val).replace('.', ',') : '')
+              }}
+              onBlur={() => {
+                const val = watch('amount')
+                setAmountDisplay(val != null ? val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '')
+              }}
+            />
             {errors.amount && <p className="text-red-500 text-sm">{errors.amount.message}</p>}
           </div>
 
@@ -148,8 +181,17 @@ export function TransactionForm() {
                 <Select value={watch('categoryId') || ''} onValueChange={(v) => setValue('categoryId', v)}>
                   <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    {filteredCategories?.map((c: { id: string; name: string }) => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    {grouped.map(group => (
+                      <SelectGroup key={group.parent.id}>
+                        <SelectLabel className="text-xs font-semibold text-muted-foreground px-2 py-1.5">
+                          {group.parent.name}
+                        </SelectLabel>
+                        {group.children.map(child => (
+                          <SelectItem key={child.id} value={child.id}>
+                            {child.icon ? `${child.icon} ` : ''}{child.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     ))}
                   </SelectContent>
                 </Select>

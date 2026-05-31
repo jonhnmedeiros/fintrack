@@ -78,30 +78,101 @@ async function main() {
   const [salario, freelance, investimentos] = createdIncomeCategories
   const [moradia, alimentacao, transporte, saude, educacao, lazer, assinaturas, compras] = createdExpenseCategories
 
+  const subAluguel = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: moradia.id, name: 'Aluguel', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Aluguel', type: 'EXPENSE', color: '#ef4444', icon: '🏠', userId: user.id, parentId: moradia.id },
+  })
+  const subCondominio = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: moradia.id, name: 'Condomínio', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Condomínio', type: 'EXPENSE', color: '#ef4444', icon: '🏢', userId: user.id, parentId: moradia.id },
+  })
+  const subInternet = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: moradia.id, name: 'Internet', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Internet', type: 'EXPENSE', color: '#ef4444', icon: '📡', userId: user.id, parentId: moradia.id },
+  })
+  const subRestaurante = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: alimentacao.id, name: 'Restaurante', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Restaurante', type: 'EXPENSE', color: '#f97316', icon: '🍕', userId: user.id, parentId: alimentacao.id },
+  })
+  const subSupermercado = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: alimentacao.id, name: 'Supermercado', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Supermercado', type: 'EXPENSE', color: '#f97316', icon: '🛒', userId: user.id, parentId: alimentacao.id },
+  })
+  const subIfood = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: alimentacao.id, name: 'Ifood', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Ifood', type: 'EXPENSE', color: '#f97316', icon: '🥡', userId: user.id, parentId: alimentacao.id },
+  })
+  const subGasolina = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: transporte.id, name: 'Gasolina', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Gasolina', type: 'EXPENSE', color: '#eab308', icon: '⛽', userId: user.id, parentId: transporte.id },
+  })
+  const subUber = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: transporte.id, name: 'Uber', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Uber', type: 'EXPENSE', color: '#eab308', icon: '🚗', userId: user.id, parentId: transporte.id },
+  })
+  const subPlanoSaude = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: saude.id, name: 'Plano de Saúde', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Plano de Saúde', type: 'EXPENSE', color: '#ec4899', icon: '💊', userId: user.id, parentId: saude.id },
+  })
+  const subAcademia = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: saude.id, name: 'Academia', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Academia', type: 'EXPENSE', color: '#ec4899', icon: '🏋️', userId: user.id, parentId: saude.id },
+  })
+  const subStreaming = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: lazer.id, name: 'Streaming', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Streaming', type: 'EXPENSE', color: '#a855f7', icon: '🎬', userId: user.id, parentId: lazer.id },
+  })
+  const subCinema = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: lazer.id, name: 'Cinema', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Cinema', type: 'EXPENSE', color: '#a855f7', icon: '🎮', userId: user.id, parentId: lazer.id },
+  })
+  const subApps = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: assinaturas.id, name: 'Apps', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Apps', type: 'EXPENSE', color: '#6366f1', icon: '📱', userId: user.id, parentId: assinaturas.id },
+  })
+  const subCloud = await prisma.category.upsert({
+    where: { userId_parentId_name_type: { userId: user.id, parentId: assinaturas.id, name: 'Cloud', type: 'EXPENSE' } },
+    update: {},
+    create: { name: 'Cloud', type: 'EXPENSE', color: '#6366f1', icon: '☁️', userId: user.id, parentId: assinaturas.id },
+  })
+
   const transactionsData = [
     { type: 'INCOME', amount: 8500, description: 'Salário Maio/2026', date: new Date(2026, 4, 5), categoryId: salario.id },
     { type: 'INCOME', amount: 4200, description: 'Salário Abr/2026', date: new Date(2026, 3, 5), categoryId: salario.id },
     { type: 'INCOME', amount: 1200, description: 'Projeto site XYZ', date: new Date(2026, 4, 12), categoryId: freelance.id },
     { type: 'INCOME', amount: 340, description: 'Dividendos mensais', date: new Date(2026, 4, 15), categoryId: investimentos.id },
     { type: 'INCOME', amount: 150, description: 'Dividendos', date: new Date(2026, 4, 1), categoryId: investimentos.id },
-    { type: 'EXPENSE', amount: 1800, description: 'Aluguel', date: new Date(2026, 4, 1), categoryId: moradia.id },
-    { type: 'EXPENSE', amount: 320, description: 'Condomínio', date: new Date(2026, 4, 5), categoryId: moradia.id },
-    { type: 'EXPENSE', amount: 89.90, description: 'Supermercado', date: new Date(2026, 4, 3), categoryId: alimentacao.id },
-    { type: 'EXPENSE', amount: 245.50, description: 'Supermercado Extra', date: new Date(2026, 4, 10), categoryId: alimentacao.id },
-    { type: 'EXPENSE', amount: 34.90, description: 'Uber', date: new Date(2026, 4, 2), categoryId: transporte.id },
-    { type: 'EXPENSE', amount: 199.90, description: 'Gasolina', date: new Date(2026, 4, 8), categoryId: transporte.id },
-    { type: 'EXPENSE', amount: 150, description: 'Plano de saúde', date: new Date(2026, 4, 10), categoryId: saude.id },
-    { type: 'EXPENSE', amount: 89.90, description: 'Academia', date: new Date(2026, 4, 1), categoryId: saude.id },
+    { type: 'EXPENSE', amount: 1800, description: 'Aluguel', date: new Date(2026, 4, 1), categoryId: subAluguel.id },
+    { type: 'EXPENSE', amount: 320, description: 'Condomínio', date: new Date(2026, 4, 5), categoryId: subCondominio.id },
+    { type: 'EXPENSE', amount: 89.90, description: 'Supermercado', date: new Date(2026, 4, 3), categoryId: subSupermercado.id },
+    { type: 'EXPENSE', amount: 245.50, description: 'Supermercado Extra', date: new Date(2026, 4, 10), categoryId: subSupermercado.id },
+    { type: 'EXPENSE', amount: 34.90, description: 'Uber', date: new Date(2026, 4, 2), categoryId: subUber.id },
+    { type: 'EXPENSE', amount: 199.90, description: 'Gasolina', date: new Date(2026, 4, 8), categoryId: subGasolina.id },
+    { type: 'EXPENSE', amount: 150, description: 'Plano de saúde', date: new Date(2026, 4, 10), categoryId: subPlanoSaude.id },
+    { type: 'EXPENSE', amount: 89.90, description: 'Academia', date: new Date(2026, 4, 1), categoryId: subAcademia.id },
     { type: 'EXPENSE', amount: 497, description: 'Curso online React', date: new Date(2026, 4, 7), categoryId: educacao.id },
-    { type: 'EXPENSE', amount: 79.90, description: 'Streaming Netflix', date: new Date(2026, 4, 15), categoryId: lazer.id },
-    { type: 'EXPENSE', amount: 34.90, description: 'Cinema + pipoca', date: new Date(2026, 4, 12), categoryId: lazer.id },
-    { type: 'EXPENSE', amount: 49.90, description: 'Spotify', date: new Date(2026, 4, 5), categoryId: assinaturas.id },
-    { type: 'EXPENSE', amount: 29.90, description: 'iCloud', date: new Date(2026, 4, 10), categoryId: assinaturas.id },
-    { type: 'EXPENSE', amount: 89.90, description: 'Internet', date: new Date(2026, 4, 8), categoryId: assinaturas.id },
+    { type: 'EXPENSE', amount: 79.90, description: 'Streaming Netflix', date: new Date(2026, 4, 15), categoryId: subStreaming.id },
+    { type: 'EXPENSE', amount: 34.90, description: 'Cinema + pipoca', date: new Date(2026, 4, 12), categoryId: subCinema.id },
+    { type: 'EXPENSE', amount: 49.90, description: 'Spotify', date: new Date(2026, 4, 5), categoryId: subApps.id },
+    { type: 'EXPENSE', amount: 29.90, description: 'iCloud', date: new Date(2026, 4, 10), categoryId: subCloud.id },
+    { type: 'EXPENSE', amount: 89.90, description: 'Internet', date: new Date(2026, 4, 8), categoryId: subInternet.id },
     { type: 'EXPENSE', amount: 299, description: 'Camiseta + calça', date: new Date(2026, 4, 15), categoryId: compras.id },
-    { type: 'EXPENSE', amount: 1500, description: 'Aluguel', date: new Date(2026, 3, 1), categoryId: moradia.id },
-    { type: 'EXPENSE', amount: 320, description: 'Condomínio', date: new Date(2026, 3, 5), categoryId: moradia.id },
-    { type: 'EXPENSE', amount: 78.50, description: 'Supermercado', date: new Date(2026, 3, 3), categoryId: alimentacao.id },
+    { type: 'EXPENSE', amount: 1500, description: 'Aluguel', date: new Date(2026, 3, 1), categoryId: subAluguel.id },
+    { type: 'EXPENSE', amount: 320, description: 'Condomínio', date: new Date(2026, 3, 5), categoryId: subCondominio.id },
+    { type: 'EXPENSE', amount: 78.50, description: 'Supermercado', date: new Date(2026, 3, 3), categoryId: subSupermercado.id },
     { type: 'INCOME', amount: 350, description: 'Venda de item usado', date: new Date(2026, 3, 20), categoryId: investimentos.id },
   ]
 

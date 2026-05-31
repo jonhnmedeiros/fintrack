@@ -6,6 +6,7 @@ export const categorySchema = z.object({
   type: z.enum(['INCOME', 'EXPENSE']),
   color: z.string().optional(),
   icon: z.string().optional(),
+  parentId: z.string().optional(),
   userId: z.string(),
 })
 
