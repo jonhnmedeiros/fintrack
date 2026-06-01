@@ -123,6 +123,7 @@ _Critical rules and patterns AI agents must follow when implementing code in thi
 
 - **Tailwind CSS v3** with `clsx` + `tailwind-merge` via `cn()` utility.
 - shadcn/ui colors defined as CSS variables in `globals.css` (`--background`, `--popover`, etc.) and mapped in `tailwind.config.js`.
+- **shadcn/ui first**: Always use shadcn/ui components from `app/components/ui/` for UI elements. Only use raw HTML or third-party alternatives when no shadcn equivalent exists.
 - Formatting: `Intl.DateTimeFormat('pt-BR')` for dates, `Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })` for currency — use `formatDate()` / `formatCurrency()` from `app/lib/utils.ts`.
 - Portuguese (PT-BR) locale for all UI text.
 - Components use `asChild` pattern from Radix when wrapping triggers.
