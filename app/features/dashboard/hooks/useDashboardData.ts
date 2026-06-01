@@ -1,30 +1,24 @@
 import { useQuery } from '@tanstack/react-query'
+import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 
-function getMonthStartEnd(monthsAgo = 0) {
-  const d = new Date()
-  d.setDate(1)
-  d.setMonth(d.getMonth() - monthsAgo)
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const lastDay = new Date(year, d.getMonth() + 1, 0).getDate()
-  return { startDate: `${year}-${month}-01`, endDate: `${year}-${month}-${lastDay}` }
+interface DateRange {
+  startDate: string
+  endDate: string
 }
 
-function getLast6MonthsRange() {
+export function useDashboardData(dateRange?: DateRange) {
   const now = new Date()
-  const start = new Date()
-  start.setMonth(start.getMonth() - 5)
-  start.setDate(1)
-  const sy = start.getFullYear()
-  const sm = String(start.getMonth() + 1).padStart(2, '0')
-  const ey = now.getFullYear()
-  const em = String(now.getMonth() + 1).padStart(2, '0')
-  return { startDate: `${sy}-${sm}-01`, endDate: `${ey}-${em}-${now.getDate()}` }
-}
+  const cm = dateRange || {
+    startDate: format(startOfMonth(now), 'yyyy-MM-dd'),
+    endDate: format(endOfMonth(now), 'yyyy-MM-dd'),
+  }
 
-export function useDashboardData() {
-  const cm = getMonthStartEnd(0)
-  const l6m = getLast6MonthsRange()
+  const l6mStart = startOfMonth(subMonths(now, 5))
+  const l6mEnd = endOfMonth(now)
+  const l6m = {
+    startDate: format(l6mStart, 'yyyy-MM-dd'),
+    endDate: format(l6mEnd, 'yyyy-MM-dd'),
+  }
 
   const currentMonthTransactions = useQuery({
     queryKey: ['dashboard', 'current-month', cm],
