@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { format, startOfMonth, endOfMonth, subMonths, startOfDay } from 'date-fns'
+import { format, startOfMonth, endOfMonth, subMonths, startOfDay, subDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -18,7 +18,8 @@ interface PeriodSelectorProps {
 }
 
 const PRESETS = [
-  { label: 'Este mês', key: 'this-month' },
+  { label: 'Mês atual', key: 'this-month' },
+  { label: 'Mês passado', key: 'last-month' },
   { label: 'Últimos 3 meses', key: 'last-3-months' },
   { label: 'Últimos 6 meses', key: 'last-6-months' },
   { label: 'Todo o período', key: 'all-time' },
@@ -31,6 +32,12 @@ function getPresetRange(key: string): DateRange {
     case 'this-month': {
       const start = startOfMonth(now)
       const end = endOfMonth(now)
+      return { startDate: format(start, 'yyyy-MM-dd'), endDate: format(end, 'yyyy-MM-dd') }
+    }
+    case 'last-month': {
+      const lastMonth = subMonths(now, 1)
+      const start = startOfMonth(lastMonth)
+      const end = endOfMonth(lastMonth)
       return { startDate: format(start, 'yyyy-MM-dd'), endDate: format(end, 'yyyy-MM-dd') }
     }
     case 'last-3-months': {
