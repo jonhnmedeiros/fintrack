@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { addDays, startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
+import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { type DateRange } from 'react-day-picker'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -95,19 +94,18 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
           {formatRangeLabel(value)}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
-        <Card className="border-0 shadow-none">
-          <CardContent className="p-0">
-            <Calendar
-              mode="range"
-              defaultMonth={range?.from}
-              selected={range}
-              onSelect={handleRangeSelect}
-              numberOfMonths={2}
-              className="p-0 [--cell-size:--spacing(9.5)]"
-            />
-          </CardContent>
-          <CardFooter className="flex flex-wrap gap-2 border-t p-3">
+      <PopoverContent className="w-auto p-0" align="end">
+        <div className="border rounded-lg bg-background">
+          <Calendar
+            mode="range"
+            defaultMonth={range?.from}
+            selected={range}
+            onSelect={handleRangeSelect}
+            numberOfMonths={2}
+            className="p-3"
+            locale={ptBR}
+          />
+          <div className="flex flex-wrap gap-2 border-t p-3">
             {PRESETS.map((preset) => (
               <Button
                 key={preset.label}
@@ -119,8 +117,8 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
                 {preset.label}
               </Button>
             ))}
-          </CardFooter>
-        </Card>
+          </div>
+        </div>
       </PopoverContent>
     </Popover>
   )
