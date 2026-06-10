@@ -251,6 +251,8 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
   const grouped = Array.from(parentMap.values())
 
   const doClose = () => {
+    reset()
+    setValue('date', DAY)
     setOpen(false)
     if (isEditing) onEditDone?.()
     setAmountDisplay('')
@@ -284,26 +286,25 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent key={formKey} className="relative">
-        {pendingClose && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 rounded-lg">
-            <div className="bg-popover p-6 rounded-lg border shadow-lg space-y-4 mx-4">
-              <p className="text-sm font-medium">Descartar alterações?</p>
-              <p className="text-sm text-muted-foreground">As alterações não salvas serão perdidas.</p>
-              <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => setPendingClose(false)}>Cancelar</Button>
-                <Button variant="destructive" onClick={doClose}>Descartar</Button>
-              </div>
+      <DialogContent key={formKey}>
+        {pendingClose ? (
+          <div className="p-6 space-y-4">
+            <p className="font-medium">Descartar alterações?</p>
+            <p className="text-sm text-muted-foreground">As alterações não salvas serão perdidas.</p>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setPendingClose(false)}>Cancelar</Button>
+              <Button variant="destructive" onClick={doClose}>Descartar</Button>
             </div>
           </div>
-        )}
+        ) : (
+        <>        
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Editar Transação' : 'Nova Transação'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label>Tipo</Label>
-            <Select value={watch('type') || ''} onValueChange={(v) => setValue('type', v as any)}>
+            <Select value={watch('type') || ''} onValueChange={(v) => setValue('type', v as any, { shouldDirty: true })}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="INCOME">Receita</SelectItem>
@@ -326,7 +327,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
                 const parts = raw.split(',')
                 const cleaned = parts[0] + (parts.length > 1 ? ',' + parts.slice(1).join('') : '')
                 setAmountDisplay(cleaned)
-                setValue('amount', parseFloat(cleaned.replace(',', '.')) || 0)
+                setValue('amount', parseFloat(cleaned.replace(',', '.')) || 0, { shouldDirty: true })
               }}
               onFocus={() => {
                 const val = watch('amount')
@@ -342,7 +343,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
 
           <div className="space-y-2">
             <Label>Descrição</Label>
-            <Input value={watch('description') || ''} onChange={(e) => setValue('description', e.target.value)} placeholder="Descrição da transação" />
+            <Input value={watch('description') || ''} onChange={(e) => setValue('description', e.target.value, { shouldDirty: true })} placeholder="Descrição da transação" />
           </div>
 
           <div className="space-y-2">
@@ -350,7 +351,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
             {catError && <p className="text-red-500 text-xs">Erro ao carregar categorias</p>}
             <div className="flex gap-2">
               <div className="flex-1">
-                <Select value={watch('categoryId') || ''} onValueChange={(v) => setValue('categoryId', v)}>
+                <Select value={watch('categoryId') || ''} onValueChange={(v) => setValue('categoryId', v, { shouldDirty: true })}>
                   <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
                     {grouped.filter(g => g.children.length > 0).length === 0 ? (
@@ -382,7 +383,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
 
           <div className="space-y-2">
             <Label>Data</Label>
-            <Input type="date" value={watch('date') || ''} onChange={(e) => setValue('date', e.target.value)} />
+            <Input type="date" value={watch('date') || ''} onChange={(e) => setValue('date', e.target.value, { shouldDirty: true })} />
             {errors.date && <p className="text-red-500 text-sm">{errors.date.message}</p>}
           </div>
 
@@ -391,7 +392,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
               <div className="space-y-2">
                 <Label>Cartão de Crédito</Label>
                 {ccError && <p className="text-red-500 text-xs">Erro ao carregar cartões</p>}
-                <Select value={watch('creditCardId') || '__none__'} onValueChange={(v) => setValue('creditCardId', v === '__none__' ? '' : v)}>
+                <Select value={watch('creditCardId') || '__none__'} onValueChange={(v) => setValue('creditCardId', v === '__none__' ? '' : v, { shouldDirty: true })}>
                   <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Nenhum</SelectItem>
@@ -404,7 +405,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
               {creditCardId && (
                 <div className="space-y-2">
                   <Label>Parcelas</Label>
-                  <Input type="number" min="1" max="48" placeholder="1" value={watch('totalInstallments') ?? ''} onChange={(e) => setValue('totalInstallments', isNaN(parseInt(e.target.value)) ? undefined : parseInt(e.target.value))} />
+                  <Input type="number" min="1" max="48" placeholder="1" value={watch('totalInstallments') ?? ''} onChange={(e) => setValue('totalInstallments', isNaN(parseInt(e.target.value)) ? undefined : parseInt(e.target.value), { shouldDirty: true })} />
                   {errors.totalInstallments && <p className="text-red-500 text-sm">{errors.totalInstallments.message}</p>}
                 </div>
               )}
@@ -492,6 +493,8 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
             </div>
           </DialogContent>
         </Dialog>
+        </>
+        )}
       </DialogContent>
     </Dialog>
   )
