@@ -232,15 +232,19 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
     (c) => type === 'INCOME' ? c.type === 'INCOME' : c.type === 'EXPENSE'
   ) ?? []
 
-  const grouped = allCategories.reduce<{ parent: { id: string; name: string; icon?: string }; children: { id: string; name: string; icon?: string }[] }[]>((acc, cat) => {
+  const parentMap = new Map<string, { parent: { id: string; name: string; icon?: string }; children: { id: string; name: string; icon?: string }[] }>()
+  for (const cat of allCategories) {
     if (!cat.parentId) {
-      acc.push({ parent: cat, children: [] })
-    } else {
-      const group = acc.find(g => g.parent.id === cat.parentId)
+      parentMap.set(cat.id, { parent: cat, children: [] })
+    }
+  }
+  for (const cat of allCategories) {
+    if (cat.parentId) {
+      const group = parentMap.get(cat.parentId)
       if (group) group.children.push(cat)
     }
-    return acc
-  }, [])
+  }
+  const grouped = Array.from(parentMap.values())
 
   return (
     <Dialog open={isEditing ? open : open} onOpenChange={(v) => {
@@ -312,31 +316,20 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
                 <Select value={watch('categoryId') || ''} onValueChange={(v) => setValue('categoryId', v)}>
                   <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    {grouped.length === 0 ? (
+                    {grouped.filter(g => g.children.length > 0).length === 0 ? (
                       <SelectItem value="__no_category__" disabled>
                         Nenhuma categoria disponível
                       </SelectItem>
-                    ) : grouped.map(group => (
+                    ) : grouped.map(group => group.children.length > 0 && (
                       <SelectGroup key={group.parent.id}>
-                        {group.children.length > 0 ? (
-                          <>
-                            <SelectLabel className="text-xs font-semibold text-muted-foreground px-2 py-1.5">
-                              {group.parent.icon ? `${group.parent.icon} ` : ''}{group.parent.name}
-                            </SelectLabel>
-                            <SelectItem value={group.parent.id}>
-                              {group.parent.icon ? `${group.parent.icon} ` : ''}{group.parent.name}
-                            </SelectItem>
-                            {group.children.map(child => (
-                              <SelectItem key={child.id} value={child.id}>
-                                {child.icon ? `${child.icon} ` : ''}{child.name}
-                              </SelectItem>
-                            ))}
-                          </>
-                        ) : (
-                          <SelectItem value={group.parent.id} className="font-medium">
-                            {group.parent.icon ? `${group.parent.icon} ` : ''}{group.parent.name}
+                        <SelectLabel className="text-xs font-semibold text-muted-foreground px-2 py-1.5">
+                          {group.parent.icon ? `${group.parent.icon} ` : ''}{group.parent.name}
+                        </SelectLabel>
+                        {group.children.map(child => (
+                          <SelectItem key={child.id} value={child.id}>
+                            {child.icon ? `${child.icon} ` : ''}{child.name}
                           </SelectItem>
-                        )}
+                        ))}
                       </SelectGroup>
                     ))}
                   </SelectContent>
