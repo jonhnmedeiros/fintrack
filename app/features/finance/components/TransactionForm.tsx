@@ -141,6 +141,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
         totalInstallments: editTx.totalInstallments || undefined,
       })
       setAmountDisplay(Number(editTx.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }))
+      setValue('amount', Number(editTx.amount))
     }
     if (!editTx) {
       setPrevEditId(null)
@@ -209,7 +210,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
         categoryId: data.categoryId || undefined,
         creditCardId: data.creditCardId || undefined,
         totalInstallments: data.totalInstallments || undefined,
-        amount: data.amount,
+        amount: Number(data.amount),
       }
       if (isEditing) {
         await updateMutation.mutateAsync({ id: editTx.id, data: payload })

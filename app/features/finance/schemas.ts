@@ -13,7 +13,7 @@ export const categorySchema = z.object({
 export const transactionSchema = z.object({
   id: z.string(),
   type: z.enum(['INCOME', 'EXPENSE', 'TRANSFER']),
-  amount: z.number().positive(),
+  amount: z.number({ coerce: true }).positive(),
   description: z.string().optional(),
   date: z.string(),
   categoryId: z.string().optional(),
