@@ -119,7 +119,8 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
   const isEditing = !!editTx
   const [open, setOpen] = useState(false)
   const [formKey, setFormKey] = useState(0)
-  const { handleSubmit, formState: { errors }, watch, reset, setValue } = useForm<TransactionForm>({
+  const [pendingClose, setPendingClose] = useState(false)
+  const { handleSubmit, formState: { errors, isDirty }, watch, reset, setValue } = useForm<TransactionForm>({
     resolver: zodResolver(createTransactionSchema),
     defaultValues: { date: DAY },
   })
@@ -215,6 +216,8 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
       if (isEditing) {
         await updateMutation.mutateAsync({ id: editTx.id, data: payload })
         toast.success('Transação atualizada com sucesso')
+        setOpen(false)
+        setAmountDisplay('')
         onEditDone?.()
       } else {
         await createMutation.mutateAsync(payload)
@@ -247,10 +250,23 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
   }
   const grouped = Array.from(parentMap.values())
 
+  const doClose = () => {
+    setOpen(false)
+    if (isEditing) onEditDone?.()
+    setAmountDisplay('')
+    setPendingClose(false)
+  }
+
   return (
     <Dialog open={isEditing ? open : open} onOpenChange={(v) => {
-      if (isEditing) { if (!v) { setOpen(false); onEditDone?.() } }
-      else { setOpen(v); if (v) setFormKey(k => k + 1) }
+      if (v) {
+        if (isEditing) setOpen(true)
+        else { setOpen(true); setFormKey(k => k + 1) }
+      } else if (isDirty) {
+        setPendingClose(true)
+      } else {
+        doClose()
+      }
     }}>
       {!isEditing && (
         <DialogTrigger asChild>
@@ -260,7 +276,27 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent key={formKey}>
+      {!isEditing && (
+        <DialogTrigger asChild>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Transação
+          </Button>
+        </DialogTrigger>
+      )}
+      <DialogContent key={formKey} className="relative">
+        {pendingClose && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 rounded-lg">
+            <div className="bg-popover p-6 rounded-lg border shadow-lg space-y-4 mx-4">
+              <p className="text-sm font-medium">Descartar alterações?</p>
+              <p className="text-sm text-muted-foreground">As alterações não salvas serão perdidas.</p>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setPendingClose(false)}>Cancelar</Button>
+                <Button variant="destructive" onClick={doClose}>Descartar</Button>
+              </div>
+            </div>
+          </div>
+        )}
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Editar Transação' : 'Nova Transação'}</DialogTitle>
         </DialogHeader>
