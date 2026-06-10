@@ -312,16 +312,31 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
                 <Select value={watch('categoryId') || ''} onValueChange={(v) => setValue('categoryId', v)}>
                   <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    {grouped.map(group => (
+                    {grouped.length === 0 ? (
+                      <SelectItem value="__no_category__" disabled>
+                        Nenhuma categoria disponível
+                      </SelectItem>
+                    ) : grouped.map(group => (
                       <SelectGroup key={group.parent.id}>
-                        <SelectLabel className="text-xs font-semibold text-muted-foreground px-2 py-1.5">
-                          {group.parent.name}
-                        </SelectLabel>
-                        {group.children.map(child => (
-                          <SelectItem key={child.id} value={child.id}>
-                            {child.icon ? `${child.icon} ` : ''}{child.name}
+                        {group.children.length > 0 ? (
+                          <>
+                            <SelectLabel className="text-xs font-semibold text-muted-foreground px-2 py-1.5">
+                              {group.parent.icon ? `${group.parent.icon} ` : ''}{group.parent.name}
+                            </SelectLabel>
+                            <SelectItem value={group.parent.id}>
+                              {group.parent.icon ? `${group.parent.icon} ` : ''}{group.parent.name}
+                            </SelectItem>
+                            {group.children.map(child => (
+                              <SelectItem key={child.id} value={child.id}>
+                                {child.icon ? `${child.icon} ` : ''}{child.name}
+                              </SelectItem>
+                            ))}
+                          </>
+                        ) : (
+                          <SelectItem value={group.parent.id} className="font-medium">
+                            {group.parent.icon ? `${group.parent.icon} ` : ''}{group.parent.name}
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectGroup>
                     ))}
                   </SelectContent>
