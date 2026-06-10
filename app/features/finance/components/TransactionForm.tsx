@@ -278,15 +278,11 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
           </Button>
         </DialogTrigger>
       )}
-      {!isEditing && (
-        <DialogTrigger asChild>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Transação
-          </Button>
-        </DialogTrigger>
-      )}
-      <DialogContent key={formKey}>
+      <DialogContent
+        key={formKey}
+        onEscapeKeyDown={(e) => { if (isDirty) e.preventDefault() }}
+        onInteractOutside={(e) => { if (isDirty) e.preventDefault() }}
+      >
         {pendingClose ? (
           <div className="p-6 space-y-4">
             <p className="font-medium">Descartar alterações?</p>
