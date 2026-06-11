@@ -24,8 +24,8 @@ export async function listTransactions(
   }
   if (filters?.startDate || filters?.endDate) {
     ;(where.date as Record<string, unknown>) = {}
-    if (filters.startDate) (where.date as Record<string, unknown>).gte = new Date(filters.startDate)
-    if (filters.endDate) (where.date as Record<string, unknown>).lte = new Date(filters.endDate)
+    if (filters.startDate) (where.date as Record<string, unknown>).gte = new Date(filters.startDate + 'T00:00:00')
+    if (filters.endDate) (where.date as Record<string, unknown>).lte = new Date(filters.endDate + 'T23:59:59')
   }
   return db.transaction.findMany({
     where,
@@ -40,7 +40,7 @@ export async function createTransaction(userId: string, data: unknown) {
 
   const txData = {
     ...validated,
-    date: new Date(validated.date),
+    date: new Date(validated.date + 'T00:00:00'),
   }
 
   if (txData.creditCardId && txData.totalInstallments && txData.totalInstallments > 1) {
@@ -78,7 +78,7 @@ export async function updateTransaction(userId: string, id: string, data: unknow
     where: { id },
     data: {
       ...validated,
-      date: new Date(validated.date),
+      date: new Date(validated.date + 'T00:00:00'),
     },
   })
 }

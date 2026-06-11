@@ -219,11 +219,12 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
         setOpen(false)
         setAmountDisplay('')
         onEditDone?.()
+        reset( { date: DAY , type: undefined, description: '', categoryId: '', creditCardId: '', totalInstallments: undefined, amount: undefined })
       } else {
         await createMutation.mutateAsync(payload)
         toast.success('Transação criada com sucesso')
-        reset()
-        setValue('date', DAY)
+        reset( { date: DAY , type: undefined, description: '', categoryId: '', creditCardId: '', totalInstallments: undefined, amount: undefined })
+        setAmountDisplay('')
         setOpen(false)
       }
     } catch (err) {
@@ -251,8 +252,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
   const grouped = Array.from(parentMap.values())
 
   const doClose = () => {
-    reset()
-    setValue('date', DAY)
+    reset({ date: DAY , type: undefined, description: '', categoryId: '', creditCardId: '', totalInstallments: undefined, amount: undefined })
     setOpen(false)
     if (isEditing) onEditDone?.()
     setAmountDisplay('')
@@ -284,7 +284,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
         onInteractOutside={(e) => { if (isDirty) e.preventDefault() }}
       >
         {pendingClose ? (
-          <div className="p-6 space-y-4">
+          <div className="p-2 space-y-4">
             <p className="font-medium">Descartar alterações?</p>
             <p className="text-sm text-muted-foreground">As alterações não salvas serão perdidas.</p>
             <div className="flex gap-2 justify-end">
