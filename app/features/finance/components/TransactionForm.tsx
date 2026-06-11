@@ -342,6 +342,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
             <Input value={watch('description') || ''} onChange={(e) => setValue('description', e.target.value, { shouldDirty: true })} placeholder="Descrição da transação" />
           </div>
 
+          {type !== 'TRANSFER' && (
           <div className="space-y-2">
             <Label>Categoria</Label>
             {catError && <p className="text-red-500 text-xs">Erro ao carregar categorias</p>}
@@ -376,6 +377,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
               )}
             </div>
           </div>
+          )}
 
           <div className="space-y-2">
             <Label>Data</Label>
