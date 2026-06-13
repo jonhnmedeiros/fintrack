@@ -4,24 +4,44 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import type { ChartConfig } from '@/components/ui/chart'
 import { formatCurrency } from '@/lib/utils'
 
+interface CategoryInfo {
+  id: string
+  name: string
+  parentId: string | null
+}
+
 interface ExpenseByCategoryChartProps {
-  transactions: Array<{ type: string; amount: number; category: { name: string } | null }>
+  transactions: Array<{ type: string; amount: number; category: CategoryInfo | null }>
   isLoading?: boolean
 }
 
 const COLORS = ['#22c55e', '#3b82f6', '#f97316', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
 
 export function ExpenseByCategoryChart({ transactions, isLoading }: ExpenseByCategoryChartProps) {
-  const categoryData = transactions
+  const categoryMap = new Map<string, { id: string; name: string; parentId: string | null }>()
+  transactions
     .filter((t) => t.type === 'EXPENSE' && t.category)
-    .reduce((acc, tx) => {
-      const name = tx.category!.name
-      if (!acc[name]) acc[name] = { name, value: 0 }
-      acc[name].value += Number(tx.amount)
-      return acc
-    }, {} as Record<string, { name: string; value: number }>)
+    .forEach((tx) => {
+      const cat = tx.category!
+      if (!categoryMap.has(cat.id)) {
+        categoryMap.set(cat.id, { id: cat.id, name: cat.name, parentId: cat.parentId })
+      }
+    })
 
-  const data = Object.values(categoryData)
+  const parentMap = new Map<string, { name: string; value: number }>()
+  transactions
+    .filter((t) => t.type === 'EXPENSE' && t.category)
+    .forEach((tx) => {
+      const cat = tx.category!
+      const parent = categoryMap.get(cat.parentId || cat.id) || { id: cat.id, name: cat.name, parentId: null }
+      const parentName = cat.parentId ? parent.name : cat.name
+      if (!parentMap.has(parentName)) {
+        parentMap.set(parentName, { name: parentName, value: 0 })
+      }
+      parentMap.get(parentName)!.value += Number(tx.amount)
+    })
+
+  const data = Array.from(parentMap.values())
 
   const chartConfig: ChartConfig = data.reduce((acc, item, idx) => {
     acc[item.name] = { label: item.name, color: COLORS[idx % COLORS.length] }

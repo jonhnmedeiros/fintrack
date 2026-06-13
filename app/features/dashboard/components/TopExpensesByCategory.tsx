@@ -21,29 +21,39 @@ interface TopExpensesByCategoryProps {
 export function TopExpensesByCategory({ transactions, isLoading }: TopExpensesByCategoryProps) {
   const expenses = transactions.filter(t => t.type === 'EXPENSE' && t.category)
 
-  const categoryTotals = expenses.reduce((acc, tx) => {
+  const categoryMap = new Map<string, { id: string; name: string; parentId: string | null }>()
+  expenses.forEach((tx) => {
     const cat = tx.category!
-    if (!acc[cat.id]) {
-      acc[cat.id] = { id: cat.id, name: cat.name, parentId: cat.parentId, total: 0 }
+    if (!categoryMap.has(cat.id)) {
+      categoryMap.set(cat.id, { id: cat.id, name: cat.name, parentId: cat.parentId })
     }
-    acc[cat.id].total += Number(tx.amount)
-    return acc
-  }, {} as Record<string, { id: string; name: string; parentId: string | null; total: number }>)
+  })
 
-  const allCategories = Object.values(categoryTotals)
-  const parentCategories = allCategories.filter(c => !c.parentId)
-  const subcategories = allCategories.filter(c => c.parentId)
+  const parentMap = new Map<string, { id: string; name: string; total: number; children: { id: string; name: string; total: number }[] }>()
+  expenses.forEach((tx) => {
+    const cat = tx.category!
+    const parentId = cat.parentId || cat.id
+    if (!parentMap.has(parentId)) {
+      const parentCat = categoryMap.get(parentId) || { id: cat.id, name: cat.name, parentId: null }
+      parentMap.set(parentId, { id: parentCat.id, name: parentCat.name, total: 0, children: [] })
+    }
+    const parent = parentMap.get(parentId)!
+    if (cat.parentId) {
+      let child = parent.children.find(c => c.id === cat.id)
+      if (!child) {
+        child = { id: cat.id, name: cat.name, total: 0 }
+        parent.children.push(child)
+      }
+      child.total += Number(tx.amount)
+    } else {
+      parent.total += Number(tx.amount)
+    }
+  })
 
-  const parentWithChildren = parentCategories.map(parent => ({
-    ...parent,
-    children: subcategories.filter(sub => sub.parentId === parent.id),
-    totalWithChildren: parent.total + subcategories
-      .filter(sub => sub.parentId === parent.id)
-      .reduce((sum, sub) => sum + sub.total, 0),
-  }))
-
-  const totalExpenses = allCategories.reduce((sum, c) => sum + c.total, 0)
-  const top5 = parentWithChildren
+  const allParents = Array.from(parentMap.values())
+  const totalExpenses = allParents.reduce((sum, p) => sum + p.total + p.children.reduce((s, c) => s + c.total, 0), 0)
+  const top5 = allParents
+    .map(p => ({ ...p, totalWithChildren: p.total + p.children.reduce((s, c) => s + c.total, 0) }))
     .sort((a, b) => b.totalWithChildren - a.totalWithChildren)
     .slice(0, 5)
 

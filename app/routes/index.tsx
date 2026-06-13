@@ -5,8 +5,10 @@ import { CashFlowChart } from '@/features/dashboard/components/CashFlowChart'
 import { ExpenseByCategoryChart } from '@/features/dashboard/components/ExpenseByCategoryChart'
 import { RecentTransactions } from '@/features/dashboard/components/RecentTransactions'
 import { TopExpensesByCategory } from '@/features/dashboard/components/TopExpensesByCategory'
+import { CategorySpendingCard } from '@/features/dashboard/components/CategorySpendingCard'
 import { PeriodSelector } from '@/features/dashboard/components/PeriodSelector'
 import { useDashboardData } from '@/features/dashboard/hooks/useDashboardData'
+import { useCategories } from '@/features/finance/hooks/useCategories'
 import { startOfMonth, endOfMonth, format } from 'date-fns'
 
 export const Route = createFileRoute('/')({
@@ -21,6 +23,7 @@ function DashboardPage() {
   })
 
   const { currentMonthTransactions, last6MonthsTransactions, assets } = useDashboardData(dateRange)
+  const { data: categories, isLoading: categoriesLoading } = useCategories()
 
   return (
     <div className="space-y-6">
@@ -73,6 +76,18 @@ function DashboardPage() {
         <TopExpensesByCategory
           transactions={currentMonthTransactions.data || []}
           isLoading={currentMonthTransactions.isLoading}
+        />
+      )}
+
+      {currentMonthTransactions.isError ? (
+        <div className="rounded-xl border-2 border-dashed border-red-200 p-12 text-center text-red-500">
+          <p className="text-lg font-medium">Erro ao carregar gráficos</p>
+        </div>
+      ) : (
+        <CategorySpendingCard
+          transactions={currentMonthTransactions.data || []}
+          categories={categories || []}
+          isLoading={currentMonthTransactions.isLoading || categoriesLoading}
         />
       )}
 
