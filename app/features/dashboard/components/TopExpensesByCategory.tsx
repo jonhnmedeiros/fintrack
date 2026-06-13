@@ -15,26 +15,20 @@ interface Transaction {
 
 interface TopExpensesByCategoryProps {
   transactions: Transaction[]
+  categories: CategoryInfo[]
   isLoading?: boolean
 }
 
-export function TopExpensesByCategory({ transactions, isLoading }: TopExpensesByCategoryProps) {
+export function TopExpensesByCategory({ transactions, categories, isLoading }: TopExpensesByCategoryProps) {
   const expenses = transactions.filter(t => t.type === 'EXPENSE' && t.category)
-
-  const categoryMap = new Map<string, { id: string; name: string; parentId: string | null }>()
-  expenses.forEach((tx) => {
-    const cat = tx.category!
-    if (!categoryMap.has(cat.id)) {
-      categoryMap.set(cat.id, { id: cat.id, name: cat.name, parentId: cat.parentId })
-    }
-  })
+  const categoryById = new Map(categories.map(c => [c.id, c]))
 
   const parentMap = new Map<string, { id: string; name: string; total: number; children: { id: string; name: string; total: number }[] }>()
   expenses.forEach((tx) => {
     const cat = tx.category!
     const parentId = cat.parentId || cat.id
+    const parentCat = categoryById.get(parentId) || cat
     if (!parentMap.has(parentId)) {
-      const parentCat = categoryMap.get(parentId) || { id: cat.id, name: cat.name, parentId: null }
       parentMap.set(parentId, { id: parentCat.id, name: parentCat.name, total: 0, children: [] })
     }
     const parent = parentMap.get(parentId)!

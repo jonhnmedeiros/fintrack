@@ -61,13 +61,15 @@ function DashboardPage() {
             <p className="text-lg font-medium">Erro ao carregar gráficos</p>
           </div>
         ) : (
-          <ExpenseByCategoryChart
-            transactions={currentMonthTransactions.data || []}
-            isLoading={currentMonthTransactions.isLoading}
-          />
-        )}
-      </div>
+        <ExpenseByCategoryChart
+          transactions={currentMonthTransactions.data || []}
+          categories={categories || []}
+          isLoading={currentMonthTransactions.isLoading}
+        />
+      )}
+    </div>
 
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {currentMonthTransactions.isError ? (
         <div className="rounded-xl border-2 border-dashed border-red-200 p-12 text-center text-red-500">
           <p className="text-lg font-medium">Erro ao carregar gráficos</p>
@@ -75,6 +77,7 @@ function DashboardPage() {
       ) : (
         <TopExpensesByCategory
           transactions={currentMonthTransactions.data || []}
+          categories={categories || []}
           isLoading={currentMonthTransactions.isLoading}
         />
       )}
@@ -90,8 +93,9 @@ function DashboardPage() {
           isLoading={currentMonthTransactions.isLoading || categoriesLoading}
         />
       )}
+    </div>
 
-      <RecentTransactions
+    <RecentTransactions
         transactions={currentMonthTransactions.data || []}
         isLoading={currentMonthTransactions.isLoading}
       />
