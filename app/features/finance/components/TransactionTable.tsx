@@ -82,6 +82,7 @@ export function TransactionTable({ transactions, showActions = true, onEdit }: T
           <Button
             variant="ghost"
             size="icon"
+            aria-label="Editar transação"
             onClick={() => onEdit?.(row.original)}
           >
             <Pencil className="h-4 w-4" />
@@ -89,6 +90,7 @@ export function TransactionTable({ transactions, showActions = true, onEdit }: T
           <Button
             variant="ghost"
             size="icon"
+            aria-label="Excluir transação"
             onClick={() => setPendingDeleteId(row.original.id)}
             disabled={deleteMutation.isPending}
           >

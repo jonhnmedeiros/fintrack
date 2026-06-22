@@ -411,10 +411,10 @@ function CategoriesPage() {
                       <Button variant="outline" size="sm" onClick={() => openSubCreate(parent)}>
                         <Plus className="h-3 w-3 mr-1" /> Sub
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(parent)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Editar categoria ${parent.name}`} onClick={() => openEdit(parent)}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(parent)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" aria-label={`Excluir categoria ${parent.name}`} onClick={() => setDeleteTarget(parent)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -428,10 +428,10 @@ function CategoriesPage() {
                     </div>
                     {!isVisualizador && (
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(child)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Editar categoria ${child.name}`} onClick={() => openEdit(child)}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(child)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" aria-label={`Excluir categoria ${child.name}`} onClick={() => setDeleteTarget(child)}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
@@ -462,10 +462,10 @@ function CategoriesPage() {
                       <Button variant="outline" size="sm" onClick={() => openSubCreate(parent)}>
                         <Plus className="h-3 w-3 mr-1" /> Sub
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(parent)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Editar categoria ${parent.name}`} onClick={() => openEdit(parent)}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(parent)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" aria-label={`Excluir categoria ${parent.name}`} onClick={() => setDeleteTarget(parent)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -479,10 +479,10 @@ function CategoriesPage() {
                     </div>
                     {!isVisualizador && (
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(child)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Editar categoria ${child.name}`} onClick={() => openEdit(child)}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(child)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" aria-label={`Excluir categoria ${child.name}`} onClick={() => setDeleteTarget(child)}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
