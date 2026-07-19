@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { DatePicker } from '@/components/ui/date-picker'
 import {
   Select,
   SelectContent,
@@ -381,7 +382,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
 
           <div className="space-y-2">
             <Label>Data</Label>
-            <Input type="date" value={watch('date') || ''} onChange={(e) => setValue('date', e.target.value, { shouldDirty: true })} />
+            <DatePicker value={watch('date') || ''} onChange={(v) => setValue('date', v, { shouldDirty: true })} />
             {errors.date && <p className="text-red-500 text-sm">{errors.date.message}</p>}
           </div>
 

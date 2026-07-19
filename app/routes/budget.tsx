@@ -22,10 +22,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
+import { MonthYearPicker } from '@/components/ui/month-year-picker'
 import { useBudgets, useCreateOrUpdateBudget, useDeleteBudget } from '@/features/finance/hooks/useBudgets'
 import { useCategories } from '@/features/finance/hooks/useCategories'
 import { useUserRole } from '@/features/auth/hooks/useUserRole'
 import { formatCurrency } from '@/lib/utils'
+
+function capitalizeFirst(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
 
 export const Route = createFileRoute('/budget')({
   component: BudgetPage,
@@ -121,15 +126,13 @@ function BudgetDialog({
             {errors.amount && <p className="text-red-500 text-sm">{errors.amount.message}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Mês</Label>
-              <Input value={month} disabled className="opacity-60" />
-            </div>
-            <div className="space-y-2">
-              <Label>Ano</Label>
-              <Input value={year} disabled className="opacity-60" />
-            </div>
+          <div className="space-y-2">
+            <Label>Período</Label>
+            <Input
+              value={capitalizeFirst(new Date(year, month - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }))}
+              disabled
+              className="opacity-60"
+            />
           </div>
 
           <Button
@@ -265,7 +268,7 @@ function BudgetPage() {
     setDialogOpen(true)
   }
 
-  const monthLabel = new Date(yearFilter, monthFilter - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  const monthLabel = capitalizeFirst(new Date(yearFilter, monthFilter - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }))
 
   return (
     <div className="space-y-6">
@@ -274,7 +277,7 @@ function BudgetPage() {
           <PiggyBank className="h-8 w-8 text-muted-foreground" />
           <div>
             <h1 className="text-2xl font-bold">Orçamentos</h1>
-            <p className="text-sm text-muted-foreground capitalize">{monthLabel}</p>
+            <p className="text-sm text-muted-foreground">{monthLabel}</p>
           </div>
         </div>
         {!isVisualizador && (
@@ -287,25 +290,11 @@ function BudgetPage() {
 
       <div className="flex gap-4 items-end flex-wrap">
         <div className="space-y-2">
-          <Label>Mês</Label>
-          <Input
-            type="number"
-            min={1}
-            max={12}
-            value={monthFilter}
-            onChange={(e) => setMonthFilter(parseInt(e.target.value) || 1)}
-            className="w-20"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Ano</Label>
-          <Input
-            type="number"
-            min={2020}
-            max={2099}
-            value={yearFilter}
-            onChange={(e) => setYearFilter(parseInt(e.target.value) || now.getFullYear())}
-            className="w-24"
+          <Label>Período</Label>
+          <MonthYearPicker
+            month={monthFilter}
+            year={yearFilter}
+            onChange={(m, y) => { setMonthFilter(m); setYearFilter(y) }}
           />
         </div>
       </div>

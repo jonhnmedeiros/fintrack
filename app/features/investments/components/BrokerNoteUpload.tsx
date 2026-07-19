@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/ui/date-picker'
 import { formatCurrency } from '@/lib/utils'
 import { useParseBrokerNote, useImportBrokerNote } from '../hooks/useBrokerageNote'
 
@@ -116,11 +117,7 @@ export function BrokerNoteUpload({ open, onOpenChange }: BrokerNoteUploadProps) 
 
             <div className="text-sm">
               <Label className="block font-medium mb-1">Data das operações</Label>
-              <Input
-                type="date"
-                value={importDate}
-                onChange={(e) => setImportDate(e.target.value)}
-              />
+              <DatePicker value={importDate} onChange={setImportDate} />
             </div>
 
             <div className="border rounded-lg divide-y max-h-60 overflow-y-auto">

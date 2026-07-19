@@ -11,6 +11,7 @@ import type { ChartConfig } from '@/components/ui/chart'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { DatePicker } from '@/components/ui/date-picker'
 import {
   Select,
   SelectContent,
@@ -261,10 +262,7 @@ function TransactionDialog({
           </div>
           <div className="space-y-2">
             <Label>Data</Label>
-            <Input type="date"
-              value={watch('date')}
-              onChange={(e) => setValue('date', e.target.value)}
-            />
+            <DatePicker value={watch('date') || ''} onChange={(v) => setValue('date', v)} />
             {errors.date && <p className="text-red-500 text-sm">{errors.date.message}</p>}
           </div>
           <Button type="submit" className="w-full" disabled={createTx.isPending}>

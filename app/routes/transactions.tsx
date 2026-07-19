@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import { startOfMonth, endOfMonth, format } from 'date-fns'
 import { TransactionTable } from '@/features/finance/components/TransactionTable'
 import { TransactionForm } from '@/features/finance/components/TransactionForm'
 import { useTransactions } from '@/features/finance/hooks/useTransactions'
 import { useCategories } from '@/features/finance/hooks/useCategories'
 import { useUserRole } from '@/features/auth/hooks/useUserRole'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PeriodSelector } from '@/components/ui/period-selector'
 import { formatCurrency } from '@/lib/utils'
 import {
   Select,
@@ -23,7 +24,11 @@ export const Route = createFileRoute('/transactions')({
 function TransactionsPage() {
   const [typeFilter, setTypeFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
-  const [monthFilter, setMonthFilter] = useState(new Date().toISOString().slice(0, 7))
+  const now = new Date()
+  const [periodFilter, setPeriodFilter] = useState({
+    startDate: format(startOfMonth(now), 'yyyy-MM-dd'),
+    endDate: format(endOfMonth(now), 'yyyy-MM-dd'),
+  })
   const [editTx, setEditTx] = useState<{
     id: string
     type: string
@@ -39,14 +44,8 @@ function TransactionsPage() {
   const filters: Record<string, string | undefined> = {}
   if (typeFilter && typeFilter !== '__all__') filters.type = typeFilter
   if (categoryFilter && categoryFilter !== '__all__') filters.categoryId = categoryFilter
-  if (monthFilter) {
-    const [year, month] = monthFilter.split('-')
-    const startDate = `${year}-${month}-01`
-    const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate()
-    const endDate = `${year}-${month}-${lastDay}`
-    filters.startDate = startDate
-    filters.endDate = endDate
-  }
+  filters.startDate = periodFilter.startDate
+  filters.endDate = periodFilter.endDate
 
   const { data, isLoading, isError } = useTransactions(filters)
   const { data: categories } = useCategories()
@@ -122,8 +121,8 @@ function TransactionsPage() {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Mês</Label>
-          <Input type="month" value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="w-44" />
+          <Label>Período</Label>
+          <PeriodSelector value={periodFilter} onChange={setPeriodFilter} />
         </div>
       </div>
 
