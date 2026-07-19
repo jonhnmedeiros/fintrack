@@ -29,7 +29,6 @@ export default defineConfig({
               /node_modules\/@prisma\//,
               /app\/generated\/prisma\//,
               /app\/lib\/(auth|db|tenant-db)/,
-              /app\/features\//,
             ],
           },
         },

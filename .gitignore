@@ -12,3 +12,6 @@ page-snapshot.yml
 .playwright-mcp
 /playwright-report
 /test-results
+.vercel
+.env*
+!.env.example
