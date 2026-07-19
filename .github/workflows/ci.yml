@@ -55,6 +55,12 @@ jobs:
     - name: Run tests
       run: npm test
 
+    - name: Build app for E2E
+      run: npx vinxi build
+      env:
+        NEXTAUTH_URL: http://localhost:3000
+        NEXTAUTH_SECRET: test-secret-for-ci
+
     - name: Install Playwright browsers
       run: npx playwright install --with-deps chromium
 
