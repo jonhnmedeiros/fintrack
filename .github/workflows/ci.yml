@@ -48,11 +48,15 @@ jobs:
     
     - name: Run tests
       run: npm test
-    
+
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps chromium
+
     - name: Run E2E tests
       run: npm run test:e2e
-      # Uncomment when E2E tests are implemented
-      # run: npx playwright test
+      env:
+        NEXTAUTH_URL: http://localhost:3000
+        NEXTAUTH_SECRET: test-secret-for-ci
 
   build:
     runs-on: ubuntu-latest
