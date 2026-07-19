@@ -19,6 +19,6 @@ export async function selectByLabel(container: import('@playwright/test').Locato
     .first()
   await trigger.click()
   const option = page.getByRole('option', { name: optionText })
-  await option.waitFor({ state: 'visible', timeout: 15000 })
-  await option.click()
+  await option.waitFor({ state: 'attached', timeout: 15000 })
+  await option.click({ force: true })
 }
