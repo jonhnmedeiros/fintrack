@@ -41,20 +41,20 @@ function Calendar({
         ...formatters,
       }}
       classNames={{
-        root: cn('w-fit', defaultClassNames.root),
+        root: cn('w-fit relative', defaultClassNames.root),
         months: cn('flex flex-col sm:flex-row gap-4', defaultClassNames.months),
         month: cn('flex flex-col gap-4', defaultClassNames.month),
         caption_label: cn('text-sm font-medium', defaultClassNames.caption_label),
-        nav: cn('flex items-center gap-1 absolute inset-x-0 top-0 justify-between px-1', defaultClassNames.nav),
+        nav: cn('flex items-center gap-1 absolute inset-x-0 top-0 justify-between px-1 h-9 z-10', defaultClassNames.nav),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
-          'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100'
+          'h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100'
         ),
         button_next: cn(
           buttonVariants({ variant: buttonVariant }),
-          'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100'
+          'h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100'
         ),
-        month_caption: cn('flex justify-center items-center h-7 relative', defaultClassNames.month_caption),
+        month_caption: cn('flex justify-center items-center h-9 relative', defaultClassNames.month_caption),
         month_grid: 'w-full border-collapse',
         weekdays: cn('flex', defaultClassNames.weekdays),
         weekday: cn(

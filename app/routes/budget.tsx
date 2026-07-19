@@ -272,7 +272,7 @@ function BudgetPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <PiggyBank className="h-8 w-8 text-muted-foreground" />
           <div>
@@ -289,7 +289,7 @@ function BudgetPage() {
       </div>
 
       <div className="flex gap-4 items-end flex-wrap">
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <Label>Período</Label>
           <MonthYearPicker
             month={monthFilter}

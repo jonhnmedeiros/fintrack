@@ -96,7 +96,7 @@ function TransactionsPage() {
       </div>
 
       <div className="flex gap-4 items-end flex-wrap">
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <Label>Tipo</Label>
           <Select value={typeFilter || '__all__'} onValueChange={(v) => { setTypeFilter(v === '__all__' ? '' : v); setCategoryFilter('') }}>
             <SelectTrigger className="w-36"><SelectValue placeholder="Todos" /></SelectTrigger>
@@ -108,7 +108,7 @@ function TransactionsPage() {
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <Label>Categoria</Label>
           <Select value={categoryFilter || '__all__'} onValueChange={(v) => setCategoryFilter(v === '__all__' ? '' : v)}>
             <SelectTrigger className="w-44"><SelectValue placeholder="Todas" /></SelectTrigger>
@@ -120,7 +120,7 @@ function TransactionsPage() {
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <Label>Período</Label>
           <PeriodSelector value={periodFilter} onChange={setPeriodFilter} />
         </div>
