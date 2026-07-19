@@ -18,5 +18,7 @@ export async function selectByLabel(container: import('@playwright/test').Locato
     .locator('xpath=following-sibling::*[1]//*[@role="combobox"] | following-sibling::*[1][@role="combobox"]')
     .first()
   await trigger.click()
-  await page.getByRole('option', { name: optionText }).click()
+  const option = page.getByRole('option', { name: optionText })
+  await option.waitFor({ state: 'visible', timeout: 15000 })
+  await option.click()
 }
