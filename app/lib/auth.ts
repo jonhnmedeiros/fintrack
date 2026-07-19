@@ -96,9 +96,10 @@ export async function auth(request?: Request) {
       ? '__Secure-next-auth.session-token'
       : 'next-auth.session-token'
 
+    console.log('[auth] secret set:', !!process.env.NEXTAUTH_SECRET, 'cookieName:', cookieName, 'cookie keys:', Object.keys(cookies))
     const raw = cookies[cookieName]
     if (!raw) {
-      if (process.env.NODE_ENV !== 'production') console.warn('[auth] cookie not found, cookieName:', cookieName, 'keys:', Object.keys(cookies))
+      console.log('[auth] cookie not found')
       return null
     }
 
@@ -108,10 +109,11 @@ export async function auth(request?: Request) {
     })
 
     if (!token || !token.sub) {
-      if (process.env.NODE_ENV !== 'production') console.warn('[auth] token decode failed or missing sub, secret set:', !!process.env.NEXTAUTH_SECRET)
+      console.log('[auth] token decode failed or missing sub, token:', JSON.stringify(token))
       return null
     }
 
+    console.log('[auth] success, sub:', token.sub)
     return {
       user: {
         id: token.sub,
@@ -122,7 +124,7 @@ export async function auth(request?: Request) {
       },
     }
   } catch (e) {
-    if (process.env.NODE_ENV !== 'production') console.error('[auth] error:', e)
+    console.log('[auth] error:', String(e))
     return null
   }
 }
