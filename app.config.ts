@@ -4,7 +4,7 @@ import { resolve } from 'path'
 
 export default defineConfig({
   server: {
-    preset: 'vercel',
+    preset: process.env.VERCEL ? 'vercel' : 'node',
   },
   vite: {
     resolve: {
