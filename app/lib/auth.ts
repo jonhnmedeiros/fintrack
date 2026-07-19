@@ -97,14 +97,20 @@ export async function auth(request?: Request) {
       : 'next-auth.session-token'
 
     const raw = cookies[cookieName]
-    if (!raw) return null
+    if (!raw) {
+      if (process.env.NODE_ENV !== 'production') console.warn('[auth] cookie not found, cookieName:', cookieName, 'keys:', Object.keys(cookies))
+      return null
+    }
 
     const token = await decode({
       token: raw,
       secret: process.env.NEXTAUTH_SECRET!,
     })
 
-    if (!token || !token.sub) return null
+    if (!token || !token.sub) {
+      if (process.env.NODE_ENV !== 'production') console.warn('[auth] token decode failed or missing sub, secret set:', !!process.env.NEXTAUTH_SECRET)
+      return null
+    }
 
     return {
       user: {
@@ -115,7 +121,8 @@ export async function auth(request?: Request) {
         viewerOfId: (token as any).viewerOfId as string | undefined,
       },
     }
-  } catch {
+  } catch (e) {
+    if (process.env.NODE_ENV !== 'production') console.error('[auth] error:', e)
     return null
   }
 }
