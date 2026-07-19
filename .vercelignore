@@ -1,0 +1,12 @@
+docker-compose.yml
+prisma/seed.ts
+app/e2e
+playwright.config.ts
+playwright-report
+test-results
+*.png
+*.bak
+_bmad
+_bmad-output
+design-artifacts
+docs

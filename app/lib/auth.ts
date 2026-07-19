@@ -12,6 +12,7 @@ const CredentialsProvider = (CredentialsProviderModule as any).default ?? Creden
 const nextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: 'credentials',

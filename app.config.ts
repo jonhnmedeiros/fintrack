@@ -3,6 +3,9 @@ import tsr from '@tanstack/router-plugin/vite'
 import { resolve } from 'path'
 
 export default defineConfig({
+  server: {
+    preset: 'vercel',
+  },
   vite: {
     resolve: {
       alias: {
