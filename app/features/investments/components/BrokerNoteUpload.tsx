@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -32,6 +32,12 @@ export function BrokerNoteUpload({ open, onOpenChange }: BrokerNoteUploadProps) 
     setFileName(file.name)
     await parse(file)
   }
+
+  // A nota traz a própria "Data pregão" — usamos ela como padrão em vez da
+  // data de hoje, para não datar errado uma importação de nota antiga.
+  useEffect(() => {
+    if (result?.date) setImportDate(result.date)
+  }, [result])
 
   const handleImport = async () => {
     if (!result?.operations.length) return

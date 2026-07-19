@@ -8,22 +8,13 @@ const operationSchema = z.object({
   quantity: z.number().positive(),
   price: z.number().positive(),
   total: z.number(),
+  assetType: z.enum(['STOCK', 'ETF', 'CRYPTO', 'FIIS', 'BOND', 'OTHER']).optional(),
 })
 
 const importSchema = z.object({
   operations: z.array(operationSchema).min(1),
   date: z.string().optional(),
 })
-
-function guessAssetType(ticker: string): 'STOCK' | 'ETF' | 'CRYPTO' | 'FIIS' | 'BOND' | 'OTHER' {
-  const upper = ticker.toUpperCase()
-  if (/11$|12$/.test(upper)) return 'FIIS'
-  if (/3[45]$|4[56]$/.test(upper)) return 'STOCK'
-  if (/^BOVA|^IVVB|^ACWI/.test(upper)) return 'ETF'
-  if (/^BTC|^ETH|^USDC/.test(upper)) return 'CRYPTO'
-  if (/^NTN|^LTN|^LFT|^TESOURO/.test(upper)) return 'BOND'
-  return 'OTHER'
-}
 
 export const APIRoute = {
   path: '/api/brokerage-notes/import',
@@ -45,6 +36,7 @@ export const APIRoute = {
 
         const importDate = validated.date || new Date().toISOString().split('T')[0]
         let created = 0
+        let skipped = 0
 
         for (const op of validated.operations) {
           let asset = await prisma.asset.findFirst({
@@ -52,10 +44,25 @@ export const APIRoute = {
           })
 
           if (!asset) {
-            const type = guessAssetType(op.ticker)
             asset = await db.asset.create({
-              data: { ticker: op.ticker, type, name: op.ticker },
+              data: { ticker: op.ticker, type: op.assetType ?? 'OTHER', name: op.ticker },
             })
+          }
+
+          // Evita duplicar a mesma operação caso a nota seja importada mais de uma vez.
+          const existing = await prisma.investmentTransaction.findFirst({
+            where: {
+              userId: session.user.id,
+              assetId: asset.id,
+              type: op.type,
+              quantity: op.quantity,
+              price: op.price,
+              date: new Date(importDate),
+            },
+          })
+          if (existing) {
+            skipped++
+            continue
           }
 
           await db.investmentTransaction.create({
@@ -72,7 +79,7 @@ export const APIRoute = {
           created++
         }
 
-        return Response.json({ created })
+        return Response.json({ created, skipped })
       } catch (err: unknown) {
         if (err instanceof Error && err.name === 'ZodError') {
           return Response.json({ error: 'Dados inválidos' }, { status: 400 })

@@ -77,7 +77,8 @@ export function useImportBrokerNote() {
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['assets'] })
       qc.invalidateQueries({ queryKey: ['investment-transactions'] })
-      toast.success(`${data.created} operações importadas com sucesso!`)
+      const extra = data.skipped ? ` (${data.skipped} já existiam e foram ignoradas)` : ''
+      toast.success(`${data.created} operações importadas com sucesso!${extra}`)
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Erro ao importar nota')
