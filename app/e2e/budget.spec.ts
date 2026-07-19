@@ -9,6 +9,14 @@ test.describe('Orçamentos', () => {
   })
 
   test('cria, edita e exclui um orçamento', async ({ page }) => {
+    // Debug: log /api/categories response in CI
+    page.on('response', async (res) => {
+      if (res.url().includes('/api/categories')) {
+        const body = await res.text().catch(() => '(err)')
+        console.log(`[E2E] /api/categories → ${res.status()} ${body.slice(0, 200)}`)
+      }
+    })
+
     await page.getByRole('button', { name: 'Novo Orçamento' }).click()
     const dialog = page.getByRole('dialog')
     await expect(dialog.getByText('Novo Orçamento')).toBeVisible()
