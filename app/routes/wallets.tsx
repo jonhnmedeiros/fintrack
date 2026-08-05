@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -85,10 +85,22 @@ function WalletDialog({
 
   const { handleSubmit, formState: { errors }, watch, setValue, reset } = useForm<WalletFormData>({
     resolver: zodResolver(walletFormSchema),
-    values: editWallet
-      ? { name: editWallet.name, type: editWallet.type as WalletFormData['type'], color: editWallet.color || randomColor() }
-      : { name: '', type: undefined as unknown as WalletFormData['type'], color: randomColor() },
+    defaultValues: { name: '', type: undefined as unknown as WalletFormData['type'], color: randomColor() },
   })
+
+  // Preenche o formulário quando o dialog abre — para edição, com os dados
+  // da conta; para criação, em branco. Usar `reset()` (em vez de `values`)
+  // evita recomputar/resetar o formulário a cada re-render (ex: cada tecla
+  // digitada), que apagava o que o usuário acabara de escrever.
+  useEffect(() => {
+    if (!open) return
+    if (editWallet) {
+      reset({ name: editWallet.name, type: editWallet.type as WalletFormData['type'], color: editWallet.color || randomColor() })
+    } else {
+      reset({ name: '', type: undefined as unknown as WalletFormData['type'], color: randomColor() })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editWallet?.id])
 
   const onSubmit = async (data: WalletFormData) => {
     try {
