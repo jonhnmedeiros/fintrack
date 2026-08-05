@@ -44,6 +44,7 @@
 | Componente | Descrição |
 |---|---|
 | `app/features/finance/components/*` | Tabelas, formulários, cards financeiros |
+| `app/routes/wallets.tsx` | Página CRUD de Contas/Carteiras (`/wallets`) — cria, edita, exclui contas e mostra o saldo calculado de cada uma |
 
 ### Investments
 | Componente | Descrição |

@@ -11,6 +11,7 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as WalletsImport } from './routes/wallets'
 import { Route as TransactionsImport } from './routes/transactions'
 import { Route as SettingsImport } from './routes/settings'
 import { Route as ReportsImport } from './routes/reports'
@@ -24,6 +25,7 @@ import { Route as BudgetImport } from './routes/budget'
 import { Route as IndexImport } from './routes/index'
 import { Route as InvitesAcceptImport } from './routes/invites.accept'
 import { Route as ApiRegisterImport } from './routes/api/register'
+import { Route as ApiWalletsIndexImport } from './routes/api/wallets/index'
 import { Route as ApiTransactionsIndexImport } from './routes/api/transactions/index'
 import { Route as ApiNotificationsIndexImport } from './routes/api/notifications/index'
 import { Route as ApiInvitesIndexImport } from './routes/api/invites/index'
@@ -33,6 +35,7 @@ import { Route as ApiCategoriesIndexImport } from './routes/api/categories/index
 import { Route as ApiBudgetsIndexImport } from './routes/api/budgets/index'
 import { Route as ApiAssetsIndexImport } from './routes/api/assets/index'
 import { Route as ApiAlertsIndexImport } from './routes/api/alerts/index'
+import { Route as ApiWalletsIdImport } from './routes/api/wallets/$id'
 import { Route as ApiTransactionsIdImport } from './routes/api/transactions/$id'
 import { Route as ApiNotificationsIdImport } from './routes/api/notifications/$id'
 import { Route as ApiInvitesAcceptImport } from './routes/api/invites/accept'
@@ -49,6 +52,12 @@ import { Route as ApiAssetsIdImport } from './routes/api/assets/$id'
 import { Route as ApiAlertsIdImport } from './routes/api/alerts/$id'
 
 // Create/Update Routes
+
+const WalletsRoute = WalletsImport.update({
+  id: '/wallets',
+  path: '/wallets',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const TransactionsRoute = TransactionsImport.update({
   id: '/transactions',
@@ -128,6 +137,12 @@ const ApiRegisterRoute = ApiRegisterImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ApiWalletsIndexRoute = ApiWalletsIndexImport.update({
+  id: '/api/wallets/',
+  path: '/api/wallets/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ApiTransactionsIndexRoute = ApiTransactionsIndexImport.update({
   id: '/api/transactions/',
   path: '/api/transactions/',
@@ -180,6 +195,12 @@ const ApiAssetsIndexRoute = ApiAssetsIndexImport.update({
 const ApiAlertsIndexRoute = ApiAlertsIndexImport.update({
   id: '/api/alerts/',
   path: '/api/alerts/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ApiWalletsIdRoute = ApiWalletsIdImport.update({
+  id: '/api/wallets/$id',
+  path: '/api/wallets/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -350,6 +371,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TransactionsImport
       parentRoute: typeof rootRoute
     }
+    '/wallets': {
+      id: '/wallets'
+      path: '/wallets'
+      fullPath: '/wallets'
+      preLoaderRoute: typeof WalletsImport
+      parentRoute: typeof rootRoute
+    }
     '/api/register': {
       id: '/api/register'
       path: '/api/register'
@@ -462,6 +490,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTransactionsIdImport
       parentRoute: typeof rootRoute
     }
+    '/api/wallets/$id': {
+      id: '/api/wallets/$id'
+      path: '/api/wallets/$id'
+      fullPath: '/api/wallets/$id'
+      preLoaderRoute: typeof ApiWalletsIdImport
+      parentRoute: typeof rootRoute
+    }
     '/api/alerts/': {
       id: '/api/alerts/'
       path: '/api/alerts'
@@ -525,6 +560,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTransactionsIndexImport
       parentRoute: typeof rootRoute
     }
+    '/api/wallets/': {
+      id: '/api/wallets/'
+      path: '/api/wallets'
+      fullPath: '/api/wallets'
+      preLoaderRoute: typeof ApiWalletsIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -542,6 +584,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
+  '/wallets': typeof WalletsRoute
   '/api/register': typeof ApiRegisterRoute
   '/invites/accept': typeof InvitesAcceptRoute
   '/api/alerts/$id': typeof ApiAlertsIdRoute
@@ -558,6 +601,7 @@ export interface FileRoutesByFullPath {
   '/api/invites/accept': typeof ApiInvitesAcceptRoute
   '/api/notifications/$id': typeof ApiNotificationsIdRoute
   '/api/transactions/$id': typeof ApiTransactionsIdRoute
+  '/api/wallets/$id': typeof ApiWalletsIdRoute
   '/api/alerts': typeof ApiAlertsIndexRoute
   '/api/assets': typeof ApiAssetsIndexRoute
   '/api/budgets': typeof ApiBudgetsIndexRoute
@@ -567,6 +611,7 @@ export interface FileRoutesByFullPath {
   '/api/invites': typeof ApiInvitesIndexRoute
   '/api/notifications': typeof ApiNotificationsIndexRoute
   '/api/transactions': typeof ApiTransactionsIndexRoute
+  '/api/wallets': typeof ApiWalletsIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -581,6 +626,7 @@ export interface FileRoutesByTo {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
+  '/wallets': typeof WalletsRoute
   '/api/register': typeof ApiRegisterRoute
   '/invites/accept': typeof InvitesAcceptRoute
   '/api/alerts/$id': typeof ApiAlertsIdRoute
@@ -597,6 +643,7 @@ export interface FileRoutesByTo {
   '/api/invites/accept': typeof ApiInvitesAcceptRoute
   '/api/notifications/$id': typeof ApiNotificationsIdRoute
   '/api/transactions/$id': typeof ApiTransactionsIdRoute
+  '/api/wallets/$id': typeof ApiWalletsIdRoute
   '/api/alerts': typeof ApiAlertsIndexRoute
   '/api/assets': typeof ApiAssetsIndexRoute
   '/api/budgets': typeof ApiBudgetsIndexRoute
@@ -606,6 +653,7 @@ export interface FileRoutesByTo {
   '/api/invites': typeof ApiInvitesIndexRoute
   '/api/notifications': typeof ApiNotificationsIndexRoute
   '/api/transactions': typeof ApiTransactionsIndexRoute
+  '/api/wallets': typeof ApiWalletsIndexRoute
 }
 
 export interface FileRoutesById {
@@ -621,6 +669,7 @@ export interface FileRoutesById {
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
+  '/wallets': typeof WalletsRoute
   '/api/register': typeof ApiRegisterRoute
   '/invites/accept': typeof InvitesAcceptRoute
   '/api/alerts/$id': typeof ApiAlertsIdRoute
@@ -637,6 +686,7 @@ export interface FileRoutesById {
   '/api/invites/accept': typeof ApiInvitesAcceptRoute
   '/api/notifications/$id': typeof ApiNotificationsIdRoute
   '/api/transactions/$id': typeof ApiTransactionsIdRoute
+  '/api/wallets/$id': typeof ApiWalletsIdRoute
   '/api/alerts/': typeof ApiAlertsIndexRoute
   '/api/assets/': typeof ApiAssetsIndexRoute
   '/api/budgets/': typeof ApiBudgetsIndexRoute
@@ -646,6 +696,7 @@ export interface FileRoutesById {
   '/api/invites/': typeof ApiInvitesIndexRoute
   '/api/notifications/': typeof ApiNotificationsIndexRoute
   '/api/transactions/': typeof ApiTransactionsIndexRoute
+  '/api/wallets/': typeof ApiWalletsIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -662,6 +713,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/transactions'
+    | '/wallets'
     | '/api/register'
     | '/invites/accept'
     | '/api/alerts/$id'
@@ -678,6 +730,7 @@ export interface FileRouteTypes {
     | '/api/invites/accept'
     | '/api/notifications/$id'
     | '/api/transactions/$id'
+    | '/api/wallets/$id'
     | '/api/alerts'
     | '/api/assets'
     | '/api/budgets'
@@ -687,6 +740,7 @@ export interface FileRouteTypes {
     | '/api/invites'
     | '/api/notifications'
     | '/api/transactions'
+    | '/api/wallets'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -700,6 +754,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/transactions'
+    | '/wallets'
     | '/api/register'
     | '/invites/accept'
     | '/api/alerts/$id'
@@ -716,6 +771,7 @@ export interface FileRouteTypes {
     | '/api/invites/accept'
     | '/api/notifications/$id'
     | '/api/transactions/$id'
+    | '/api/wallets/$id'
     | '/api/alerts'
     | '/api/assets'
     | '/api/budgets'
@@ -725,6 +781,7 @@ export interface FileRouteTypes {
     | '/api/invites'
     | '/api/notifications'
     | '/api/transactions'
+    | '/api/wallets'
   id:
     | '__root__'
     | '/'
@@ -738,6 +795,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/transactions'
+    | '/wallets'
     | '/api/register'
     | '/invites/accept'
     | '/api/alerts/$id'
@@ -754,6 +812,7 @@ export interface FileRouteTypes {
     | '/api/invites/accept'
     | '/api/notifications/$id'
     | '/api/transactions/$id'
+    | '/api/wallets/$id'
     | '/api/alerts/'
     | '/api/assets/'
     | '/api/budgets/'
@@ -763,6 +822,7 @@ export interface FileRouteTypes {
     | '/api/invites/'
     | '/api/notifications/'
     | '/api/transactions/'
+    | '/api/wallets/'
   fileRoutesById: FileRoutesById
 }
 
@@ -778,6 +838,7 @@ export interface RootRouteChildren {
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   TransactionsRoute: typeof TransactionsRoute
+  WalletsRoute: typeof WalletsRoute
   ApiRegisterRoute: typeof ApiRegisterRoute
   InvitesAcceptRoute: typeof InvitesAcceptRoute
   ApiAlertsIdRoute: typeof ApiAlertsIdRoute
@@ -794,6 +855,7 @@ export interface RootRouteChildren {
   ApiInvitesAcceptRoute: typeof ApiInvitesAcceptRoute
   ApiNotificationsIdRoute: typeof ApiNotificationsIdRoute
   ApiTransactionsIdRoute: typeof ApiTransactionsIdRoute
+  ApiWalletsIdRoute: typeof ApiWalletsIdRoute
   ApiAlertsIndexRoute: typeof ApiAlertsIndexRoute
   ApiAssetsIndexRoute: typeof ApiAssetsIndexRoute
   ApiBudgetsIndexRoute: typeof ApiBudgetsIndexRoute
@@ -803,6 +865,7 @@ export interface RootRouteChildren {
   ApiInvitesIndexRoute: typeof ApiInvitesIndexRoute
   ApiNotificationsIndexRoute: typeof ApiNotificationsIndexRoute
   ApiTransactionsIndexRoute: typeof ApiTransactionsIndexRoute
+  ApiWalletsIndexRoute: typeof ApiWalletsIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -817,6 +880,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   TransactionsRoute: TransactionsRoute,
+  WalletsRoute: WalletsRoute,
   ApiRegisterRoute: ApiRegisterRoute,
   InvitesAcceptRoute: InvitesAcceptRoute,
   ApiAlertsIdRoute: ApiAlertsIdRoute,
@@ -833,6 +897,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiInvitesAcceptRoute: ApiInvitesAcceptRoute,
   ApiNotificationsIdRoute: ApiNotificationsIdRoute,
   ApiTransactionsIdRoute: ApiTransactionsIdRoute,
+  ApiWalletsIdRoute: ApiWalletsIdRoute,
   ApiAlertsIndexRoute: ApiAlertsIndexRoute,
   ApiAssetsIndexRoute: ApiAssetsIndexRoute,
   ApiBudgetsIndexRoute: ApiBudgetsIndexRoute,
@@ -842,6 +907,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiInvitesIndexRoute: ApiInvitesIndexRoute,
   ApiNotificationsIndexRoute: ApiNotificationsIndexRoute,
   ApiTransactionsIndexRoute: ApiTransactionsIndexRoute,
+  ApiWalletsIndexRoute: ApiWalletsIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -865,6 +931,7 @@ export const routeTree = rootRoute
         "/reports",
         "/settings",
         "/transactions",
+        "/wallets",
         "/api/register",
         "/invites/accept",
         "/api/alerts/$id",
@@ -881,6 +948,7 @@ export const routeTree = rootRoute
         "/api/invites/accept",
         "/api/notifications/$id",
         "/api/transactions/$id",
+        "/api/wallets/$id",
         "/api/alerts/",
         "/api/assets/",
         "/api/budgets/",
@@ -889,7 +957,8 @@ export const routeTree = rootRoute
         "/api/investment-transactions/",
         "/api/invites/",
         "/api/notifications/",
-        "/api/transactions/"
+        "/api/transactions/",
+        "/api/wallets/"
       ]
     },
     "/": {
@@ -924,6 +993,9 @@ export const routeTree = rootRoute
     },
     "/transactions": {
       "filePath": "transactions.tsx"
+    },
+    "/wallets": {
+      "filePath": "wallets.tsx"
     },
     "/api/register": {
       "filePath": "api/register.ts"
@@ -973,6 +1045,9 @@ export const routeTree = rootRoute
     "/api/transactions/$id": {
       "filePath": "api/transactions/$id.ts"
     },
+    "/api/wallets/$id": {
+      "filePath": "api/wallets/$id.ts"
+    },
     "/api/alerts/": {
       "filePath": "api/alerts/index.ts"
     },
@@ -999,6 +1074,9 @@ export const routeTree = rootRoute
     },
     "/api/transactions/": {
       "filePath": "api/transactions/index.ts"
+    },
+    "/api/wallets/": {
+      "filePath": "api/wallets/index.ts"
     }
   }
 }

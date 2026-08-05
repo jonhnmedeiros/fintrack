@@ -31,6 +31,16 @@ export function userDb(userId: string) {
       delete: (args: Parameters<typeof prisma.creditCard.delete>[0]) =>
         prisma.creditCard.delete(args),
     },
+    wallet: {
+      findMany: (args?: Parameters<typeof prisma.wallet.findMany>[0]) =>
+        prisma.wallet.findMany({ ...args, where: { userId, ...args?.where } }),
+      create: (args: Parameters<typeof prisma.wallet.create>[0]) =>
+        prisma.wallet.create({ ...args, data: { ...args.data, userId } }),
+      update: (args: Parameters<typeof prisma.wallet.update>[0]) =>
+        prisma.wallet.update(args),
+      delete: (args: Parameters<typeof prisma.wallet.delete>[0]) =>
+        prisma.wallet.delete(args),
+    },
     budget: {
       findMany: (args?: Parameters<typeof prisma.budget.findMany>[0]) =>
         prisma.budget.findMany({ ...args, where: { userId, ...args?.where } }),

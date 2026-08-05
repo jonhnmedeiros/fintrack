@@ -57,9 +57,30 @@
 | date | DateTime | |
 | categoryId | String? | FK → Category |
 | creditCardId | String? | FK → CreditCard |
+| walletId | String? | FK → Wallet — conta de origem/afetada. Para `TRANSFER`, é a conta de onde o dinheiro sai |
+| toWalletId | String? | FK → Wallet — só usado em `TRANSFER`: conta de destino |
 | installmentNumber | Int? | |
 | totalInstallments | Int? | |
 | userId | String | FK → User |
+
+### Wallet
+| Campo | Tipo | Atributos |
+|---|---|---|
+| id | String | `@id @default(cuid())` |
+| name | String | Ex: Nubank, Carteira, Investimentos |
+| type | WalletType | `CHECKING` / `SAVINGS` / `INVESTMENT` / `CASH` / `OTHER` |
+| color | String? | |
+| icon | String? | |
+| userId | String | FK → User |
+| **Único** | | `@@unique([userId, name])` |
+| **Relações** | | Transaction[] (como origem), Transaction[] (como destino de transferência) |
+
+Saldo de cada `Wallet` é **calculado dinamicamente** (não armazenado): soma de `INCOME`
+na conta, subtrai `EXPENSE`, e para `TRANSFER` subtrai da conta de origem (`walletId`) e
+soma na conta de destino (`toWalletId`). Ver `app/features/finance/api/wallets.ts`.
+
+`Wallet` (conta financeira/carteira) não deve ser confundido com o model `Account` do
+NextAuth (`app/routes/api/auth`) — que representa uma conexão OAuth, sem relação com este.
 
 ### CreditCard
 | Campo | Tipo | Atributos |

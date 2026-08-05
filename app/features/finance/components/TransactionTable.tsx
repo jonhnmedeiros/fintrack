@@ -23,6 +23,10 @@ interface TransactionType {
   category: { name: string } | null
   categoryId: string | null
   creditCardId: string | null
+  walletId: string | null
+  toWalletId: string | null
+  wallet?: { name: string } | null
+  toWallet?: { name: string } | null
   installmentNumber: number | null
   totalInstallments: number | null
 }
@@ -64,6 +68,17 @@ export function TransactionTable({ transactions, showActions = true, onEdit }: T
       accessorKey: 'category',
       header: 'Categoria',
       cell: ({ getValue }: { getValue: () => { name: string } | null }) => getValue()?.name || '-',
+    },
+    {
+      accessorKey: 'wallet',
+      header: 'Conta',
+      cell: ({ row }: { row: { original: TransactionType } }) => {
+        const { type, wallet, toWallet } = row.original
+        if (type === 'TRANSFER') {
+          return <span className="text-sm">{wallet?.name || '-'} → {toWallet?.name || '-'}</span>
+        }
+        return <span className="text-sm">{wallet?.name || '-'}</span>
+      },
     },
     {
       accessorKey: 'amount',

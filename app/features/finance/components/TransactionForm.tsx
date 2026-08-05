@@ -28,6 +28,7 @@ import { createTransactionSchema } from '../schemas'
 import { useCreateTransaction, useUpdateTransaction } from '../hooks/useTransactions'
 import { useCategories, useCreateCategory } from '../hooks/useCategories'
 import { useCreditCards } from '../hooks/useCreditCards'
+import { useWallets } from '../hooks/useWallets'
 import { Plus, Smile } from 'lucide-react'
 import {
   Popover,
@@ -107,6 +108,8 @@ interface EditTransaction {
   date: string
   categoryId: string | null
   creditCardId: string | null
+  walletId: string | null
+  toWalletId: string | null
   installmentNumber: number | null
   totalInstallments: number | null
 }
@@ -140,6 +143,8 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
         date: editTx.date.split('T')[0],
         categoryId: editTx.categoryId || '',
         creditCardId: editTx.creditCardId || '',
+        walletId: editTx.walletId || '',
+        toWalletId: editTx.toWalletId || '',
         totalInstallments: editTx.totalInstallments || undefined,
       })
       setAmountDisplay(Number(editTx.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }))
@@ -154,6 +159,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
   const updateMutation = useUpdateTransaction()
   const { data: categories, isError: catError } = useCategories()
   const { data: creditCards, isError: ccError } = useCreditCards()
+  const { data: wallets, isError: walletError } = useWallets()
 
   const createCategory = useCreateCategory()
   const queryClient = useQueryClient()
@@ -166,10 +172,21 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
 
   const type = watch('type')
   const creditCardId = watch('creditCardId')
+  const walletId = watch('walletId')
 
   const parentCategories = !type ? [] : (categories as any[] | undefined)?.filter(
     (c: any) => c.type === type && !c.parentId
   ) ?? []
+
+  const walletList = (wallets as { id: string; name: string }[] | undefined) ?? []
+
+  // Pré-seleciona a primeira conta ao abrir uma transação nova, assim que a
+  // lista de contas carregar — evita deixar o campo obrigatório vazio.
+  useEffect(() => {
+    if (open && !isEditing && !walletId && walletList.length > 0) {
+      setValue('walletId', walletList[0].id)
+    }
+  }, [open, isEditing, walletId, walletList])
 
   const handleCreateCategory = async () => {
     if (!newCatName.trim() || !type) return
@@ -211,6 +228,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
         ...data,
         categoryId: data.categoryId || undefined,
         creditCardId: data.creditCardId || undefined,
+        toWalletId: data.toWalletId || undefined,
         totalInstallments: data.totalInstallments || undefined,
         amount: Number(data.amount),
       }
@@ -220,11 +238,11 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
         setOpen(false)
         setAmountDisplay('')
         onEditDone?.()
-        reset( { date: DAY , type: undefined, description: '', categoryId: '', creditCardId: '', totalInstallments: undefined, amount: undefined })
+        reset( { date: DAY , type: undefined, description: '', categoryId: '', creditCardId: '', walletId: '', toWalletId: '', totalInstallments: undefined, amount: undefined })
       } else {
         await createMutation.mutateAsync(payload)
         toast.success('Transação criada com sucesso')
-        reset( { date: DAY , type: undefined, description: '', categoryId: '', creditCardId: '', totalInstallments: undefined, amount: undefined })
+        reset( { date: DAY , type: undefined, description: '', categoryId: '', creditCardId: '', walletId: '', toWalletId: '', totalInstallments: undefined, amount: undefined })
         setAmountDisplay('')
         setOpen(false)
       }
@@ -253,7 +271,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
   const grouped = Array.from(parentMap.values())
 
   const doClose = () => {
-    reset({ date: DAY , type: undefined, description: '', categoryId: '', creditCardId: '', totalInstallments: undefined, amount: undefined })
+    reset({ date: DAY , type: undefined, description: '', categoryId: '', creditCardId: '', walletId: '', toWalletId: '', totalInstallments: undefined, amount: undefined })
     setOpen(false)
     if (isEditing) onEditDone?.()
     setAmountDisplay('')
@@ -342,6 +360,39 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
             <Label>Descrição</Label>
             <Input value={watch('description') || ''} onChange={(e) => setValue('description', e.target.value, { shouldDirty: true })} placeholder="Descrição da transação" />
           </div>
+
+          <div className="space-y-2">
+            <Label>{type === 'TRANSFER' ? 'Conta de origem' : 'Conta'}</Label>
+            {walletError && <p className="text-red-500 text-xs">Erro ao carregar contas</p>}
+            <Select value={watch('walletId') || ''} onValueChange={(v) => setValue('walletId', v, { shouldDirty: true })}>
+              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectContent>
+                {walletList.length === 0 ? (
+                  <SelectItem value="__no_wallet__" disabled>
+                    Nenhuma conta cadastrada
+                  </SelectItem>
+                ) : walletList.map((w) => (
+                  <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.walletId && <p className="text-red-500 text-sm">{errors.walletId.message}</p>}
+          </div>
+
+          {type === 'TRANSFER' && (
+            <div className="space-y-2">
+              <Label>Conta de destino</Label>
+              <Select value={watch('toWalletId') || ''} onValueChange={(v) => setValue('toWalletId', v, { shouldDirty: true })}>
+                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  {walletList.filter((w) => w.id !== walletId).map((w) => (
+                    <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.toWalletId && <p className="text-red-500 text-sm">{errors.toWalletId.message}</p>}
+            </div>
+          )}
 
           {type !== 'TRANSFER' && (
           <div className="space-y-2">

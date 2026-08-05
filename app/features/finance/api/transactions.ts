@@ -7,6 +7,7 @@ export async function listTransactions(
   filters?: {
     type?: string
     categoryId?: string
+    walletId?: string
     startDate?: string
     endDate?: string
   }
@@ -22,6 +23,9 @@ export async function listTransactions(
       ],
     }
   }
+  if (filters?.walletId) {
+    where.OR = [{ walletId: filters.walletId }, { toWalletId: filters.walletId }]
+  }
   if (filters?.startDate || filters?.endDate) {
     ;(where.date as Record<string, unknown>) = {}
     if (filters.startDate) (where.date as Record<string, unknown>).gte = new Date(filters.startDate + 'T00:00:00Z')
@@ -30,7 +34,7 @@ export async function listTransactions(
   return db.transaction.findMany({
     where,
     orderBy: { date: 'desc' },
-    include: { category: true },
+    include: { category: true, wallet: true, toWallet: true },
   })
 }
 

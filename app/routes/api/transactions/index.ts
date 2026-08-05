@@ -14,6 +14,7 @@ export const APIRoute = {
       const filters = {
         type: url.searchParams.get('type') || undefined,
         categoryId: url.searchParams.get('categoryId') || undefined,
+        walletId: url.searchParams.get('walletId') || undefined,
         startDate: url.searchParams.get('startDate') || undefined,
         endDate: url.searchParams.get('endDate') || undefined,
       }

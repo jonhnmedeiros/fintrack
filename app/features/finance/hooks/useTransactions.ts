@@ -4,6 +4,7 @@ export function useTransactions(filters?: Record<string, string | undefined>) {
   const params = new URLSearchParams()
   if (filters?.type) params.set('type', filters.type)
   if (filters?.categoryId) params.set('categoryId', filters.categoryId)
+  if (filters?.walletId) params.set('walletId', filters.walletId)
   if (filters?.startDate) params.set('startDate', filters.startDate)
   if (filters?.endDate) params.set('endDate', filters.endDate)
 

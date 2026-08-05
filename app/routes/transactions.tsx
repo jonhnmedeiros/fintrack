@@ -5,6 +5,7 @@ import { TransactionTable } from '@/features/finance/components/TransactionTable
 import { TransactionForm } from '@/features/finance/components/TransactionForm'
 import { useTransactions } from '@/features/finance/hooks/useTransactions'
 import { useCategories } from '@/features/finance/hooks/useCategories'
+import { useWallets } from '@/features/finance/hooks/useWallets'
 import { useUserRole } from '@/features/auth/hooks/useUserRole'
 import { Label } from '@/components/ui/label'
 import { PeriodSelector } from '@/components/ui/period-selector'
@@ -24,6 +25,7 @@ export const Route = createFileRoute('/transactions')({
 function TransactionsPage() {
   const [typeFilter, setTypeFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
+  const [walletFilter, setWalletFilter] = useState('')
   const now = new Date()
   const [periodFilter, setPeriodFilter] = useState({
     startDate: format(startOfMonth(now), 'yyyy-MM-dd'),
@@ -37,6 +39,8 @@ function TransactionsPage() {
     date: string
     categoryId: string | null
     creditCardId: string | null
+    walletId: string | null
+    toWalletId: string | null
     installmentNumber: number | null
     totalInstallments: number | null
   } | null>(null)
@@ -44,11 +48,13 @@ function TransactionsPage() {
   const filters: Record<string, string | undefined> = {}
   if (typeFilter && typeFilter !== '__all__') filters.type = typeFilter
   if (categoryFilter && categoryFilter !== '__all__') filters.categoryId = categoryFilter
+  if (walletFilter && walletFilter !== '__all__') filters.walletId = walletFilter
   filters.startDate = periodFilter.startDate
   filters.endDate = periodFilter.endDate
 
   const { data, isLoading, isError } = useTransactions(filters)
   const { data: categories } = useCategories()
+  const { data: wallets } = useWallets()
   const { isVisualizador } = useUserRole()
 
   const transactions = useMemo(() => (Array.isArray(data) ? data : []), [data])
@@ -116,6 +122,18 @@ function TransactionsPage() {
               <SelectItem value="__all__">Todas</SelectItem>
               {filteredCategories.map((c: { id: string; name: string; type: string }) => (
                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label>Conta</Label>
+          <Select value={walletFilter || '__all__'} onValueChange={(v) => setWalletFilter(v === '__all__' ? '' : v)}>
+            <SelectTrigger className="w-40"><SelectValue placeholder="Todas" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">Todas</SelectItem>
+              {(wallets as { id: string; name: string }[] | undefined)?.map((w) => (
+                <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>

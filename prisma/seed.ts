@@ -75,6 +75,18 @@ async function main() {
   })
   console.log('Cartão de crédito criado:', creditCard.name)
 
+  const walletNubank = await prisma.wallet.upsert({
+    where: { userId_name: { userId: user.id, name: 'Nubank' } },
+    update: {},
+    create: { name: 'Nubank', type: 'CHECKING', color: '#8b5cf6', userId: user.id },
+  })
+  const walletInvestimentos = await prisma.wallet.upsert({
+    where: { userId_name: { userId: user.id, name: 'Investimentos' } },
+    update: {},
+    create: { name: 'Investimentos', type: 'INVESTMENT', color: '#10b981', userId: user.id },
+  })
+  console.log('Contas criadas:', walletNubank.name, walletInvestimentos.name)
+
   const [salario, freelance, investimentos] = createdIncomeCategories
   const [moradia, alimentacao, transporte, saude, educacao, lazer, assinaturas, compras] = createdExpenseCategories
 
@@ -185,11 +197,26 @@ async function main() {
         description: t.description,
         date: t.date,
         categoryId: t.categoryId,
+        walletId: walletNubank.id,
         userId: user.id,
       },
     })
     txCount++
   }
+
+  // Transferência de exemplo: dinheiro saindo do Nubank para a conta Investimentos
+  await prisma.transaction.create({
+    data: {
+      type: 'TRANSFER',
+      amount: 1000,
+      description: 'Aporte mensal',
+      date: new Date(2026, 4, 1),
+      walletId: walletNubank.id,
+      toWalletId: walletInvestimentos.id,
+      userId: user.id,
+    },
+  })
+  txCount++
   console.log('Transações criadas:', txCount)
 
   const budgetsData = [

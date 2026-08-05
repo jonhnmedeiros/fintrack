@@ -28,6 +28,7 @@ model User {
   categories    Category[]
   transactions  Transaction[]
   creditCards   CreditCard[]
+  wallets       Wallet[]
   budgets       Budget[]
   assets        Asset[]
   investmentTransactions InvestmentTransaction[]
@@ -99,6 +100,28 @@ enum TransactionType {
   TRANSFER
 }
 
+enum WalletType {
+  CHECKING
+  SAVINGS
+  INVESTMENT
+  CASH
+  OTHER
+}
+
+model Wallet {
+  id            String        @id @default(cuid())
+  name          String
+  type          WalletType
+  color         String?
+  icon          String?
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  Transaction[] @relation("WalletTransactions")
+  transfersIn   Transaction[] @relation("WalletTransfersIn")
+
+  @@unique([userId, name])
+}
+
 model Transaction {
   id                String       @id @default(cuid())
   type              TransactionType
@@ -109,6 +132,10 @@ model Transaction {
   category          Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   creditCardId      String?
   creditCard        CreditCard?  @relation(fields: [creditCardId], references: [id], onDelete: SetNull)
+  walletId          String?
+  wallet            Wallet?      @relation("WalletTransactions", fields: [walletId], references: [id], onDelete: SetNull)
+  toWalletId        String?
+  toWallet          Wallet?      @relation("WalletTransfersIn", fields: [toWalletId], references: [id], onDelete: SetNull)
   installmentNumber Int?
   totalInstallments Int?
   userId            String

@@ -9,12 +9,14 @@ import {
   CreditCard,
   Tags,
   PiggyBank,
+  Wallet,
 } from 'lucide-react'
 
 const tabItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/transactions', label: 'Transações', icon: Receipt },
   { href: '/categories', label: 'Categorias', icon: Tags },
+  { href: '/wallets', label: 'Contas', icon: Wallet },
   { href: '/credit-cards', label: 'Cartões', icon: CreditCard },
   { href: '/budget', label: 'Orçamentos', icon: PiggyBank },
   { href: '/investments', label: 'Investimentos', icon: TrendingUp },
