@@ -171,19 +171,31 @@ enum AssetType {
   CRYPTO
   FIIS
   BOND
+  CDB
   OTHER
 }
 
+enum FixedIncomeRateType {
+  CDI_PERCENT
+  PREFIXADO
+  IPCA_PLUS
+}
+
 model Asset {
-  id          String    @id @default(cuid())
-  ticker      String
-  name        String?
-  type        AssetType
-  market      String?
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions InvestmentTransaction[]
-  alerts      Alert[]
+  id            String               @id @default(cuid())
+  ticker        String
+  name          String?
+  type          AssetType
+  market        String?
+  // Campos específicos de renda fixa (CDB, etc.) — null para os demais tipos
+  rateType      FixedIncomeRateType?
+  rate          Decimal?
+  maturityDate  DateTime?
+  issuer        String?
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  InvestmentTransaction[]
+  alerts        Alert[]
   @@unique([userId, ticker])
 }
 

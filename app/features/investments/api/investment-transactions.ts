@@ -15,7 +15,13 @@ export async function listInvestmentTransactions(userId: string, assetId?: strin
 export async function createInvestmentTransaction(userId: string, data: unknown) {
   const validated = createInvestmentTransactionSchema.parse(data)
   const db = userDb(userId)
-  return db.investmentTransaction.create({ data: validated })
+  // Data-only (yyyy-MM-dd) ancorada em UTC — mesmo motivo do fix em
+  // finance/api/transactions.ts: string sem timezone quebra o Prisma
+  // ("premature end of input, Expected ISO-8601 DateTime") e, se aceita
+  // de outra forma, ficaria sujeita ao timezone do processo do servidor.
+  return db.investmentTransaction.create({
+    data: { ...validated, date: new Date(validated.date + 'T00:00:00Z') },
+  })
 }
 
 export async function deleteInvestmentTransaction(userId: string, id: string) {

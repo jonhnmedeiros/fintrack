@@ -29,6 +29,7 @@ export const APIRoute = {
         const tx = await createInvestmentTransaction(session.user.id, body)
         return Response.json(tx)
       } catch (err: unknown) {
+        console.error('[investment-transactions POST]', err)
         if (err instanceof Error && err.name === 'ZodError') {
           return Response.json({ error: 'Dados inválidos' }, { status: 400 })
         }

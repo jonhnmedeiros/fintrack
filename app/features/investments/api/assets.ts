@@ -1,21 +1,78 @@
 import { userDb } from '@/lib/tenant-db'
 import { createAssetSchema } from '../schemas'
+import { getReferenceRates, calcFixedIncomeValue } from '@/lib/rates'
+
+interface AssetWithRelations {
+  id: string
+  ticker: string
+  type: string
+  rateType: 'CDI_PERCENT' | 'PREFIXADO' | 'IPCA_PLUS' | null
+  rate: number | null
+  transactions: { type: string; quantity: number; price: number; date: Date }[]
+}
 
 export async function listAssets(userId: string) {
   const db = userDb(userId)
-  return db.asset.findMany({
+  // O wrapper multi-tenant (tenant-db.ts) não repassa o shape do `include` ao
+  // tipo de retorno — asserção explícita, já que sabemos o formato real em
+  // runtime (transactions/alerts sempre vêm por causa do include abaixo).
+  const assets = (await db.asset.findMany({
     orderBy: { ticker: 'asc' },
     include: {
       transactions: { orderBy: { date: 'desc' } },
       alerts: { where: { active: true } },
     },
+  })) as unknown as AssetWithRelations[]
+
+  const hasCdb = assets.some((a) => a.type === 'CDB')
+  if (!hasCdb) return assets.map((a) => ({ ...a, fixedIncomeCurrentValue: null, principal: null }))
+
+  let rates: Awaited<ReturnType<typeof getReferenceRates>> | null = null
+  try {
+    rates = await getReferenceRates()
+  } catch (err) {
+    console.error('[assets] falha ao buscar taxas de referência (CDI/IPCA):', err)
+  }
+
+  return assets.map((asset) => {
+    if (asset.type !== 'CDB') return { ...asset, fixedIncomeCurrentValue: null, principal: null }
+
+    // Principal = soma de aportes (BUY) - resgates (SELL), a valor de face
+    // (quantity=1 sempre nas transações de CDB; price = valor do aporte/resgate)
+    const principal = asset.transactions.reduce((sum, t) => {
+      const amount = Number(t.quantity) * Number(t.price)
+      if (t.type === 'BUY') return sum + amount
+      if (t.type === 'SELL') return sum - amount
+      return sum
+    }, 0)
+
+    if (!asset.rateType || asset.rate == null || !rates || principal <= 0) {
+      return { ...asset, fixedIncomeCurrentValue: null, principal }
+    }
+    const firstBuy = [...asset.transactions].filter((t) => t.type === 'BUY').sort((a, b) => a.date.getTime() - b.date.getTime())[0]
+    if (!firstBuy) return { ...asset, fixedIncomeCurrentValue: null, principal }
+
+    const fixedIncomeCurrentValue = calcFixedIncomeValue({
+      principal,
+      rateType: asset.rateType,
+      rate: Number(asset.rate),
+      purchaseDate: firstBuy.date,
+      cdiAnnual: rates.cdiAnnual,
+      ipca12m: rates.ipca12m,
+    })
+    return { ...asset, fixedIncomeCurrentValue, principal }
   })
 }
 
 export async function createAsset(userId: string, data: unknown) {
   const validated = createAssetSchema.parse(data)
   const db = userDb(userId)
-  return db.asset.create({ data: validated })
+  return db.asset.create({
+    data: {
+      ...validated,
+      maturityDate: validated.maturityDate ? new Date(validated.maturityDate + 'T00:00:00Z') : undefined,
+    },
+  })
 }
 
 export async function deleteAsset(userId: string, id: string) {

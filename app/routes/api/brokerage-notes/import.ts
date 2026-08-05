@@ -34,7 +34,8 @@ export const APIRoute = {
         const { userDb } = await import('@/lib/tenant-db')
         const db = userDb(session.user.id)
 
-        const importDate = validated.date || new Date().toISOString().split('T')[0]
+        const importDateStr = validated.date || new Date().toISOString().split('T')[0]
+        const importDate = new Date(importDateStr + 'T00:00:00Z')
         let created = 0
         let skipped = 0
 
@@ -57,7 +58,7 @@ export const APIRoute = {
               type: op.type,
               quantity: op.quantity,
               price: op.price,
-              date: new Date(importDate),
+              date: importDate,
             },
           })
           if (existing) {

@@ -27,6 +27,7 @@ import { Route as InvitesAcceptImport } from './routes/invites.accept'
 import { Route as ApiRegisterImport } from './routes/api/register'
 import { Route as ApiWalletsIndexImport } from './routes/api/wallets/index'
 import { Route as ApiTransactionsIndexImport } from './routes/api/transactions/index'
+import { Route as ApiRatesIndexImport } from './routes/api/rates/index'
 import { Route as ApiNotificationsIndexImport } from './routes/api/notifications/index'
 import { Route as ApiInvitesIndexImport } from './routes/api/invites/index'
 import { Route as ApiInvestmentTransactionsIndexImport } from './routes/api/investment-transactions/index'
@@ -146,6 +147,12 @@ const ApiWalletsIndexRoute = ApiWalletsIndexImport.update({
 const ApiTransactionsIndexRoute = ApiTransactionsIndexImport.update({
   id: '/api/transactions/',
   path: '/api/transactions/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ApiRatesIndexRoute = ApiRatesIndexImport.update({
+  id: '/api/rates/',
+  path: '/api/rates/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -553,6 +560,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiNotificationsIndexImport
       parentRoute: typeof rootRoute
     }
+    '/api/rates/': {
+      id: '/api/rates/'
+      path: '/api/rates'
+      fullPath: '/api/rates'
+      preLoaderRoute: typeof ApiRatesIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/api/transactions/': {
       id: '/api/transactions/'
       path: '/api/transactions'
@@ -610,6 +624,7 @@ export interface FileRoutesByFullPath {
   '/api/investment-transactions': typeof ApiInvestmentTransactionsIndexRoute
   '/api/invites': typeof ApiInvitesIndexRoute
   '/api/notifications': typeof ApiNotificationsIndexRoute
+  '/api/rates': typeof ApiRatesIndexRoute
   '/api/transactions': typeof ApiTransactionsIndexRoute
   '/api/wallets': typeof ApiWalletsIndexRoute
 }
@@ -652,6 +667,7 @@ export interface FileRoutesByTo {
   '/api/investment-transactions': typeof ApiInvestmentTransactionsIndexRoute
   '/api/invites': typeof ApiInvitesIndexRoute
   '/api/notifications': typeof ApiNotificationsIndexRoute
+  '/api/rates': typeof ApiRatesIndexRoute
   '/api/transactions': typeof ApiTransactionsIndexRoute
   '/api/wallets': typeof ApiWalletsIndexRoute
 }
@@ -695,6 +711,7 @@ export interface FileRoutesById {
   '/api/investment-transactions/': typeof ApiInvestmentTransactionsIndexRoute
   '/api/invites/': typeof ApiInvitesIndexRoute
   '/api/notifications/': typeof ApiNotificationsIndexRoute
+  '/api/rates/': typeof ApiRatesIndexRoute
   '/api/transactions/': typeof ApiTransactionsIndexRoute
   '/api/wallets/': typeof ApiWalletsIndexRoute
 }
@@ -739,6 +756,7 @@ export interface FileRouteTypes {
     | '/api/investment-transactions'
     | '/api/invites'
     | '/api/notifications'
+    | '/api/rates'
     | '/api/transactions'
     | '/api/wallets'
   fileRoutesByTo: FileRoutesByTo
@@ -780,6 +798,7 @@ export interface FileRouteTypes {
     | '/api/investment-transactions'
     | '/api/invites'
     | '/api/notifications'
+    | '/api/rates'
     | '/api/transactions'
     | '/api/wallets'
   id:
@@ -821,6 +840,7 @@ export interface FileRouteTypes {
     | '/api/investment-transactions/'
     | '/api/invites/'
     | '/api/notifications/'
+    | '/api/rates/'
     | '/api/transactions/'
     | '/api/wallets/'
   fileRoutesById: FileRoutesById
@@ -864,6 +884,7 @@ export interface RootRouteChildren {
   ApiInvestmentTransactionsIndexRoute: typeof ApiInvestmentTransactionsIndexRoute
   ApiInvitesIndexRoute: typeof ApiInvitesIndexRoute
   ApiNotificationsIndexRoute: typeof ApiNotificationsIndexRoute
+  ApiRatesIndexRoute: typeof ApiRatesIndexRoute
   ApiTransactionsIndexRoute: typeof ApiTransactionsIndexRoute
   ApiWalletsIndexRoute: typeof ApiWalletsIndexRoute
 }
@@ -906,6 +927,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiInvestmentTransactionsIndexRoute: ApiInvestmentTransactionsIndexRoute,
   ApiInvitesIndexRoute: ApiInvitesIndexRoute,
   ApiNotificationsIndexRoute: ApiNotificationsIndexRoute,
+  ApiRatesIndexRoute: ApiRatesIndexRoute,
   ApiTransactionsIndexRoute: ApiTransactionsIndexRoute,
   ApiWalletsIndexRoute: ApiWalletsIndexRoute,
 }
@@ -957,6 +979,7 @@ export const routeTree = rootRoute
         "/api/investment-transactions/",
         "/api/invites/",
         "/api/notifications/",
+        "/api/rates/",
         "/api/transactions/",
         "/api/wallets/"
       ]
@@ -1071,6 +1094,9 @@ export const routeTree = rootRoute
     },
     "/api/notifications/": {
       "filePath": "api/notifications/index.ts"
+    },
+    "/api/rates/": {
+      "filePath": "api/rates/index.ts"
     },
     "/api/transactions/": {
       "filePath": "api/transactions/index.ts"

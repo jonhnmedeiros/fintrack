@@ -108,13 +108,25 @@ NextAuth (`app/routes/api/auth`) — que representa uma conexão OAuth, sem rela
 | Campo | Tipo | Atributos |
 |---|---|---|
 | id | String | `@id @default(cuid())` |
-| ticker | String | Ex: PETR4, BTC |
+| ticker | String | Ex: PETR4, BTC — para CDB, é o nome livre (ex: "CDB Banco Inter 110% CDI") |
 | name | String? | |
-| type | AssetType | `STOCK` / `ETF` / `CRYPTO` / `FIIS` / `BOND` / `OTHER` |
+| type | AssetType | `STOCK` / `ETF` / `CRYPTO` / `FIIS` / `BOND` / `CDB` / `OTHER` |
 | market | String? | |
+| rateType | FixedIncomeRateType? | `CDI_PERCENT` / `PREFIXADO` / `IPCA_PLUS` — só para `CDB` |
+| rate | Decimal? | Taxa contratada (ex: 110 = 110% do CDI) — só para `CDB` |
+| maturityDate | DateTime? | Vencimento — vazio = liquidez diária (ex: "caixinha") |
+| issuer | String? | Banco/emissor — só para `CDB` |
 | userId | String | FK → User |
 | **Único** | | `@@unique([userId, ticker])` |
 | **Relações** | | InvestmentTransaction[], Alert[] |
+
+**CDB / renda fixa:** transações usam `quantity=1` sempre, com `price` = valor
+do aporte/resgate (não faz sentido "preço por unidade" em renda fixa). O
+"valor atualizado" é calculado sob demanda em `listAssets()`
+(`app/features/investments/api/assets.ts`) via juros compostos, usando a
+taxa CDI/IPCA vigente buscada da API pública do Banco Central — ver
+`app/lib/rates.ts`. É uma aproximação: assume a taxa de referência atual
+constante durante todo o período (CDI/IPCA variam dia a dia na realidade).
 
 ### InvestmentTransaction
 | Campo | Tipo | Atributos |

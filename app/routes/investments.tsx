@@ -35,6 +35,7 @@ import {
 import { useAssets, useCreateAsset, useDeleteAsset } from '@/features/investments/hooks/useAssets'
 import { useInvestmentTransactions, useCreateInvestmentTransaction, useDeleteInvestmentTransaction } from '@/features/investments/hooks/useInvestmentTransactions'
 import { useAlerts, useCreateAlert, useDeleteAlert } from '@/features/investments/hooks/useAlerts'
+import { useRates } from '@/features/investments/hooks/useRates'
 import { BrokerNoteUpload } from '@/features/investments/components/BrokerNoteUpload'
 import { ProfitChart } from '@/features/investments/components/ProfitChart'
 import { useUserRole } from '@/features/auth/hooks/useUserRole'
@@ -45,16 +46,29 @@ export const Route = createFileRoute('/investments')({
 })
 
 const ALLOCATION_COLORS = ['#3b82f6', '#22c55e', '#f97316', '#f59e0b', '#8b5cf6', '#ec4899']
-const TYPE_LABELS: Record<string, string> = { STOCK: 'Ações', ETF: 'ETFs', CRYPTO: 'Cripto', FIIS: 'FIIs', BOND: 'Renda Fixa', OTHER: 'Outros' }
+const TYPE_LABELS: Record<string, string> = { STOCK: 'Ações', ETF: 'ETFs', CRYPTO: 'Cripto', FIIS: 'FIIs', BOND: 'Renda Fixa', CDB: 'CDB', OTHER: 'Outros' }
 
-const ASSET_TYPES = ['STOCK', 'ETF', 'CRYPTO', 'FIIS', 'BOND', 'OTHER'] as const
+const ASSET_TYPES = ['STOCK', 'ETF', 'CRYPTO', 'FIIS', 'BOND', 'CDB', 'OTHER'] as const
+
+const RATE_TYPE_LABELS: Record<string, string> = {
+  CDI_PERCENT: '% do CDI',
+  PREFIXADO: 'Prefixado (% a.a.)',
+  IPCA_PLUS: 'IPCA+ (% a.a.)',
+}
 
 const assetFormSchema = z.object({
-  ticker: z.string().min(1, 'Ticker é obrigatório').max(20).toUpperCase(),
+  ticker: z.string().min(1, 'Nome/ticker é obrigatório').max(50),
   name: z.string().optional(),
-  type: z.enum(['STOCK', 'ETF', 'CRYPTO', 'FIIS', 'BOND', 'OTHER']),
+  type: z.enum(['STOCK', 'ETF', 'CRYPTO', 'FIIS', 'BOND', 'CDB', 'OTHER']),
   market: z.string().optional(),
-})
+  rateType: z.enum(['CDI_PERCENT', 'PREFIXADO', 'IPCA_PLUS']).optional(),
+  rate: z.number().positive().optional(),
+  maturityDate: z.string().optional(),
+  issuer: z.string().optional(),
+}).refine(
+  (data) => data.type !== 'CDB' || (!!data.rateType && data.rate !== undefined),
+  { message: 'Informe o tipo e o valor da taxa', path: ['rate'] }
+)
 
 type AssetFormData = z.infer<typeof assetFormSchema>
 
@@ -85,6 +99,12 @@ interface AssetItem {
   name: string | null
   type: string
   market: string | null
+  rateType: string | null
+  rate: number | null
+  maturityDate: string | null
+  issuer: string | null
+  fixedIncomeCurrentValue: number | null
+  principal: number | null
   transactions: AssetTx[]
 }
 
@@ -115,10 +135,14 @@ function CreateAssetDialog({
   onOpenChange: (v: boolean) => void
 }) {
   const createAsset = useCreateAsset()
+  const { data: rates } = useRates()
   const { handleSubmit, formState: { errors }, watch, setValue, reset } = useForm<AssetFormData>({
     resolver: zodResolver(assetFormSchema),
-    defaultValues: { ticker: '', name: '', type: undefined, market: '' },
+    defaultValues: { ticker: '', name: '', type: undefined, market: '', rateType: undefined, rate: undefined, maturityDate: '', issuer: '' },
   })
+
+  const type = watch('type')
+  const isCdb = type === 'CDB'
 
   const onSubmit = async (data: AssetFormData) => {
     try {
@@ -137,42 +161,91 @@ function CreateAssetDialog({
         <DialogHeader><DialogTitle>Novo Ativo</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label>Ticker</Label>
-            <Input
-              value={watch('ticker')}
-              onChange={(e) => setValue('ticker', e.target.value.toUpperCase())}
-              placeholder="Ex: PETR4"
-            />
-            {errors.ticker && <p className="text-red-500 text-sm">{errors.ticker.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <Label>Nome (opcional)</Label>
-            <Input
-              value={watch('name') || ''}
-              onChange={(e) => setValue('name', e.target.value)}
-              placeholder="Ex: Petrobras"
-            />
-          </div>
-          <div className="space-y-2">
             <Label>Tipo</Label>
             <Select value={watch('type') || ''} onValueChange={(v) => setValue('type', v as AssetFormData['type'])}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 {ASSET_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                  <SelectItem key={t} value={t}>{TYPE_LABELS[t] || t}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {errors.type && <p className="text-red-500 text-sm">{errors.type.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label>Mercado (opcional)</Label>
+            <Label>{isCdb ? 'Nome (ex: CDB Banco Inter)' : 'Ticker'}</Label>
             <Input
-              value={watch('market') || ''}
-              onChange={(e) => setValue('market', e.target.value)}
-              placeholder="Ex: BOVESPA"
+              value={watch('ticker')}
+              onChange={(e) => setValue('ticker', isCdb ? e.target.value : e.target.value.toUpperCase())}
+              placeholder={isCdb ? 'Ex: CDB Banco Inter 110% CDI' : 'Ex: PETR4'}
             />
+            {errors.ticker && <p className="text-red-500 text-sm">{errors.ticker.message}</p>}
           </div>
+          {!isCdb && (
+            <div className="space-y-2">
+              <Label>Nome (opcional)</Label>
+              <Input
+                value={watch('name') || ''}
+                onChange={(e) => setValue('name', e.target.value)}
+                placeholder="Ex: Petrobras"
+              />
+            </div>
+          )}
+          {isCdb ? (
+            <>
+              <div className="space-y-2">
+                <Label>Emissor (opcional)</Label>
+                <Input
+                  value={watch('issuer') || ''}
+                  onChange={(e) => setValue('issuer', e.target.value)}
+                  placeholder="Ex: Banco Inter"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Tipo de taxa</Label>
+                  <Select value={watch('rateType') || ''} onValueChange={(v) => setValue('rateType', v as AssetFormData['rateType'])}>
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(RATE_TYPE_LABELS).map(([v, label]) => (
+                        <SelectItem key={v} value={v}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Taxa contratada</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder={watch('rateType') === 'CDI_PERCENT' ? '110' : '12,5'}
+                    value={watch('rate') ?? ''}
+                    onChange={(e) => setValue('rate', e.target.value ? parseFloat(e.target.value) : undefined)}
+                  />
+                </div>
+              </div>
+              {errors.rate && <p className="text-red-500 text-sm">{errors.rate.message}</p>}
+              {rates && (
+                <p className="text-xs text-muted-foreground">
+                  Referência atual: CDI {rates.cdiAnnual.toFixed(2)}% a.a. · IPCA (12m) {rates.ipca12m.toFixed(2)}%
+                  {rates.stale && ' (cache — API indisponível no momento)'}
+                </p>
+              )}
+              <div className="space-y-2">
+                <Label>Data de vencimento (opcional)</Label>
+                <DatePicker value={watch('maturityDate') || ''} onChange={(v) => setValue('maturityDate', v)} placeholder="Deixe em branco para liquidez diária (ex: caixinha)" />
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2">
+              <Label>Mercado (opcional)</Label>
+              <Input
+                value={watch('market') || ''}
+                onChange={(e) => setValue('market', e.target.value)}
+                placeholder="Ex: BOVESPA"
+              />
+            </div>
+          )}
           <Button type="submit" className="w-full" disabled={createAsset.isPending}>
             {createAsset.isPending ? 'Salvando...' : 'Criar'}
           </Button>
@@ -191,15 +264,16 @@ function TransactionDialog({
   open: boolean
   onOpenChange: (v: boolean) => void
 }) {
+  const isCdb = asset.type === 'CDB'
   const createTx = useCreateInvestmentTransaction()
   const { handleSubmit, formState: { errors }, watch, setValue, reset } = useForm<TransactionFormData>({
     resolver: zodResolver(transactionFormSchema),
-    defaultValues: { type: undefined, quantity: undefined, price: undefined, fees: 0, taxes: 0, date: new Date().toISOString().slice(0, 10) },
+    defaultValues: { type: undefined, quantity: isCdb ? 1 : undefined, price: undefined, fees: 0, taxes: 0, date: new Date().toISOString().slice(0, 10) },
   })
 
   const onSubmit = async (data: TransactionFormData) => {
     try {
-      await createTx.mutateAsync({ ...data, fees: data.fees || 0, taxes: data.taxes || 0, assetId: asset.id })
+      await createTx.mutateAsync({ ...data, quantity: isCdb ? 1 : data.quantity, fees: data.fees || 0, taxes: data.taxes || 0, assetId: asset.id })
       toast.success('Transação registrada')
       reset()
       onOpenChange(false)
@@ -218,26 +292,28 @@ function TransactionDialog({
             <Select value={watch('type') || ''} onValueChange={(v) => setValue('type', v as TransactionFormData['type'])}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="BUY">Compra</SelectItem>
-                <SelectItem value="SELL">Venda</SelectItem>
-                <SelectItem value="DIVIDEND">Dividendo</SelectItem>
+                <SelectItem value="BUY">{isCdb ? 'Aporte' : 'Compra'}</SelectItem>
+                <SelectItem value="SELL">{isCdb ? 'Resgate' : 'Venda'}</SelectItem>
+                {!isCdb && <SelectItem value="DIVIDEND">Dividendo</SelectItem>}
                 <SelectItem value="TAX">Taxa</SelectItem>
               </SelectContent>
             </Select>
             {errors.type && <p className="text-red-500 text-sm">{errors.type.message}</p>}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className={isCdb ? '' : 'grid grid-cols-2 gap-4'}>
+            {!isCdb && (
+              <div className="space-y-2">
+                <Label>Quantidade</Label>
+                <Input type="number" step="1" min="0" placeholder="100"
+                  value={watch('quantity') ?? ''}
+                  onChange={(e) => setValue('quantity', e.target.value ? parseFloat(e.target.value) : 0)}
+                />
+                {errors.quantity && <p className="text-red-500 text-sm">{errors.quantity.message}</p>}
+              </div>
+            )}
             <div className="space-y-2">
-              <Label>Quantidade</Label>
-              <Input type="number" step="1" min="0" placeholder="100"
-                value={watch('quantity') ?? ''}
-                onChange={(e) => setValue('quantity', e.target.value ? parseFloat(e.target.value) : 0)}
-              />
-              {errors.quantity && <p className="text-red-500 text-sm">{errors.quantity.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label>Preço</Label>
-              <Input type="number" step="0.01" min="0" placeholder="25.50"
+              <Label>{isCdb ? 'Valor' : 'Preço'}</Label>
+              <Input type="number" step="0.01" min="0" placeholder={isCdb ? '1000,00' : '25.50'}
                 value={watch('price') ?? ''}
                 onChange={(e) => setValue('price', e.target.value ? parseFloat(e.target.value) : 0)}
               />
@@ -420,16 +496,21 @@ function InvestmentsPage() {
     let totalInvested = 0
     const byType: Record<string, number> = {}
     for (const a of assets) {
-      const pos = calcPosition(a.transactions)
-      totalInvested += pos.invested
-      if (pos.invested > 0) {
-        byType[a.type] = (byType[a.type] || 0) + pos.invested
+      // CDB usa o `principal` calculado no backend (soma de aportes - resgates
+      // pelo valor literal) — calcPosition() assume preço médio por unidade,
+      // o que não faz sentido quando cada "unidade" é 1 aporte de valor variável.
+      const invested = a.type === 'CDB' ? (a.principal ?? 0) : calcPosition(a.transactions).invested
+      totalInvested += invested
+      if (invested > 0) {
+        byType[a.type] = (byType[a.type] || 0) + invested
       }
     }
+    const assetCount = assets.filter((a) =>
+      a.type === 'CDB' ? (a.principal ?? 0) > 0 : calcPosition(a.transactions).quantity > 0
+    ).length
     const allocation = Object.entries(byType)
       .map(([type, value]) => ({ name: type, value: Math.round(value * 100) / 100 }))
       .sort((a, b) => b.value - a.value)
-    const assetCount = assets.filter((a) => calcPosition(a.transactions).quantity > 0).length
     return { totalInvested, allocation, assetCount }
   }, [assets])
 
@@ -581,9 +662,11 @@ function InvestmentsPage() {
               </CardHeader>
               <CardContent className="p-4 pt-0">
               <div className="space-y-2">
-                {assets.filter((a) => calcPosition(a.transactions).quantity > 0).map((asset) => {
-                  const pos = calcPosition(asset.transactions)
-                  const pct = ((pos.invested / portfolio.totalInvested) * 100)
+                {assets
+                  .filter((a) => a.type === 'CDB' ? (a.principal ?? 0) > 0 : calcPosition(a.transactions).quantity > 0)
+                  .map((asset) => {
+                  const invested = asset.type === 'CDB' ? (asset.principal ?? 0) : calcPosition(asset.transactions).invested
+                  const pct = ((invested / portfolio.totalInvested) * 100)
                   return (
                     <div key={asset.id} className="flex items-center gap-3">
                       <span className="text-sm font-medium w-20 shrink-0">{asset.ticker}</span>
@@ -591,7 +674,7 @@ function InvestmentsPage() {
                         <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
                       </div>
                       <span className="text-xs text-muted-foreground w-16 text-right">{pct.toFixed(1)}%</span>
-                      <span className="text-xs font-medium w-24 text-right">{formatCurrency(pos.invested)}</span>
+                      <span className="text-xs font-medium w-24 text-right">{formatCurrency(invested)}</span>
                     </div>
                   )
                 })}
@@ -613,7 +696,8 @@ function InvestmentsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {assets.map((asset) => {
             const pos = calcPosition(asset.transactions)
-            const typeLabel: Record<string, string> = { STOCK: 'Ação', ETF: 'ETF', CRYPTO: 'Crypto', FIIS: 'FII', BOND: 'Renda Fixa', OTHER: 'Outro' }
+            const typeLabel: Record<string, string> = { STOCK: 'Ação', ETF: 'ETF', CRYPTO: 'Crypto', FIIS: 'FII', BOND: 'Renda Fixa', CDB: 'CDB', OTHER: 'Outro' }
+            const isCdb = asset.type === 'CDB'
             return (
               <Card
                 key={asset.id}
@@ -647,7 +731,52 @@ function InvestmentsPage() {
                   </div>
                 </div>
                 {asset.name && <p className="text-xs text-muted-foreground">{asset.name}</p>}
-                {pos.quantity > 0 ? (
+                {isCdb ? (
+                  asset.principal != null && asset.principal > 0 ? (
+                    <div className="space-y-1 text-sm">
+                      {asset.issuer && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Emissor</span>
+                          <span className="font-medium">{asset.issuer}</span>
+                        </div>
+                      )}
+                      {asset.rateType && asset.rate != null && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Taxa</span>
+                          <span className="font-medium">
+                            {asset.rateType === 'CDI_PERCENT' && `${asset.rate}% do CDI`}
+                            {asset.rateType === 'PREFIXADO' && `${asset.rate}% a.a.`}
+                            {asset.rateType === 'IPCA_PLUS' && `IPCA+${asset.rate}%`}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Vencimento</span>
+                        <span className="font-medium">{asset.maturityDate ? formatDate(asset.maturityDate) : 'Liquidez diária'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Valor investido</span>
+                        <span className="font-medium">{formatCurrency(asset.principal)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Valor atualizado</span>
+                        <span className="font-semibold">
+                          {asset.fixedIncomeCurrentValue != null ? formatCurrency(asset.fixedIncomeCurrentValue) : '—'}
+                        </span>
+                      </div>
+                      {asset.fixedIncomeCurrentValue != null && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Rentabilidade</span>
+                          <span className="font-medium text-green-500">
+                            +{formatCurrency(asset.fixedIncomeCurrentValue - asset.principal)} ({(((asset.fixedIncomeCurrentValue / asset.principal) - 1) * 100).toFixed(2)}%)
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Sem posição</p>
+                  )
+                ) : pos.quantity > 0 ? (
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Quantidade</span>
