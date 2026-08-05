@@ -46,11 +46,10 @@ export function SummaryCards({ transactions, assets, isLoading }: SummaryCardsPr
   const totalInvested = assetArray.reduce((sum, asset) => {
     const buys = asset.transactions.filter((t) => t.type === 'BUY')
     const sells = asset.transactions.filter((t) => t.type === 'SELL')
-    const qty = buys.reduce((s, t) => s + t.quantity, 0) - sells.reduce((s, t) => s + t.quantity, 0)
-    const avgPrice =
-      buys.length > 0
-        ? buys.reduce((s, t) => s + t.quantity * t.price, 0) / buys.reduce((s, t) => s + t.quantity, 0)
-        : 0
+    const buyQty = buys.reduce((s, t) => s + t.quantity, 0)
+    const qty = buyQty - sells.reduce((s, t) => s + t.quantity, 0)
+    // Evita NaN quando a quantidade comprada é zero (avgPrice = 0/0)
+    const avgPrice = buyQty > 0 ? buys.reduce((s, t) => s + t.quantity * t.price, 0) / buyQty : 0
     return sum + qty * avgPrice
   }, 0)
 

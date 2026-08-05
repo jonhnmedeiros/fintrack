@@ -11,6 +11,16 @@
 | **Input** | `app/components/ui/input.tsx` | Campo texto | `type`, `placeholder`, `disabled` |
 | **Label** | `app/components/ui/label.tsx` | Rótulo | `htmlFor`, `children` |
 | **Select** | `app/components/ui/select.tsx` | Dropdown | `SelectTrigger`, `SelectContent`, `SelectItem` |
+| **Popover** | `app/components/ui/popover.tsx` | Overlay posicionado | `PopoverTrigger`, `PopoverContent` |
+| **Calendar** | `app/components/ui/calendar.tsx` | Calendário (react-day-picker v10) | `mode`, `selected`, `onSelect`, `numberOfMonths` |
+
+## Componentes de Data (compostos)
+
+| Componente | Arquivo | Descrição |
+|---|---|---|
+| **DatePicker** | `app/components/ui/date-picker.tsx` | Popover + Calendar para seleção de data única (substitui `<input type="date">` nativo, evita bugs no Safari) |
+| **MonthYearPicker** | `app/components/ui/month-year-picker.tsx` | Popover com navegação mês a mês, usado em Orçamentos |
+| **PeriodSelector** | `app/components/ui/period-selector.tsx` | Popover de seleção de intervalo de datas com presets (Mês atual, Últimos 3 meses, etc.) — presets em coluna lateral + calendário responsivo (1 mês mobile / 2 desktop). Usado em Dashboard e Transações |
 
 ## Componentes de Layout
 
@@ -39,6 +49,12 @@
 | Componente | Descrição |
 |---|---|
 | `app/features/investments/hooks/*` | Hooks (componentes na pasta de hooks) |
+
+## Hooks compartilhados
+
+| Hook | Arquivo | Descrição |
+|---|---|---|
+| **useMediaQuery** | `app/hooks/useMediaQuery.ts` | Wrapper de `window.matchMedia` para responsividade condicional em componentes (ex: número de meses exibidos no `PeriodSelector`) |
 
 ## Padrões
 
