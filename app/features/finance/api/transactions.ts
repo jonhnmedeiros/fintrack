@@ -24,8 +24,8 @@ export async function listTransactions(
   }
   if (filters?.startDate || filters?.endDate) {
     ;(where.date as Record<string, unknown>) = {}
-    if (filters.startDate) (where.date as Record<string, unknown>).gte = new Date(filters.startDate + 'T00:00:00')
-    if (filters.endDate) (where.date as Record<string, unknown>).lte = new Date(filters.endDate + 'T23:59:59')
+    if (filters.startDate) (where.date as Record<string, unknown>).gte = new Date(filters.startDate + 'T00:00:00Z')
+    if (filters.endDate) (where.date as Record<string, unknown>).lte = new Date(filters.endDate + 'T23:59:59Z')
   }
   return db.transaction.findMany({
     where,
@@ -40,7 +40,9 @@ export async function createTransaction(userId: string, data: unknown) {
 
   const txData = {
     ...validated,
-    date: new Date(validated.date + 'T00:00:00'),
+    // Data-only (yyyy-MM-dd) sempre ancorada em UTC: evita que o timezone do
+    // servidor (local no dev, UTC em produção/Vercel) desloque o dia salvo.
+    date: new Date(validated.date + 'T00:00:00Z'),
   }
 
   if (txData.creditCardId && txData.totalInstallments && txData.totalInstallments > 1) {
@@ -48,7 +50,8 @@ export async function createTransaction(userId: string, data: unknown) {
     const transactions = []
     for (let i = 1; i <= txData.totalInstallments; i++) {
       const installmentDate = new Date(txData.date)
-      installmentDate.setMonth(installmentDate.getMonth() + i - 1)
+      // setUTCMonth (não setMonth) para não depender do timezone local do processo
+      installmentDate.setUTCMonth(installmentDate.getUTCMonth() + i - 1)
       transactions.push(
         db.transaction.create({
           data: {
@@ -78,7 +81,7 @@ export async function updateTransaction(userId: string, id: string, data: unknow
     where: { id },
     data: {
       ...validated,
-      date: new Date(validated.date + 'T00:00:00'),
+      date: new Date(validated.date + 'T00:00:00Z'),
     },
   })
 }

@@ -18,10 +18,14 @@ export function formatPercent(value: number, decimals = 2): string {
 }
 
 export function formatDate(date: string): string {
-  const normalized = date.includes('T') ? date : date + 'T00:00:00'
+  // Datas de transação são "dia do calendário" (sem hora relevante), salvas
+  // ancoradas em UTC. Formatamos também em UTC para não deslocar o dia
+  // conforme o timezone do navegador (ex: BRT exibiria 1 dia a menos).
+  const normalized = date.includes('T') ? date : date + 'T00:00:00Z'
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
+    timeZone: 'UTC',
   }).format(new Date(normalized))
 }
