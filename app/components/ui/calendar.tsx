@@ -3,6 +3,7 @@ import { ptBR } from 'date-fns/locale'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronDownIcon,
 } from 'lucide-react'
 import {
   DayPicker,
@@ -44,7 +45,11 @@ function Calendar({
         root: cn('w-fit relative', defaultClassNames.root),
         months: cn('flex flex-col sm:flex-row gap-4', defaultClassNames.months),
         month: cn('flex flex-col gap-4', defaultClassNames.month),
-        caption_label: cn('text-sm font-medium', defaultClassNames.caption_label),
+        caption_label: cn(
+          'text-sm font-medium',
+          captionLayout !== 'label' && 'flex items-center gap-1 rounded-md px-2 py-1 hover:bg-accent',
+          defaultClassNames.caption_label
+        ),
         nav: cn('flex items-center gap-1 absolute inset-x-0 top-0 justify-between px-1 h-9 z-10', defaultClassNames.nav),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
@@ -55,6 +60,11 @@ function Calendar({
           'h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100'
         ),
         month_caption: cn('flex justify-center items-center h-9 relative', defaultClassNames.month_caption),
+        dropdowns: cn('flex items-center justify-center gap-1.5 text-sm font-medium', defaultClassNames.dropdowns),
+        dropdown_root: cn('relative inline-flex items-center', defaultClassNames.dropdown_root),
+        dropdown: cn('absolute inset-0 z-10 opacity-0 cursor-pointer', defaultClassNames.dropdown),
+        months_dropdown: cn('rounded-md', defaultClassNames.months_dropdown),
+        years_dropdown: cn('rounded-md', defaultClassNames.years_dropdown),
         month_grid: 'w-full border-collapse',
         weekdays: cn('flex', defaultClassNames.weekdays),
         weekday: cn(
@@ -82,12 +92,11 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Chevron: ({ orientation }) =>
-          orientation === 'left' ? (
-            <ChevronLeftIcon className="h-4 w-4" />
-          ) : (
-            <ChevronRightIcon className="h-4 w-4" />
-          ),
+        Chevron: ({ orientation }) => {
+          if (orientation === 'left') return <ChevronLeftIcon className="h-4 w-4" />
+          if (orientation === 'down') return <ChevronDownIcon className="h-4 w-4 opacity-50" />
+          return <ChevronRightIcon className="h-4 w-4" />
+        },
         ...components,
       }}
       {...props}
