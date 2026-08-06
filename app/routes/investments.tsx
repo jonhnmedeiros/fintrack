@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { DatePicker } from '@/components/ui/date-picker'
+import { CurrencyInput } from '@/components/ui/currency-input'
 import {
   Select,
   SelectContent,
@@ -313,9 +314,9 @@ function TransactionDialog({
             )}
             <div className="space-y-2">
               <Label>{isCdb ? 'Valor' : 'Preço'}</Label>
-              <Input type="number" step="0.01" min="0" placeholder={isCdb ? '1000,00' : '25.50'}
-                value={watch('price') ?? ''}
-                onChange={(e) => setValue('price', e.target.value ? parseFloat(e.target.value) : 0)}
+              <CurrencyInput
+                value={watch('price')}
+                onChange={(v) => setValue('price', v, { shouldDirty: true })}
               />
               {errors.price && <p className="text-red-500 text-sm">{errors.price.message}</p>}
             </div>
@@ -323,16 +324,16 @@ function TransactionDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Taxas</Label>
-              <Input type="number" step="0.01" min="0" placeholder="0"
-                value={watch('fees') ?? 0}
-                onChange={(e) => setValue('fees', e.target.value ? parseFloat(e.target.value) : 0)}
+              <CurrencyInput
+                value={watch('fees')}
+                onChange={(v) => setValue('fees', v, { shouldDirty: true })}
               />
             </div>
             <div className="space-y-2">
               <Label>Impostos</Label>
-              <Input type="number" step="0.01" min="0" placeholder="0"
-                value={watch('taxes') ?? 0}
-                onChange={(e) => setValue('taxes', e.target.value ? parseFloat(e.target.value) : 0)}
+              <CurrencyInput
+                value={watch('taxes')}
+                onChange={(v) => setValue('taxes', v, { shouldDirty: true })}
               />
             </div>
           </div>
