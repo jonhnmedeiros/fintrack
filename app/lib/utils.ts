@@ -17,6 +17,8 @@ export function formatPercent(value: number, decimals = 2): string {
   return `${value >= 0 ? '+' : ''}${value.toFixed(decimals)}%`
 }
 
+// Formato compacto (dd/MM/yyyy) para listas/tabelas — usado em toda a base
+// para manter consistência visual e economizar espaço horizontal.
 export function formatDate(date: string): string {
   // Datas de transação são "dia do calendário" (sem hora relevante), salvas
   // ancoradas em UTC. Formatamos também em UTC para não deslocar o dia
@@ -24,7 +26,7 @@ export function formatDate(date: string): string {
   const normalized = date.includes('T') ? date : date + 'T00:00:00Z'
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
-    month: 'short',
+    month: '2-digit',
     year: 'numeric',
     timeZone: 'UTC',
   }).format(new Date(normalized))
