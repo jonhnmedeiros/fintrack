@@ -567,7 +567,7 @@ function InvestmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <TrendingUp className="h-8 w-8 text-muted-foreground" />
           <div>
@@ -576,7 +576,7 @@ function InvestmentsPage() {
           </div>
         </div>
         {!isVisualizador && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button variant="outline" onClick={() => setImportOpen(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Importar Nota
@@ -822,7 +822,8 @@ function InvestmentsPage() {
               </Button>
             )}
           </div>
-          <div className="overflow-x-auto">
+          {/* Desktop: tabela. No mobile, 6 colunas não cabem — vira lista de cards abaixo. */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
@@ -857,6 +858,32 @@ function InvestmentsPage() {
                 })}
               </tbody>
             </table>
+          </div>
+
+          <div className="sm:hidden divide-y">
+            {selectedAsset.transactions.map((tx) => {
+              const total = Number(tx.quantity) * Number(tx.price) + Number(tx.fees) + Number(tx.taxes)
+              const typeLabel: Record<string, string> = { BUY: 'Compra', SELL: 'Venda', DIVIDEND: 'Dividendo', TAX: 'Taxa' }
+              return (
+                <div key={tx.id} className="py-2.5 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">{typeLabel[tx.type] || tx.type}</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(tx.date)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {Number(tx.quantity)} × {formatCurrency(Number(tx.price))}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="font-semibold text-sm whitespace-nowrap">{formatCurrency(total)}</span>
+                    {!isVisualizador && (
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteTxId(tx.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </Card>
       )}

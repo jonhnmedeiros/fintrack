@@ -1,28 +1,7 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
-import {
-  LayoutDashboard,
-  Receipt,
-  TrendingUp,
-  BarChart3,
-  Settings,
-  CreditCard,
-  Tags,
-  PiggyBank,
-  Wallet,
-} from 'lucide-react'
-
-const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/transactions', label: 'Transações', icon: Receipt },
-  { href: '/categories', label: 'Categorias', icon: Tags },
-  { href: '/wallets', label: 'Contas', icon: Wallet },
-  { href: '/credit-cards', label: 'Cartões', icon: CreditCard },
-  { href: '/budget', label: 'Orçamentos', icon: PiggyBank },
-  { href: '/investments', label: 'Investimentos', icon: TrendingUp },
-  { href: '/reports', label: 'Relatórios', icon: BarChart3 },
-  { href: '/settings', label: 'Configurações', icon: Settings },
-]
+import { TrendingUp } from 'lucide-react'
+import { navItems } from './nav-items'
 
 export function Sidebar() {
   const location = useLocation()

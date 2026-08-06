@@ -156,7 +156,10 @@ export function TransactionTable({ transactions, showActions = true, onEdit }: T
         </DialogContent>
       </Dialog>
 
-    <div className="rounded-md border overflow-x-auto">
+    {/* Desktop/tablet: tabela tradicional. Some abaixo do breakpoint sm — no
+        celular, uma tabela de 5-6 colunas não cabe na tela e força scroll
+        horizontal sem indicação visual (ver versão em cards logo abaixo). */}
+    <div className="hidden sm:block rounded-md border overflow-x-auto">
       <table className="w-full">
         <thead className="bg-muted">
           {table.getHeaderGroups().map((hg) => (
@@ -181,6 +184,59 @@ export function TransactionTable({ transactions, showActions = true, onEdit }: T
           ))}
         </tbody>
       </table>
+    </div>
+
+    {/* Mobile: cada transação vira um card — tudo visível sem scroll horizontal. */}
+    <div className="sm:hidden rounded-md border divide-y">
+      {transactions.map((tx) => {
+        const color = tx.type === 'INCOME' ? 'text-green-500' : tx.type === 'EXPENSE' ? 'text-red-500' : 'text-blue-500'
+        const sign = tx.type === 'INCOME' ? '+' : tx.type === 'EXPENSE' ? '-' : '→'
+        const accountLabel = tx.type === 'TRANSFER'
+          ? `${tx.wallet?.name || '-'} → ${tx.toWallet?.name || '-'}`
+          : tx.wallet?.name || '-'
+        return (
+          <div key={tx.id} className="p-3 space-y-1.5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {tx.description || '-'}
+                  {tx.installmentNumber != null && tx.totalInstallments && tx.totalInstallments > 1 && (
+                    <span className="ml-2 text-xs text-muted-foreground border rounded px-1 align-middle">
+                      {tx.installmentNumber}/{tx.totalInstallments}
+                    </span>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">{formatDate(tx.date)}</p>
+              </div>
+              <span className={`font-semibold text-sm whitespace-nowrap ${color}`}>
+                {sign} {formatCurrency(Number(tx.amount))}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-muted-foreground truncate">
+                {tx.category?.name || '-'} · {accountLabel}
+              </p>
+              {showActions && (
+                <div className="flex gap-1 shrink-0">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Editar transação" onClick={() => onEdit?.(tx)}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    aria-label="Excluir transação"
+                    onClick={() => setPendingDeleteId(tx.id)}
+                    disabled={deleteMutation.isPending}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })}
     </div>
     </>
   )
