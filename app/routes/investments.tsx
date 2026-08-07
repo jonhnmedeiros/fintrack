@@ -74,9 +74,10 @@ const assetFormSchema = z.object({
 type AssetFormData = z.infer<typeof assetFormSchema>
 
 const transactionFormSchema = z.object({
-  type: z.enum(['BUY', 'SELL', 'DIVIDEND', 'TAX']),
+  type: z.enum(['BUY', 'SELL', 'DIVIDEND', 'TAX', 'BONUS']),
   quantity: z.number().positive('Quantidade deve ser positiva'),
-  price: z.number().positive('Preço deve ser positivo'),
+  // Bonificação (ações recebidas sem custo) tem preço 0.
+  price: z.number().min(0, 'Preço deve ser zero ou positivo'),
   fees: z.number().optional(),
   taxes: z.number().optional(),
   date: z.string().min(1, 'Data é obrigatória'),
@@ -118,6 +119,10 @@ function calcPosition(transactions: AssetTx[]) {
     if (tx.type === 'BUY') {
       totalQuantity += qty
       totalCost += qty * price
+    } else if (tx.type === 'BONUS') {
+      // Bonificação: ações recebidas sem custo — aumenta a quantidade
+      // sem alterar o custo total investido (dilui o preço médio).
+      totalQuantity += qty
     } else if (tx.type === 'SELL') {
       const avg = totalQuantity > 0 ? totalCost / totalQuantity : 0
       totalCost -= qty * avg
@@ -272,9 +277,12 @@ function TransactionDialog({
     defaultValues: { type: undefined, quantity: isCdb ? 1 : undefined, price: undefined, fees: 0, taxes: 0, date: new Date().toISOString().slice(0, 10) },
   })
 
+  const type = watch('type')
+  const isBonus = type === 'BONUS'
+
   const onSubmit = async (data: TransactionFormData) => {
     try {
-      await createTx.mutateAsync({ ...data, quantity: isCdb ? 1 : data.quantity, fees: data.fees || 0, taxes: data.taxes || 0, assetId: asset.id })
+      await createTx.mutateAsync({ ...data, quantity: isCdb ? 1 : data.quantity, price: isBonus ? 0 : data.price, fees: data.fees || 0, taxes: data.taxes || 0, assetId: asset.id })
       toast.success('Transação registrada')
       reset()
       onOpenChange(false)
@@ -290,18 +298,22 @@ function TransactionDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label>Tipo</Label>
-            <Select value={watch('type') || ''} onValueChange={(v) => setValue('type', v as TransactionFormData['type'])}>
+            <Select value={watch('type') || ''} onValueChange={(v) => {
+              setValue('type', v as TransactionFormData['type'])
+              if (v === 'BONUS') setValue('price', 0, { shouldDirty: true })
+            }}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="BUY">{isCdb ? 'Aporte' : 'Compra'}</SelectItem>
                 <SelectItem value="SELL">{isCdb ? 'Resgate' : 'Venda'}</SelectItem>
                 {!isCdb && <SelectItem value="DIVIDEND">Dividendo</SelectItem>}
+                {!isCdb && <SelectItem value="BONUS">Bonificação</SelectItem>}
                 <SelectItem value="TAX">Taxa</SelectItem>
               </SelectContent>
             </Select>
             {errors.type && <p className="text-red-500 text-sm">{errors.type.message}</p>}
           </div>
-          <div className={isCdb ? '' : 'grid grid-cols-2 gap-4'}>
+          <div className={isCdb || isBonus ? '' : 'grid grid-cols-2 gap-4'}>
             {!isCdb && (
               <div className="space-y-2">
                 <Label>Quantidade</Label>
@@ -312,14 +324,16 @@ function TransactionDialog({
                 {errors.quantity && <p className="text-red-500 text-sm">{errors.quantity.message}</p>}
               </div>
             )}
-            <div className="space-y-2">
-              <Label>{isCdb ? 'Valor' : 'Preço'}</Label>
-              <CurrencyInput
-                value={watch('price')}
-                onChange={(v) => setValue('price', v, { shouldDirty: true })}
-              />
-              {errors.price && <p className="text-red-500 text-sm">{errors.price.message}</p>}
-            </div>
+            {!isBonus && (
+              <div className="space-y-2">
+                <Label>{isCdb ? 'Valor' : 'Preço'}</Label>
+                <CurrencyInput
+                  value={watch('price')}
+                  onChange={(v) => setValue('price', v, { shouldDirty: true })}
+                />
+                {errors.price && <p className="text-red-500 text-sm">{errors.price.message}</p>}
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -839,7 +853,7 @@ function InvestmentsPage() {
               <tbody>
                 {selectedAsset.transactions.map((tx) => {
                   const total = Number(tx.quantity) * Number(tx.price) + Number(tx.fees) + Number(tx.taxes)
-                  const typeLabel: Record<string, string> = { BUY: 'Compra', SELL: 'Venda', DIVIDEND: 'Dividendo', TAX: 'Taxa' }
+                  const typeLabel: Record<string, string> = { BUY: 'Compra', SELL: 'Venda', DIVIDEND: 'Dividendo', TAX: 'Taxa', BONUS: 'Bonificação' }
                   return (
                     <tr key={tx.id} className="border-b last:border-0">
                       <td className="py-2 pr-4">{formatDate(tx.date)}</td>
@@ -864,7 +878,7 @@ function InvestmentsPage() {
           <div className="sm:hidden divide-y">
             {selectedAsset.transactions.map((tx) => {
               const total = Number(tx.quantity) * Number(tx.price) + Number(tx.fees) + Number(tx.taxes)
-              const typeLabel: Record<string, string> = { BUY: 'Compra', SELL: 'Venda', DIVIDEND: 'Dividendo', TAX: 'Taxa' }
+              const typeLabel: Record<string, string> = { BUY: 'Compra', SELL: 'Venda', DIVIDEND: 'Dividendo', TAX: 'Taxa', BONUS: 'Bonificação' }
               return (
                 <div key={tx.id} className="py-2.5 flex items-start justify-between gap-3">
                   <div className="min-w-0">

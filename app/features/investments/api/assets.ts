@@ -88,6 +88,9 @@ export function calcAveragePrice(transactions: { type: string; quantity: number;
     if (tx.type === 'BUY') {
       totalQuantity += tx.quantity
       totalCost += tx.quantity * tx.price
+    } else if (tx.type === 'BONUS') {
+      // Bonificação: aumenta a quantidade sem custo adicional (dilui o preço médio)
+      totalQuantity += tx.quantity
     } else if (tx.type === 'SELL') {
       totalQuantity -= tx.quantity
       const avgCost = totalQuantity > 0 ? totalCost / (totalQuantity + tx.quantity) : 0
@@ -104,7 +107,7 @@ export function calcPL(
 ) {
   const avgPrice = calcAveragePrice(transactions)
   const buyQty = transactions
-    .filter((t) => t.type === 'BUY')
+    .filter((t) => t.type === 'BUY' || t.type === 'BONUS')
     .reduce((sum, t) => sum + t.quantity, 0)
   const sellQty = transactions
     .filter((t) => t.type === 'SELL')

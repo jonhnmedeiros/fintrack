@@ -22,9 +22,11 @@ function refineFixedIncomeRate<T extends z.ZodType<{ type: string; rateType?: st
 
 export const investmentTransactionSchema = z.object({
   id: z.string(),
-  type: z.enum(['BUY', 'SELL', 'DIVIDEND', 'TAX']),
+  type: z.enum(['BUY', 'SELL', 'DIVIDEND', 'TAX', 'BONUS']),
   quantity: z.number().positive(),
-  price: z.number().positive(),
+  // Bonificação (ações recebidas sem custo) tem preço 0 — os demais tipos
+  // continuam com preço positivo garantido pela UI (campo escondido/fixo).
+  price: z.number().min(0),
   fees: z.number().default(0),
   taxes: z.number().default(0),
   date: z.string(),

@@ -204,6 +204,7 @@ enum InvTransactionType {
   SELL
   DIVIDEND
   TAX
+  BONUS
 }
 
 model InvestmentTransaction {
