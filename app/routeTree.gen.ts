@@ -34,6 +34,7 @@ import { Route as ApiInvestmentTransactionsIndexImport } from './routes/api/inve
 import { Route as ApiCreditCardsIndexImport } from './routes/api/credit-cards/index'
 import { Route as ApiCategoriesIndexImport } from './routes/api/categories/index'
 import { Route as ApiBudgetsIndexImport } from './routes/api/budgets/index'
+import { Route as ApiBudgetCopyIndexImport } from './routes/api/budget-copy/index'
 import { Route as ApiAssetsIndexImport } from './routes/api/assets/index'
 import { Route as ApiAlertsIndexImport } from './routes/api/alerts/index'
 import { Route as ApiWalletsIdImport } from './routes/api/wallets/$id'
@@ -190,6 +191,12 @@ const ApiCategoriesIndexRoute = ApiCategoriesIndexImport.update({
 const ApiBudgetsIndexRoute = ApiBudgetsIndexImport.update({
   id: '/api/budgets/',
   path: '/api/budgets/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ApiBudgetCopyIndexRoute = ApiBudgetCopyIndexImport.update({
+  id: '/api/budget-copy/',
+  path: '/api/budget-copy/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -518,6 +525,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAssetsIndexImport
       parentRoute: typeof rootRoute
     }
+    '/api/budget-copy/': {
+      id: '/api/budget-copy/'
+      path: '/api/budget-copy'
+      fullPath: '/api/budget-copy'
+      preLoaderRoute: typeof ApiBudgetCopyIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/api/budgets/': {
       id: '/api/budgets/'
       path: '/api/budgets'
@@ -618,6 +632,7 @@ export interface FileRoutesByFullPath {
   '/api/wallets/$id': typeof ApiWalletsIdRoute
   '/api/alerts': typeof ApiAlertsIndexRoute
   '/api/assets': typeof ApiAssetsIndexRoute
+  '/api/budget-copy': typeof ApiBudgetCopyIndexRoute
   '/api/budgets': typeof ApiBudgetsIndexRoute
   '/api/categories': typeof ApiCategoriesIndexRoute
   '/api/credit-cards': typeof ApiCreditCardsIndexRoute
@@ -661,6 +676,7 @@ export interface FileRoutesByTo {
   '/api/wallets/$id': typeof ApiWalletsIdRoute
   '/api/alerts': typeof ApiAlertsIndexRoute
   '/api/assets': typeof ApiAssetsIndexRoute
+  '/api/budget-copy': typeof ApiBudgetCopyIndexRoute
   '/api/budgets': typeof ApiBudgetsIndexRoute
   '/api/categories': typeof ApiCategoriesIndexRoute
   '/api/credit-cards': typeof ApiCreditCardsIndexRoute
@@ -705,6 +721,7 @@ export interface FileRoutesById {
   '/api/wallets/$id': typeof ApiWalletsIdRoute
   '/api/alerts/': typeof ApiAlertsIndexRoute
   '/api/assets/': typeof ApiAssetsIndexRoute
+  '/api/budget-copy/': typeof ApiBudgetCopyIndexRoute
   '/api/budgets/': typeof ApiBudgetsIndexRoute
   '/api/categories/': typeof ApiCategoriesIndexRoute
   '/api/credit-cards/': typeof ApiCreditCardsIndexRoute
@@ -750,6 +767,7 @@ export interface FileRouteTypes {
     | '/api/wallets/$id'
     | '/api/alerts'
     | '/api/assets'
+    | '/api/budget-copy'
     | '/api/budgets'
     | '/api/categories'
     | '/api/credit-cards'
@@ -792,6 +810,7 @@ export interface FileRouteTypes {
     | '/api/wallets/$id'
     | '/api/alerts'
     | '/api/assets'
+    | '/api/budget-copy'
     | '/api/budgets'
     | '/api/categories'
     | '/api/credit-cards'
@@ -834,6 +853,7 @@ export interface FileRouteTypes {
     | '/api/wallets/$id'
     | '/api/alerts/'
     | '/api/assets/'
+    | '/api/budget-copy/'
     | '/api/budgets/'
     | '/api/categories/'
     | '/api/credit-cards/'
@@ -878,6 +898,7 @@ export interface RootRouteChildren {
   ApiWalletsIdRoute: typeof ApiWalletsIdRoute
   ApiAlertsIndexRoute: typeof ApiAlertsIndexRoute
   ApiAssetsIndexRoute: typeof ApiAssetsIndexRoute
+  ApiBudgetCopyIndexRoute: typeof ApiBudgetCopyIndexRoute
   ApiBudgetsIndexRoute: typeof ApiBudgetsIndexRoute
   ApiCategoriesIndexRoute: typeof ApiCategoriesIndexRoute
   ApiCreditCardsIndexRoute: typeof ApiCreditCardsIndexRoute
@@ -921,6 +942,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWalletsIdRoute: ApiWalletsIdRoute,
   ApiAlertsIndexRoute: ApiAlertsIndexRoute,
   ApiAssetsIndexRoute: ApiAssetsIndexRoute,
+  ApiBudgetCopyIndexRoute: ApiBudgetCopyIndexRoute,
   ApiBudgetsIndexRoute: ApiBudgetsIndexRoute,
   ApiCategoriesIndexRoute: ApiCategoriesIndexRoute,
   ApiCreditCardsIndexRoute: ApiCreditCardsIndexRoute,
@@ -973,6 +995,7 @@ export const routeTree = rootRoute
         "/api/wallets/$id",
         "/api/alerts/",
         "/api/assets/",
+        "/api/budget-copy/",
         "/api/budgets/",
         "/api/categories/",
         "/api/credit-cards/",
@@ -1076,6 +1099,9 @@ export const routeTree = rootRoute
     },
     "/api/assets/": {
       "filePath": "api/assets/index.ts"
+    },
+    "/api/budget-copy/": {
+      "filePath": "api/budget-copy/index.ts"
     },
     "/api/budgets/": {
       "filePath": "api/budgets/index.ts"

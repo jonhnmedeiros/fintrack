@@ -30,6 +30,25 @@ export function useCreateOrUpdateBudget() {
   })
 }
 
+export function useCopyBudgets() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { fromMonth: number; fromYear: number; toMonth: number; toYear: number }) =>
+      fetch('/api/budget-copy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({ error: 'Erro ao copiar orçamentos' }))
+          throw new Error(err.error || 'Erro ao copiar orçamentos')
+        }
+        return r.json() as Promise<{ copied: number }>
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['budgets'] }),
+  })
+}
+
 export function useDeleteBudget() {
   const qc = useQueryClient()
   return useMutation({

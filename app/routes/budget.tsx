@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { PiggyBank, Plus, Pencil, Trash2 } from 'lucide-react'
+import { PiggyBank, Plus, Pencil, Trash2, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
 import { MonthYearPicker } from '@/components/ui/month-year-picker'
-import { useBudgets, useCreateOrUpdateBudget, useDeleteBudget } from '@/features/finance/hooks/useBudgets'
+import { useBudgets, useCreateOrUpdateBudget, useDeleteBudget, useCopyBudgets } from '@/features/finance/hooks/useBudgets'
 import { useCategories } from '@/features/finance/hooks/useCategories'
 import { useUserRole } from '@/features/auth/hooks/useUserRole'
 import { formatCurrency } from '@/lib/utils'
@@ -255,6 +255,7 @@ function BudgetPage() {
 
   const { data, isLoading, isError } = useBudgets(yearFilter, monthFilter)
   const { isVisualizador } = useUserRole()
+  const copyBudgets = useCopyBudgets()
 
   const budgets: BudgetItem[] = Array.isArray(data) ? data : []
 
@@ -270,6 +271,28 @@ function BudgetPage() {
 
   const monthLabel = capitalizeFirst(new Date(yearFilter, monthFilter - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }))
 
+  const prevMonth = monthFilter === 1 ? 12 : monthFilter - 1
+  const prevYear = monthFilter === 1 ? yearFilter - 1 : yearFilter
+  const prevMonthLabel = capitalizeFirst(new Date(prevYear, prevMonth - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }))
+
+  const handleCopyFromPrevMonth = async () => {
+    try {
+      const result = await copyBudgets.mutateAsync({
+        fromMonth: prevMonth,
+        fromYear: prevYear,
+        toMonth: monthFilter,
+        toYear: yearFilter,
+      })
+      if (result.copied === 0) {
+        toast.info('Nenhum orçamento novo para copiar (já existem ou o mês anterior está vazio)')
+      } else {
+        toast.success(`${result.copied} orçamento${result.copied > 1 ? 's' : ''} copiado${result.copied > 1 ? 's' : ''} de ${prevMonthLabel}`)
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao copiar orçamentos')
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -281,10 +304,16 @@ function BudgetPage() {
           </div>
         </div>
         {!isVisualizador && (
-          <Button onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Orçamento
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleCopyFromPrevMonth} disabled={copyBudgets.isPending}>
+              <Copy className="h-4 w-4 mr-2" />
+              {copyBudgets.isPending ? 'Copiando...' : `Copiar de ${prevMonthLabel}`}
+            </Button>
+            <Button onClick={openCreate}>
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Orçamento
+            </Button>
+          </div>
         )}
       </div>
 
