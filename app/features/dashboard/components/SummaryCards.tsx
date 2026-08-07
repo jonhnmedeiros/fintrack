@@ -42,14 +42,30 @@ export function SummaryCards({ transactions, assets, isLoading }: SummaryCardsPr
     .filter((t) => t.type === 'EXPENSE')
     .reduce((sum, t) => sum + Number(t.amount), 0)
 
-  const assetArray = assets as Array<{ transactions: Array<{ type: string; quantity: number; price: number }> }>
+  const assetArray = assets as Array<{ type: string; transactions: Array<{ type: string; quantity: number | string; price: number | string }> }>
   const totalInvested = assetArray.reduce((sum, asset) => {
-    const buys = asset.transactions.filter((t) => t.type === 'BUY')
+    if (asset.type === 'CDB') {
+      // CDB: quantity é sempre 1 (aporte/resgate) — o "preço" é o valor em
+      // reais movimentado. Fluxo de caixa simples, igual ao principal
+      // calculado em assets.ts (não é preço médio por cota).
+      const principal = asset.transactions.reduce((s, t) => {
+        const amount = Number(t.quantity) * Number(t.price)
+        if (t.type === 'BUY') return s + amount
+        if (t.type === 'SELL') return s - amount
+        return s
+      }, 0)
+      return sum + Math.max(0, principal)
+    }
+    const buys = asset.transactions.filter((t) => t.type === 'BUY' || t.type === 'BONUS')
     const sells = asset.transactions.filter((t) => t.type === 'SELL')
-    const buyQty = buys.reduce((s, t) => s + t.quantity, 0)
-    const qty = buyQty - sells.reduce((s, t) => s + t.quantity, 0)
+    const buyQty = buys.reduce((s, t) => s + Number(t.quantity), 0)
+    const qty = buyQty - sells.reduce((s, t) => s + Number(t.quantity), 0)
+    // Bonificação não tem custo — só entra na quantidade, não no total pago.
+    const buyCost = asset.transactions
+      .filter((t) => t.type === 'BUY')
+      .reduce((s, t) => s + Number(t.quantity) * Number(t.price), 0)
     // Evita NaN quando a quantidade comprada é zero (avgPrice = 0/0)
-    const avgPrice = buyQty > 0 ? buys.reduce((s, t) => s + t.quantity * t.price, 0) / buyQty : 0
+    const avgPrice = buyQty > 0 ? buyCost / buyQty : 0
     return sum + qty * avgPrice
   }, 0)
 
