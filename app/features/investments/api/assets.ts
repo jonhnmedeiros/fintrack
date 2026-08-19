@@ -6,10 +6,14 @@ interface AssetWithRelations {
   id: string
   ticker: string
   type: string
-  rateType: 'CDI_PERCENT' | 'PREFIXADO' | 'IPCA_PLUS' | null
+  rateType: 'CDI_PERCENT' | 'SELIC_PLUS' | 'PREFIXADO' | 'IPCA_PLUS' | null
   rate: number | null
   transactions: { type: string; quantity: number; price: number; date: Date }[]
 }
+
+// Ativos de renda fixa (CDB, Tesouro Direto) são valorizados por juros
+// compostos a partir da taxa contratada, em vez de "preço médio × quantidade".
+const isFixedIncomeType = (type: string) => type === 'CDB' || type === 'TESOURO'
 
 export async function listAssets(userId: string) {
   const db = userDb(userId)
@@ -24,21 +28,21 @@ export async function listAssets(userId: string) {
     },
   })) as unknown as AssetWithRelations[]
 
-  const hasCdb = assets.some((a) => a.type === 'CDB')
-  if (!hasCdb) return assets.map((a) => ({ ...a, fixedIncomeCurrentValue: null, principal: null }))
+  const hasFixedIncome = assets.some((a) => isFixedIncomeType(a.type))
+  if (!hasFixedIncome) return assets.map((a) => ({ ...a, fixedIncomeCurrentValue: null, principal: null }))
 
   let rates: Awaited<ReturnType<typeof getReferenceRates>> | null = null
   try {
     rates = await getReferenceRates()
   } catch (err) {
-    console.error('[assets] falha ao buscar taxas de referência (CDI/IPCA):', err)
+    console.error('[assets] falha ao buscar taxas de referência (CDI/Selic/IPCA):', err)
   }
 
   return assets.map((asset) => {
-    if (asset.type !== 'CDB') return { ...asset, fixedIncomeCurrentValue: null, principal: null }
+    if (!isFixedIncomeType(asset.type)) return { ...asset, fixedIncomeCurrentValue: null, principal: null }
 
     // Principal = soma de aportes (BUY) - resgates (SELL), a valor de face
-    // (quantity=1 sempre nas transações de CDB; price = valor do aporte/resgate)
+    // (quantity=1 sempre nessas transações; price = valor do aporte/resgate)
     const principal = asset.transactions.reduce((sum, t) => {
       const amount = Number(t.quantity) * Number(t.price)
       if (t.type === 'BUY') return sum + amount
@@ -58,6 +62,7 @@ export async function listAssets(userId: string) {
       rate: Number(asset.rate),
       purchaseDate: firstBuy.date,
       cdiAnnual: rates.cdiAnnual,
+      selicAnnual: rates.selicAnnual,
       ipca12m: rates.ipca12m,
     })
     return { ...asset, fixedIncomeCurrentValue, principal }

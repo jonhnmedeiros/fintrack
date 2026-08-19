@@ -49,8 +49,8 @@ export async function createInvestmentTransaction(userId: string, data: unknown)
       select: { investExpenseCategoryId: true, investIncomeCategoryId: true },
     }),
   ])
-  const isCdb = asset?.type === 'CDB'
-  const label = isCdb
+  const isFixedIncome = asset?.type === 'CDB' || asset?.type === 'TESOURO'
+  const label = isFixedIncome
     ? (validated.type === 'BUY' ? 'Aporte' : validated.type === 'SELL' ? 'Resgate' : TX_TYPE_LABEL[validated.type])
     : (validated.type === 'BUY' ? 'Compra' : validated.type === 'SELL' ? 'Venda' : TX_TYPE_LABEL[validated.type])
   const description = `${label || validated.type}${asset ? ` — ${asset.ticker}` : ''}`

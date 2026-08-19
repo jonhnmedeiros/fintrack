@@ -38,7 +38,7 @@ export const APIRoute = {
 
       const months = [...new Set(allTxs.map((t) => t.date.slice(0, 7)))].sort()
 
-      const isCdb = new Map(assets.map((a) => [a.ticker, a.type === 'CDB']))
+      const isFixedIncome = new Map(assets.map((a) => [a.ticker, a.type === 'CDB' || a.type === 'TESOURO']))
       const positions: Record<string, { qty: number; totalCost: number }> = {}
       const firstBuyDate: Record<string, Date> = {}
       const data: { month: string; cost: number; marketValue: number; profit: number }[] = []
@@ -47,14 +47,15 @@ export const APIRoute = {
         positions[asset.ticker] = { qty: 0, totalCost: 0 }
       }
 
-      // Taxas de referência (CDI/IPCA) só são buscadas se houver algum CDB na carteira.
+      // Taxas de referência (CDI/Selic/IPCA) só são buscadas se houver algum
+      // ativo de renda fixa (CDB, Tesouro Direto) na carteira.
       let rates: Awaited<ReturnType<typeof import('@/lib/rates').getReferenceRates>> | null = null
       const { getReferenceRates, calcFixedIncomeValue } = await import('@/lib/rates')
-      if (assets.some((a) => a.type === 'CDB')) {
+      if (assets.some((a) => a.type === 'CDB' || a.type === 'TESOURO')) {
         try {
           rates = await getReferenceRates()
         } catch (err) {
-          console.error('[profitability] falha ao buscar taxas de referência (CDI/IPCA):', err)
+          console.error('[profitability] falha ao buscar taxas de referência (CDI/Selic/IPCA):', err)
         }
       }
 
@@ -65,11 +66,12 @@ export const APIRoute = {
           const pos = positions[tx.ticker]
           if (!pos) { txIndex++; continue }
 
-          if (isCdb.get(tx.ticker)) {
-            // CDB: quantity é sempre 1 (aporte/resgate) — o "preço" é o valor
-            // em reais movimentado, não um preço por unidade. Tratamos como
-            // fluxo de caixa simples (igual ao cálculo de principal em assets.ts),
-            // não como diluição de preço médio por cota.
+          if (isFixedIncome.get(tx.ticker)) {
+            // Renda fixa (CDB, Tesouro): quantity é sempre 1 (aporte/resgate)
+            // — o "preço" é o valor em reais movimentado, não um preço por
+            // unidade. Tratamos como fluxo de caixa simples (igual ao
+            // cálculo de principal em assets.ts), não como diluição de
+            // preço médio por cota.
             if (tx.type === 'BUY') {
               if (!firstBuyDate[tx.ticker]) firstBuyDate[tx.ticker] = new Date(tx.date + 'T00:00:00Z')
               pos.qty += tx.quantity
@@ -101,10 +103,11 @@ export const APIRoute = {
 
           totalCost += pos.totalCost
 
-          if (isCdb.get(asset.ticker)) {
-            // Valor de mercado do CDB: estimado por juros compostos a partir da
-            // taxa contratada, igual ao card do ativo (ver assets.ts) — não pelo
-            // "preço" das transações, que aqui é apenas valor de aporte/resgate.
+          if (isFixedIncome.get(asset.ticker)) {
+            // Valor de mercado da renda fixa: estimado por juros compostos a
+            // partir da taxa contratada, igual ao card do ativo (ver
+            // assets.ts) — não pelo "preço" das transações, que aqui é
+            // apenas valor de aporte/resgate.
             const purchaseDate = firstBuyDate[asset.ticker]
             if (asset.rateType && asset.rate != null && rates && purchaseDate) {
               const referenceDate = new Date(`${month}-28T00:00:00Z`)
@@ -117,6 +120,7 @@ export const APIRoute = {
                   purchaseDate,
                   referenceDate,
                   cdiAnnual: rates.cdiAnnual,
+                  selicAnnual: rates.selicAnnual,
                   ipca12m: rates.ipca12m,
                 })
               )

@@ -13,7 +13,7 @@ export const APIRoute = {
         const rates = await getReferenceRates()
         return Response.json(rates)
       } catch (err) {
-        return Response.json({ error: 'Erro ao buscar taxas de referência (CDI/IPCA)' }, { status: 502 })
+        return Response.json({ error: 'Erro ao buscar taxas de referência (CDI/Selic/IPCA)' }, { status: 502 })
       }
     },
   },

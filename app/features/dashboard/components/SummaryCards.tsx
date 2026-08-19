@@ -44,10 +44,10 @@ export function SummaryCards({ transactions, assets, isLoading }: SummaryCardsPr
 
   const assetArray = assets as Array<{ type: string; transactions: Array<{ type: string; quantity: number | string; price: number | string }> }>
   const totalInvested = assetArray.reduce((sum, asset) => {
-    if (asset.type === 'CDB') {
-      // CDB: quantity é sempre 1 (aporte/resgate) — o "preço" é o valor em
-      // reais movimentado. Fluxo de caixa simples, igual ao principal
-      // calculado em assets.ts (não é preço médio por cota).
+    if (asset.type === 'CDB' || asset.type === 'TESOURO') {
+      // Renda fixa: quantity é sempre 1 (aporte/resgate) — o "preço" é o
+      // valor em reais movimentado. Fluxo de caixa simples, igual ao
+      // principal calculado em assets.ts (não é preço médio por cota).
       const principal = asset.transactions.reduce((s, t) => {
         const amount = Number(t.quantity) * Number(t.price)
         if (t.type === 'BUY') return s + amount

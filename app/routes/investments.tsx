@@ -48,27 +48,40 @@ export const Route = createFileRoute('/investments')({
 })
 
 const ALLOCATION_COLORS = ['#3b82f6', '#22c55e', '#f97316', '#f59e0b', '#8b5cf6', '#ec4899']
-const TYPE_LABELS: Record<string, string> = { STOCK: 'Ações', ETF: 'ETFs', CRYPTO: 'Cripto', FIIS: 'FIIs', BOND: 'Renda Fixa', CDB: 'CDB', OTHER: 'Outros' }
+const TYPE_LABELS: Record<string, string> = { STOCK: 'Ações', ETF: 'ETFs', CRYPTO: 'Cripto', FIIS: 'FIIs', BOND: 'Renda Fixa', CDB: 'CDB', TESOURO: 'Tesouro Direto', OTHER: 'Outros' }
 
-const ASSET_TYPES = ['STOCK', 'ETF', 'CRYPTO', 'FIIS', 'BOND', 'CDB', 'OTHER'] as const
+const ASSET_TYPES = ['STOCK', 'ETF', 'CRYPTO', 'FIIS', 'BOND', 'CDB', 'TESOURO', 'OTHER'] as const
+
+// Ativos de renda fixa (CDB, Tesouro Direto) compartilham o mesmo formulário
+// (taxa/vencimento/emissor, aporte/resgate) — distintos dos demais tipos.
+const isFixedIncomeType = (type: string | undefined) => type === 'CDB' || type === 'TESOURO'
 
 const RATE_TYPE_LABELS: Record<string, string> = {
   CDI_PERCENT: '% do CDI',
+  SELIC_PLUS: 'Selic + spread (% a.a.)',
   PREFIXADO: 'Prefixado (% a.a.)',
   IPCA_PLUS: 'IPCA+ (% a.a.)',
+}
+
+// CDB usa tipicamente %CDI; Tesouro Direto usa Selic+ (Tesouro Selic) —
+// Prefixado e IPCA+ valem para os dois.
+const RATE_TYPES_BY_ASSET: Record<string, (keyof typeof RATE_TYPE_LABELS)[]> = {
+  CDB: ['CDI_PERCENT', 'PREFIXADO', 'IPCA_PLUS'],
+  TESOURO: ['SELIC_PLUS', 'PREFIXADO', 'IPCA_PLUS'],
 }
 
 const assetFormSchema = z.object({
   ticker: z.string().min(1, 'Nome/ticker é obrigatório').max(50),
   name: z.string().optional(),
-  type: z.enum(['STOCK', 'ETF', 'CRYPTO', 'FIIS', 'BOND', 'CDB', 'OTHER']),
+  type: z.enum(['STOCK', 'ETF', 'CRYPTO', 'FIIS', 'BOND', 'CDB', 'TESOURO', 'OTHER']),
   market: z.string().optional(),
-  rateType: z.enum(['CDI_PERCENT', 'PREFIXADO', 'IPCA_PLUS']).optional(),
-  rate: z.number().positive().optional(),
+  rateType: z.enum(['CDI_PERCENT', 'SELIC_PLUS', 'PREFIXADO', 'IPCA_PLUS']).optional(),
+  // Sem .positive(): Tesouro Selic pode ter spread negativo (deságio).
+  rate: z.number().optional(),
   maturityDate: z.string().optional(),
   issuer: z.string().optional(),
 }).refine(
-  (data) => data.type !== 'CDB' || (!!data.rateType && data.rate !== undefined),
+  (data) => !isFixedIncomeType(data.type) || (!!data.rateType && data.rate !== undefined),
   { message: 'Informe o tipo e o valor da taxa', path: ['rate'] }
 )
 
@@ -150,7 +163,8 @@ function CreateAssetDialog({
   })
 
   const type = watch('type')
-  const isCdb = type === 'CDB'
+  const isFixedIncome = isFixedIncomeType(type)
+  const rateTypeOptions = type ? RATE_TYPES_BY_ASSET[type] || [] : []
 
   const onSubmit = async (data: AssetFormData) => {
     try {
@@ -170,7 +184,17 @@ function CreateAssetDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label>Tipo</Label>
-            <Select value={watch('type') || ''} onValueChange={(v) => setValue('type', v as AssetFormData['type'])}>
+            <Select value={watch('type') || ''} onValueChange={(v) => {
+              setValue('type', v as AssetFormData['type'])
+              // Limpa a taxa contratada se o tipo de taxa selecionado não
+              // valer mais pro novo tipo de ativo (ex: %CDI não existe no
+              // Tesouro Direto, que usa Selic+).
+              const validRateTypes = RATE_TYPES_BY_ASSET[v] || []
+              if (watch('rateType') && !validRateTypes.includes(watch('rateType') as never)) {
+                setValue('rateType', undefined)
+                setValue('rate', undefined)
+              }
+            }}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
                 {ASSET_TYPES.map((t) => (
@@ -181,15 +205,15 @@ function CreateAssetDialog({
             {errors.type && <p className="text-red-500 text-sm">{errors.type.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label>{isCdb ? 'Nome (ex: CDB Banco Inter)' : 'Ticker'}</Label>
+            <Label>{isFixedIncome ? 'Nome (ex: CDB Banco Inter, Tesouro Selic 2029)' : 'Ticker'}</Label>
             <Input
               value={watch('ticker')}
-              onChange={(e) => setValue('ticker', isCdb ? e.target.value : e.target.value.toUpperCase())}
-              placeholder={isCdb ? 'Ex: CDB Banco Inter 110% CDI' : 'Ex: PETR4'}
+              onChange={(e) => setValue('ticker', isFixedIncome ? e.target.value : e.target.value.toUpperCase())}
+              placeholder={type === 'TESOURO' ? 'Ex: Tesouro Selic 2029' : isFixedIncome ? 'Ex: CDB Banco Inter 110% CDI' : 'Ex: PETR4'}
             />
             {errors.ticker && <p className="text-red-500 text-sm">{errors.ticker.message}</p>}
           </div>
-          {!isCdb && (
+          {!isFixedIncome && (
             <div className="space-y-2">
               <Label>Nome (opcional)</Label>
               <Input
@@ -199,14 +223,14 @@ function CreateAssetDialog({
               />
             </div>
           )}
-          {isCdb ? (
+          {isFixedIncome ? (
             <>
               <div className="space-y-2">
                 <Label>Emissor (opcional)</Label>
                 <Input
                   value={watch('issuer') || ''}
                   onChange={(e) => setValue('issuer', e.target.value)}
-                  placeholder="Ex: Banco Inter"
+                  placeholder={type === 'TESOURO' ? 'Tesouro Nacional' : 'Ex: Banco Inter'}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -215,8 +239,8 @@ function CreateAssetDialog({
                   <Select value={watch('rateType') || ''} onValueChange={(v) => setValue('rateType', v as AssetFormData['rateType'])}>
                     <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                     <SelectContent>
-                      {Object.entries(RATE_TYPE_LABELS).map(([v, label]) => (
-                        <SelectItem key={v} value={v}>{label}</SelectItem>
+                      {rateTypeOptions.map((v) => (
+                        <SelectItem key={v} value={v}>{RATE_TYPE_LABELS[v]}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -226,7 +250,7 @@ function CreateAssetDialog({
                   <Input
                     type="number"
                     step="0.01"
-                    placeholder={watch('rateType') === 'CDI_PERCENT' ? '110' : '12,5'}
+                    placeholder={watch('rateType') === 'CDI_PERCENT' ? '110' : watch('rateType') === 'SELIC_PLUS' ? '0,05 (ou -0,05)' : '12,5'}
                     value={watch('rate') ?? ''}
                     onChange={(e) => setValue('rate', e.target.value ? parseFloat(e.target.value) : undefined)}
                   />
@@ -235,13 +259,13 @@ function CreateAssetDialog({
               {errors.rate && <p className="text-red-500 text-sm">{errors.rate.message}</p>}
               {rates && (
                 <p className="text-xs text-muted-foreground">
-                  Referência atual: CDI {rates.cdiAnnual.toFixed(2)}% a.a. · IPCA (12m) {rates.ipca12m.toFixed(2)}%
+                  Referência atual: CDI {rates.cdiAnnual.toFixed(2)}% a.a. · Selic {rates.selicAnnual.toFixed(2)}% a.a. · IPCA (12m) {rates.ipca12m.toFixed(2)}%
                   {rates.stale && ' (cache — API indisponível no momento)'}
                 </p>
               )}
               <div className="space-y-2">
                 <Label>Data de vencimento (opcional)</Label>
-                <DatePicker value={watch('maturityDate') || ''} onChange={(v) => setValue('maturityDate', v)} placeholder="Deixe em branco para liquidez diária (ex: caixinha)" />
+                <DatePicker value={watch('maturityDate') || ''} onChange={(v) => setValue('maturityDate', v)} placeholder="Deixe em branco para liquidez diária (ex: caixinha, Tesouro Selic)" />
               </div>
             </>
           ) : (
@@ -272,7 +296,7 @@ function TransactionDialog({
   open: boolean
   onOpenChange: (v: boolean) => void
 }) {
-  const isCdb = asset.type === 'CDB'
+  const isFixedIncome = isFixedIncomeType(asset.type)
   const createTx = useCreateInvestmentTransaction()
   const { data: walletsData } = useWallets()
   const walletList = (Array.isArray(walletsData) ? walletsData : []) as { id: string; name: string; type: string }[]
@@ -282,7 +306,7 @@ function TransactionDialog({
 
   const { handleSubmit, formState: { errors }, watch, setValue, reset } = useForm<TransactionFormData>({
     resolver: zodResolver(transactionFormSchema),
-    defaultValues: { type: undefined, quantity: isCdb ? 1 : undefined, price: undefined, fees: 0, taxes: 0, date: new Date().toISOString().slice(0, 10), walletId: '' },
+    defaultValues: { type: undefined, quantity: isFixedIncome ? 1 : undefined, price: undefined, fees: 0, taxes: 0, date: new Date().toISOString().slice(0, 10), walletId: '' },
   })
 
   const type = watch('type')
@@ -297,7 +321,7 @@ function TransactionDialog({
     try {
       await createTx.mutateAsync({
         ...data,
-        quantity: isCdb ? 1 : data.quantity,
+        quantity: isFixedIncome ? 1 : data.quantity,
         price: isBonus ? 0 : data.price,
         fees: data.fees || 0,
         taxes: data.taxes || 0,
@@ -325,17 +349,17 @@ function TransactionDialog({
             }}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="BUY">{isCdb ? 'Aporte' : 'Compra'}</SelectItem>
-                <SelectItem value="SELL">{isCdb ? 'Resgate' : 'Venda'}</SelectItem>
-                {!isCdb && <SelectItem value="DIVIDEND">Dividendo</SelectItem>}
-                {!isCdb && <SelectItem value="BONUS">Bonificação</SelectItem>}
+                <SelectItem value="BUY">{isFixedIncome ? 'Aporte' : 'Compra'}</SelectItem>
+                <SelectItem value="SELL">{isFixedIncome ? 'Resgate' : 'Venda'}</SelectItem>
+                {!isFixedIncome && <SelectItem value="DIVIDEND">Dividendo</SelectItem>}
+                {!isFixedIncome && <SelectItem value="BONUS">Bonificação</SelectItem>}
                 <SelectItem value="TAX">Taxa</SelectItem>
               </SelectContent>
             </Select>
             {errors.type && <p className="text-red-500 text-sm">{errors.type.message}</p>}
           </div>
-          <div className={isCdb || isBonus ? '' : 'grid grid-cols-2 gap-4'}>
-            {!isCdb && (
+          <div className={isFixedIncome || isBonus ? '' : 'grid grid-cols-2 gap-4'}>
+            {!isFixedIncome && (
               <div className="space-y-2">
                 <Label>Quantidade</Label>
                 <Input type="number" step="1" min="0" placeholder="100"
@@ -347,7 +371,7 @@ function TransactionDialog({
             )}
             {!isBonus && (
               <div className="space-y-2">
-                <Label>{isCdb ? 'Valor' : 'Preço'}</Label>
+                <Label>{isFixedIncome ? 'Valor' : 'Preço'}</Label>
                 <CurrencyInput
                   value={watch('price')}
                   onChange={(v) => setValue('price', v, { shouldDirty: true })}
@@ -546,17 +570,18 @@ function InvestmentsPage() {
     let totalInvested = 0
     const byType: Record<string, number> = {}
     for (const a of assets) {
-      // CDB usa o `principal` calculado no backend (soma de aportes - resgates
-      // pelo valor literal) — calcPosition() assume preço médio por unidade,
-      // o que não faz sentido quando cada "unidade" é 1 aporte de valor variável.
-      const invested = a.type === 'CDB' ? (a.principal ?? 0) : calcPosition(a.transactions).invested
+      // Renda fixa (CDB, Tesouro) usa o `principal` calculado no backend (soma
+      // de aportes - resgates pelo valor literal) — calcPosition() assume
+      // preço médio por unidade, o que não faz sentido quando cada "unidade"
+      // é 1 aporte de valor variável.
+      const invested = isFixedIncomeType(a.type) ? (a.principal ?? 0) : calcPosition(a.transactions).invested
       totalInvested += invested
       if (invested > 0) {
         byType[a.type] = (byType[a.type] || 0) + invested
       }
     }
     const assetCount = assets.filter((a) =>
-      a.type === 'CDB' ? (a.principal ?? 0) > 0 : calcPosition(a.transactions).quantity > 0
+      isFixedIncomeType(a.type) ? (a.principal ?? 0) > 0 : calcPosition(a.transactions).quantity > 0
     ).length
     const allocation = Object.entries(byType)
       .map(([type, value]) => ({ name: type, value: Math.round(value * 100) / 100 }))
@@ -713,9 +738,9 @@ function InvestmentsPage() {
               <CardContent className="p-4 pt-0">
               <div className="space-y-2">
                 {assets
-                  .filter((a) => a.type === 'CDB' ? (a.principal ?? 0) > 0 : calcPosition(a.transactions).quantity > 0)
+                  .filter((a) => isFixedIncomeType(a.type) ? (a.principal ?? 0) > 0 : calcPosition(a.transactions).quantity > 0)
                   .map((asset) => {
-                  const invested = asset.type === 'CDB' ? (asset.principal ?? 0) : calcPosition(asset.transactions).invested
+                  const invested = isFixedIncomeType(asset.type) ? (asset.principal ?? 0) : calcPosition(asset.transactions).invested
                   const pct = ((invested / portfolio.totalInvested) * 100)
                   return (
                     <div key={asset.id} className="flex items-center gap-3">
@@ -746,8 +771,17 @@ function InvestmentsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {assets.map((asset) => {
             const pos = calcPosition(asset.transactions)
-            const typeLabel: Record<string, string> = { STOCK: 'Ação', ETF: 'ETF', CRYPTO: 'Crypto', FIIS: 'FII', BOND: 'Renda Fixa', CDB: 'CDB', OTHER: 'Outro' }
-            const isCdb = asset.type === 'CDB'
+            const typeLabel: Record<string, string> = { STOCK: 'Ação', ETF: 'ETF', CRYPTO: 'Crypto', FIIS: 'FII', BOND: 'Renda Fixa', CDB: 'CDB', TESOURO: 'Tesouro Direto', OTHER: 'Outro' }
+            const isFixedIncome = isFixedIncomeType(asset.type)
+            // Preço atual estimado: preço da compra/venda mais recente (a API
+            // já retorna as transações ordenadas por data desc) — não temos
+            // cotação ao vivo, então usamos essa aproximação, igual ao
+            // gráfico de rentabilidade (ver profitability.ts).
+            const lastPricedTx = asset.transactions.find((t) => t.type === 'BUY' || t.type === 'SELL')
+            const currentPrice = lastPricedTx ? Number(lastPricedTx.price) : null
+            const marketValue = currentPrice != null && pos.quantity > 0 ? pos.quantity * currentPrice : null
+            const profit = marketValue != null ? marketValue - pos.invested : null
+            const profitPct = profit != null && pos.invested > 0 ? (profit / pos.invested) * 100 : null
             return (
               <Card
                 key={asset.id}
@@ -781,7 +815,7 @@ function InvestmentsPage() {
                   </div>
                 </div>
                 {asset.name && <p className="text-xs text-muted-foreground">{asset.name}</p>}
-                {isCdb ? (
+                {isFixedIncome ? (
                   asset.principal != null && asset.principal > 0 ? (
                     <div className="space-y-1 text-sm">
                       {asset.issuer && (
@@ -795,6 +829,7 @@ function InvestmentsPage() {
                           <span className="text-muted-foreground">Taxa</span>
                           <span className="font-medium">
                             {asset.rateType === 'CDI_PERCENT' && `${asset.rate}% do CDI`}
+                            {asset.rateType === 'SELIC_PLUS' && `Selic ${asset.rate >= 0 ? '+' : ''}${asset.rate}%`}
                             {asset.rateType === 'PREFIXADO' && `${asset.rate}% a.a.`}
                             {asset.rateType === 'IPCA_PLUS' && `IPCA+${asset.rate}%`}
                           </span>
@@ -814,14 +849,18 @@ function InvestmentsPage() {
                           {asset.fixedIncomeCurrentValue != null ? formatCurrency(asset.fixedIncomeCurrentValue) : '—'}
                         </span>
                       </div>
-                      {asset.fixedIncomeCurrentValue != null && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Rentabilidade</span>
-                          <span className="font-medium text-green-500">
-                            +{formatCurrency(asset.fixedIncomeCurrentValue - asset.principal)} ({(((asset.fixedIncomeCurrentValue / asset.principal) - 1) * 100).toFixed(2)}%)
-                          </span>
-                        </div>
-                      )}
+                      {asset.fixedIncomeCurrentValue != null && (() => {
+                        const fiProfit = asset.fixedIncomeCurrentValue - asset.principal
+                        const fiPct = (asset.fixedIncomeCurrentValue / asset.principal - 1) * 100
+                        return (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Rentabilidade</span>
+                            <span className={`font-medium ${fiProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                              {fiProfit >= 0 ? '+' : ''}{formatCurrency(fiProfit)} ({fiProfit >= 0 ? '+' : ''}{fiPct.toFixed(2)}%)
+                            </span>
+                          </div>
+                        )
+                      })()}
                     </div>
                   ) : (
                     <p className="text-xs text-muted-foreground">Sem posição</p>
@@ -840,6 +879,21 @@ function InvestmentsPage() {
                       <span className="text-muted-foreground">Total investido</span>
                       <span className="font-semibold">{formatCurrency(pos.invested)}</span>
                     </div>
+                    {marketValue != null && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Valor atualizado</span>
+                        <span className="font-semibold">{formatCurrency(marketValue)}</span>
+                      </div>
+                    )}
+                    {profit != null && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Rentabilidade</span>
+                        <span className={`font-medium ${profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
+                          {profitPct != null && ` (${profit >= 0 ? '+' : ''}${profitPct.toFixed(2)}%)`}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <p className="text-xs text-muted-foreground">Sem posição</p>

@@ -1,13 +1,19 @@
 import { z } from 'zod'
 
+// Ativos de renda fixa (CDB, Tesouro Direto) usam os mesmos campos de
+// taxa/vencimento/emissor — distintos dos demais tipos (ações, ETFs etc).
+export const FIXED_INCOME_ASSET_TYPES = ['CDB', 'TESOURO'] as const
+
 export const assetSchema = z.object({
   id: z.string(),
   ticker: z.string().min(1).max(50),
   name: z.string().optional(),
-  type: z.enum(['STOCK', 'ETF', 'CRYPTO', 'FIIS', 'BOND', 'CDB', 'OTHER']),
+  type: z.enum(['STOCK', 'ETF', 'CRYPTO', 'FIIS', 'BOND', 'CDB', 'TESOURO', 'OTHER']),
   market: z.string().optional(),
-  rateType: z.enum(['CDI_PERCENT', 'PREFIXADO', 'IPCA_PLUS']).optional(),
-  rate: z.number().positive().optional(),
+  rateType: z.enum(['CDI_PERCENT', 'SELIC_PLUS', 'PREFIXADO', 'IPCA_PLUS']).optional(),
+  // Sem .positive(): Tesouro Selic pode ter spread negativo (deságio, ex:
+  // "Selic - 0,05% a.a.").
+  rate: z.number().optional(),
   maturityDate: z.string().optional(),
   issuer: z.string().optional(),
   userId: z.string(),
@@ -15,7 +21,7 @@ export const assetSchema = z.object({
 
 function refineFixedIncomeRate<T extends z.ZodType<{ type: string; rateType?: string; rate?: number }>>(schema: T) {
   return schema.refine(
-    (data) => data.type !== 'CDB' || (!!data.rateType && data.rate !== undefined),
+    (data) => !FIXED_INCOME_ASSET_TYPES.includes(data.type as 'CDB' | 'TESOURO') || (!!data.rateType && data.rate !== undefined),
     { message: 'Informe o tipo e o valor da taxa contratada', path: ['rate'] }
   )
 }

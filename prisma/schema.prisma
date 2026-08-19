@@ -183,11 +183,13 @@ enum AssetType {
   FIIS
   BOND
   CDB
+  TESOURO
   OTHER
 }
 
 enum FixedIncomeRateType {
   CDI_PERCENT
+  SELIC_PLUS
   PREFIXADO
   IPCA_PLUS
 }
