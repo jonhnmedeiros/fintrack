@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -37,6 +37,7 @@ import { useAssets, useCreateAsset, useDeleteAsset } from '@/features/investment
 import { useInvestmentTransactions, useCreateInvestmentTransaction, useDeleteInvestmentTransaction } from '@/features/investments/hooks/useInvestmentTransactions'
 import { useAlerts, useCreateAlert, useDeleteAlert } from '@/features/investments/hooks/useAlerts'
 import { useRates } from '@/features/investments/hooks/useRates'
+import { useWallets } from '@/features/finance/hooks/useWallets'
 import { BrokerNoteUpload } from '@/features/investments/components/BrokerNoteUpload'
 import { ProfitChart } from '@/features/investments/components/ProfitChart'
 import { useUserRole } from '@/features/auth/hooks/useUserRole'
@@ -81,6 +82,7 @@ const transactionFormSchema = z.object({
   fees: z.number().optional(),
   taxes: z.number().optional(),
   date: z.string().min(1, 'Data é obrigatória'),
+  walletId: z.string().optional(),
 })
 
 type TransactionFormData = z.infer<typeof transactionFormSchema>
@@ -272,17 +274,36 @@ function TransactionDialog({
 }) {
   const isCdb = asset.type === 'CDB'
   const createTx = useCreateInvestmentTransaction()
+  const { data: walletsData } = useWallets()
+  const walletList = (Array.isArray(walletsData) ? walletsData : []) as { id: string; name: string; type: string }[]
+  // Pré-seleciona a conta "Investimentos" (tipo INVESTMENT), se existir —
+  // é o destino mais comum pro débito/crédito automático desses lançamentos.
+  const defaultWalletId = walletList.find((w) => w.type === 'INVESTMENT')?.id ?? ''
+
   const { handleSubmit, formState: { errors }, watch, setValue, reset } = useForm<TransactionFormData>({
     resolver: zodResolver(transactionFormSchema),
-    defaultValues: { type: undefined, quantity: isCdb ? 1 : undefined, price: undefined, fees: 0, taxes: 0, date: new Date().toISOString().slice(0, 10) },
+    defaultValues: { type: undefined, quantity: isCdb ? 1 : undefined, price: undefined, fees: 0, taxes: 0, date: new Date().toISOString().slice(0, 10), walletId: '' },
   })
 
   const type = watch('type')
   const isBonus = type === 'BONUS'
 
+  useEffect(() => {
+    if (defaultWalletId && !watch('walletId')) setValue('walletId', defaultWalletId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultWalletId])
+
   const onSubmit = async (data: TransactionFormData) => {
     try {
-      await createTx.mutateAsync({ ...data, quantity: isCdb ? 1 : data.quantity, price: isBonus ? 0 : data.price, fees: data.fees || 0, taxes: data.taxes || 0, assetId: asset.id })
+      await createTx.mutateAsync({
+        ...data,
+        quantity: isCdb ? 1 : data.quantity,
+        price: isBonus ? 0 : data.price,
+        fees: data.fees || 0,
+        taxes: data.taxes || 0,
+        assetId: asset.id,
+        walletId: isBonus ? undefined : (data.walletId || undefined),
+      })
       toast.success('Transação registrada')
       reset()
       onOpenChange(false)
@@ -356,6 +377,20 @@ function TransactionDialog({
             <DatePicker value={watch('date') || ''} onChange={(v) => setValue('date', v)} />
             {errors.date && <p className="text-red-500 text-sm">{errors.date.message}</p>}
           </div>
+          {!isBonus && (
+            <div className="space-y-2">
+              <Label>Lançar {type === 'SELL' || type === 'DIVIDEND' ? 'crédito' : 'débito'} na conta</Label>
+              <Select value={watch('walletId') || '__none__'} onValueChange={(v) => setValue('walletId', v === '__none__' ? '' : v)}>
+                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Nenhuma (não lançar na conta)</SelectItem>
+                  {walletList.map((w) => (
+                    <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <Button type="submit" className="w-full" disabled={createTx.isPending}>
             {createTx.isPending ? 'Salvando...' : 'Registrar'}
           </Button>

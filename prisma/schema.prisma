@@ -140,6 +140,7 @@ model Transaction {
   totalInstallments Int?
   userId            String
   user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investmentTransaction InvestmentTransaction?
 }
 
 model CreditCard {
@@ -208,17 +209,24 @@ enum InvTransactionType {
 }
 
 model InvestmentTransaction {
-  id        String          @id @default(cuid())
-  type      InvTransactionType
-  quantity  Decimal
-  price     Decimal
-  fees      Decimal?        @default(0)
-  taxes     Decimal?        @default(0)
-  date      DateTime
-  assetId   String
-  asset     Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String          @id @default(cuid())
+  type                InvTransactionType
+  quantity            Decimal
+  price               Decimal
+  fees                Decimal?        @default(0)
+  taxes               Decimal?        @default(0)
+  date                DateTime
+  assetId             String
+  asset               Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  userId              String
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Transação (débito/crédito) lançada automaticamente numa conta ao
+  // registrar este movimento de investimento — opcional. Se a transação da
+  // conta for excluída diretamente, o vínculo só é desfeito (SetNull); a
+  // exclusão em cascata na outra direção (excluir isso ao excluir a
+  // transação de investimento) é feita explicitamente no código.
+  linkedTransactionId String?         @unique
+  linkedTransaction   Transaction?    @relation(fields: [linkedTransactionId], references: [id], onDelete: SetNull)
 }
 
 enum AlertType {

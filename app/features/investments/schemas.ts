@@ -32,6 +32,10 @@ export const investmentTransactionSchema = z.object({
   date: z.string(),
   assetId: z.string(),
   userId: z.string(),
+  // Conta (ex: "Investimentos") a debitar/creditar automaticamente ao
+  // registrar o movimento — opcional. Bonificação nunca gera lançamento na
+  // conta (não há dinheiro envolvido), mesmo se uma conta for selecionada.
+  walletId: z.string().optional(),
 })
 
 export const alertSchema = z.object({
