@@ -32,12 +32,20 @@ export async function updateInvestPreferences(userId: string, data: unknown) {
     }
   }
 
+  // Só atualiza os campos que vieram de fato no payload — o formulário salva
+  // um campo por vez (débito OU crédito), e usar `?? null` em ambos sempre
+  // zerava o campo que não foi enviado nessa chamada.
+  const updateData: { investExpenseCategoryId?: string | null; investIncomeCategoryId?: string | null } = {}
+  if (Object.prototype.hasOwnProperty.call(data as object, 'investExpenseCategoryId')) {
+    updateData.investExpenseCategoryId = validated.investExpenseCategoryId ?? null
+  }
+  if (Object.prototype.hasOwnProperty.call(data as object, 'investIncomeCategoryId')) {
+    updateData.investIncomeCategoryId = validated.investIncomeCategoryId ?? null
+  }
+
   return prisma.user.update({
     where: { id: userId },
-    data: {
-      investExpenseCategoryId: validated.investExpenseCategoryId ?? null,
-      investIncomeCategoryId: validated.investIncomeCategoryId ?? null,
-    },
+    data: updateData,
     select: { investExpenseCategoryId: true, investIncomeCategoryId: true },
   })
 }
