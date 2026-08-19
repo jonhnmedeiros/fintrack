@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useUserRole } from '@/features/auth/hooks/useUserRole'
 import { InviteForm } from '@/features/settings/components/InviteForm'
+import { InvestCategoryPreferences } from '@/features/settings/components/InvestCategoryPreferences'
 
 export const Route = createFileRoute('/settings')({
   component: SettingsPage,
@@ -49,6 +50,8 @@ function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {!isVisualizador && <InvestCategoryPreferences />}
 
       <InviteForm open={inviteOpen} onOpenChange={setInviteOpen} />
     </div>

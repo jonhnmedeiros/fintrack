@@ -42,12 +42,20 @@ export async function createInvestmentTransaction(userId: string, data: unknown)
   const isDebit = validated.type === 'BUY' || validated.type === 'TAX'
   const total = Math.max(0.01, isDebit ? amount + fees + taxes : amount - fees - taxes)
 
-  const asset = await prisma.asset.findUnique({ where: { id: validated.assetId }, select: { ticker: true, type: true } })
+  const [asset, user] = await Promise.all([
+    prisma.asset.findUnique({ where: { id: validated.assetId }, select: { ticker: true, type: true } }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { investExpenseCategoryId: true, investIncomeCategoryId: true },
+    }),
+  ])
   const isCdb = asset?.type === 'CDB'
   const label = isCdb
     ? (validated.type === 'BUY' ? 'Aporte' : validated.type === 'SELL' ? 'Resgate' : TX_TYPE_LABEL[validated.type])
     : (validated.type === 'BUY' ? 'Compra' : validated.type === 'SELL' ? 'Venda' : TX_TYPE_LABEL[validated.type])
   const description = `${label || validated.type}${asset ? ` — ${asset.ticker}` : ''}`
+  // Categoria padrão configurada em Configurações > Investimentos, se houver.
+  const categoryId = isDebit ? user?.investExpenseCategoryId : user?.investIncomeCategoryId
 
   return prisma.$transaction(async (tx) => {
     const walletTx = await tx.transaction.create({
@@ -57,6 +65,7 @@ export async function createInvestmentTransaction(userId: string, data: unknown)
         description,
         date,
         walletId,
+        categoryId: categoryId || undefined,
         userId,
       },
     })

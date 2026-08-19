@@ -39,6 +39,7 @@ import { Route as ApiAssetsIndexImport } from './routes/api/assets/index'
 import { Route as ApiAlertsIndexImport } from './routes/api/alerts/index'
 import { Route as ApiWalletsIdImport } from './routes/api/wallets/$id'
 import { Route as ApiTransactionsIdImport } from './routes/api/transactions/$id'
+import { Route as ApiSettingsPreferencesImport } from './routes/api/settings/preferences'
 import { Route as ApiNotificationsIdImport } from './routes/api/notifications/$id'
 import { Route as ApiInvitesAcceptImport } from './routes/api/invites/accept'
 import { Route as ApiInvestmentsProfitabilityImport } from './routes/api/investments/profitability'
@@ -221,6 +222,12 @@ const ApiWalletsIdRoute = ApiWalletsIdImport.update({
 const ApiTransactionsIdRoute = ApiTransactionsIdImport.update({
   id: '/api/transactions/$id',
   path: '/api/transactions/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ApiSettingsPreferencesRoute = ApiSettingsPreferencesImport.update({
+  id: '/api/settings/preferences',
+  path: '/api/settings/preferences',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -497,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiNotificationsIdImport
       parentRoute: typeof rootRoute
     }
+    '/api/settings/preferences': {
+      id: '/api/settings/preferences'
+      path: '/api/settings/preferences'
+      fullPath: '/api/settings/preferences'
+      preLoaderRoute: typeof ApiSettingsPreferencesImport
+      parentRoute: typeof rootRoute
+    }
     '/api/transactions/$id': {
       id: '/api/transactions/$id'
       path: '/api/transactions/$id'
@@ -628,6 +642,7 @@ export interface FileRoutesByFullPath {
   '/api/investments/profitability': typeof ApiInvestmentsProfitabilityRoute
   '/api/invites/accept': typeof ApiInvitesAcceptRoute
   '/api/notifications/$id': typeof ApiNotificationsIdRoute
+  '/api/settings/preferences': typeof ApiSettingsPreferencesRoute
   '/api/transactions/$id': typeof ApiTransactionsIdRoute
   '/api/wallets/$id': typeof ApiWalletsIdRoute
   '/api/alerts': typeof ApiAlertsIndexRoute
@@ -672,6 +687,7 @@ export interface FileRoutesByTo {
   '/api/investments/profitability': typeof ApiInvestmentsProfitabilityRoute
   '/api/invites/accept': typeof ApiInvitesAcceptRoute
   '/api/notifications/$id': typeof ApiNotificationsIdRoute
+  '/api/settings/preferences': typeof ApiSettingsPreferencesRoute
   '/api/transactions/$id': typeof ApiTransactionsIdRoute
   '/api/wallets/$id': typeof ApiWalletsIdRoute
   '/api/alerts': typeof ApiAlertsIndexRoute
@@ -717,6 +733,7 @@ export interface FileRoutesById {
   '/api/investments/profitability': typeof ApiInvestmentsProfitabilityRoute
   '/api/invites/accept': typeof ApiInvitesAcceptRoute
   '/api/notifications/$id': typeof ApiNotificationsIdRoute
+  '/api/settings/preferences': typeof ApiSettingsPreferencesRoute
   '/api/transactions/$id': typeof ApiTransactionsIdRoute
   '/api/wallets/$id': typeof ApiWalletsIdRoute
   '/api/alerts/': typeof ApiAlertsIndexRoute
@@ -763,6 +780,7 @@ export interface FileRouteTypes {
     | '/api/investments/profitability'
     | '/api/invites/accept'
     | '/api/notifications/$id'
+    | '/api/settings/preferences'
     | '/api/transactions/$id'
     | '/api/wallets/$id'
     | '/api/alerts'
@@ -806,6 +824,7 @@ export interface FileRouteTypes {
     | '/api/investments/profitability'
     | '/api/invites/accept'
     | '/api/notifications/$id'
+    | '/api/settings/preferences'
     | '/api/transactions/$id'
     | '/api/wallets/$id'
     | '/api/alerts'
@@ -849,6 +868,7 @@ export interface FileRouteTypes {
     | '/api/investments/profitability'
     | '/api/invites/accept'
     | '/api/notifications/$id'
+    | '/api/settings/preferences'
     | '/api/transactions/$id'
     | '/api/wallets/$id'
     | '/api/alerts/'
@@ -894,6 +914,7 @@ export interface RootRouteChildren {
   ApiInvestmentsProfitabilityRoute: typeof ApiInvestmentsProfitabilityRoute
   ApiInvitesAcceptRoute: typeof ApiInvitesAcceptRoute
   ApiNotificationsIdRoute: typeof ApiNotificationsIdRoute
+  ApiSettingsPreferencesRoute: typeof ApiSettingsPreferencesRoute
   ApiTransactionsIdRoute: typeof ApiTransactionsIdRoute
   ApiWalletsIdRoute: typeof ApiWalletsIdRoute
   ApiAlertsIndexRoute: typeof ApiAlertsIndexRoute
@@ -938,6 +959,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiInvestmentsProfitabilityRoute: ApiInvestmentsProfitabilityRoute,
   ApiInvitesAcceptRoute: ApiInvitesAcceptRoute,
   ApiNotificationsIdRoute: ApiNotificationsIdRoute,
+  ApiSettingsPreferencesRoute: ApiSettingsPreferencesRoute,
   ApiTransactionsIdRoute: ApiTransactionsIdRoute,
   ApiWalletsIdRoute: ApiWalletsIdRoute,
   ApiAlertsIndexRoute: ApiAlertsIndexRoute,
@@ -991,6 +1013,7 @@ export const routeTree = rootRoute
         "/api/investments/profitability",
         "/api/invites/accept",
         "/api/notifications/$id",
+        "/api/settings/preferences",
         "/api/transactions/$id",
         "/api/wallets/$id",
         "/api/alerts/",
@@ -1087,6 +1110,9 @@ export const routeTree = rootRoute
     },
     "/api/notifications/$id": {
       "filePath": "api/notifications/$id.ts"
+    },
+    "/api/settings/preferences": {
+      "filePath": "api/settings/preferences.ts"
     },
     "/api/transactions/$id": {
       "filePath": "api/transactions/$id.ts"

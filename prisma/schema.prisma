@@ -36,6 +36,14 @@ model User {
   notifications Notification[]
   invitesSent   Invite[]  @relation("Inviter")
   invitesReceived Invite[] @relation("Invitee")
+  // Categorias padrão aplicadas automaticamente aos lançamentos de conta
+  // gerados a partir de transações de investimento (débito/crédito
+  // automático) — opcional, uma para despesa (compra/aporte/taxa) e outra
+  // para receita (venda/resgate/dividendo).
+  investExpenseCategoryId String?
+  investExpenseCategory   Category? @relation("InvestExpenseCategoryDefault", fields: [investExpenseCategoryId], references: [id], onDelete: SetNull)
+  investIncomeCategoryId  String?
+  investIncomeCategory    Category? @relation("InvestIncomeCategoryDefault", fields: [investIncomeCategoryId], references: [id], onDelete: SetNull)
 }
 
 model Account {
@@ -88,6 +96,8 @@ model Category {
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
   budgets     Budget[]
+  usersDefaultingExpense User[] @relation("InvestExpenseCategoryDefault")
+  usersDefaultingIncome  User[] @relation("InvestIncomeCategoryDefault")
 
   @@unique([userId, id])
   @@unique([userId, name, type])
