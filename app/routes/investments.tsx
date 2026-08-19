@@ -125,6 +125,13 @@ interface AssetItem {
   transactions: AssetTx[]
 }
 
+// Arredonda a taxa contratada pra exibição — o valor vem do banco como
+// Decimal convertido pra number, que pode carregar imprecisão de ponto
+// flutuante (ex: 8.14 vira 8.140000000000001).
+function formatRate(rate: number): string {
+  return (Math.round(rate * 100) / 100).toString().replace('.', ',')
+}
+
 function calcPosition(transactions: AssetTx[]) {
   let totalQuantity = 0
   let totalCost = 0
@@ -828,10 +835,10 @@ function InvestmentsPage() {
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Taxa</span>
                           <span className="font-medium">
-                            {asset.rateType === 'CDI_PERCENT' && `${asset.rate}% do CDI`}
-                            {asset.rateType === 'SELIC_PLUS' && `Selic ${asset.rate >= 0 ? '+' : ''}${asset.rate}%`}
-                            {asset.rateType === 'PREFIXADO' && `${asset.rate}% a.a.`}
-                            {asset.rateType === 'IPCA_PLUS' && `IPCA+${asset.rate}%`}
+                            {asset.rateType === 'CDI_PERCENT' && `${formatRate(asset.rate)}% do CDI`}
+                            {asset.rateType === 'SELIC_PLUS' && `Selic ${asset.rate >= 0 ? '+' : ''}${formatRate(asset.rate)}%`}
+                            {asset.rateType === 'PREFIXADO' && `${formatRate(asset.rate)}% a.a.`}
+                            {asset.rateType === 'IPCA_PLUS' && `IPCA+${formatRate(asset.rate)}%`}
                           </span>
                         </div>
                       )}
