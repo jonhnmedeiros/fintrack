@@ -5,6 +5,33 @@ Todas as mudanças notáveis do FinTrack são documentadas aqui.
 O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o
 projeto adota [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.2.0] - 2026-08-23
+
+### Added
+- **Lógica de cartão de crédito redesenhada**: compras no cartão deixam de
+  debitar a conta na hora (como se fosse um débito) — só o pagamento da
+  fatura movimenta o saldo de verdade.
+- **Faturas por cartão** (aberta / fechada / paga), agrupadas pelo mês de
+  cobrança e considerando o dia de fechamento na hora de definir a qual
+  fatura cada compra e cada parcela pertence.
+- Botão **"Pagar fatura"**, que cria um único lançamento de pagamento e
+  quita todas as compras daquela fatura de uma vez.
+- **Limite e disponível** por cartão, calculados a partir das faturas em
+  aberto.
+- **Edição de um cartão já cadastrado** (nome, dia de fechamento,
+  vencimento e limite) — antes só dava pra criar/excluir.
+- Indicador de **gastos no cartão de crédito** no Dashboard (total em
+  aberto + gasto no período).
+- **Edição e exclusão em lote de todas as parcelas** de uma compra
+  parcelada de uma vez (descrição, categoria e cartão na edição; todas as
+  parcelas na exclusão), em vez de repetir parcela por parcela.
+
+### Fixed
+- Erro ao criar/editar uma transação parcelada no cartão de crédito
+  (`walletId` vazio quebrando a chave estrangeira com Wallet).
+- Corte/quebra de texto no card "Cartão de Crédito" do Dashboard em telas
+  médias (~1024px).
+
 ## [1.1.0] - 2026-08-19
 
 ### Added
