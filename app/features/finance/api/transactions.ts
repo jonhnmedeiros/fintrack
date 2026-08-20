@@ -92,8 +92,15 @@ export async function createTransaction(userId: string, data: unknown) {
   return db.transaction.create({ data: txData })
 }
 
-export async function deleteTransaction(userId: string, id: string) {
+export async function deleteTransaction(userId: string, id: string, opts?: { allInstallments?: boolean }) {
   const db = userDb(userId)
+  if (opts?.allInstallments) {
+    const tx = await db.transaction.findMany({ where: { id }, select: { installmentGroupId: true } })
+    const groupId = tx[0]?.installmentGroupId
+    if (groupId) {
+      return db.transaction.deleteMany({ where: { installmentGroupId: groupId } })
+    }
+  }
   return db.transaction.delete({ where: { id } })
 }
 

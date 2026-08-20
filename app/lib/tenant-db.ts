@@ -14,6 +14,8 @@ export function userDb(userId: string) {
         prisma.transaction.updateMany({ ...args, where: { userId, ...args?.where } }),
       delete: (args: Parameters<typeof prisma.transaction.delete>[0]) =>
         prisma.transaction.delete(args),
+      deleteMany: (args: Parameters<typeof prisma.transaction.deleteMany>[0]) =>
+        prisma.transaction.deleteMany({ ...args, where: { userId, ...args?.where } }),
     },
     category: {
       findMany: (args?: Parameters<typeof prisma.category.findMany>[0]) =>

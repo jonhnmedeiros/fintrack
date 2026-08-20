@@ -37,8 +37,9 @@ export const APIRoute = {
         return Response.json({ error: 'Acesso negado' }, { status: 403 })
       }
       const { deleteTransaction } = await import('@/features/finance/api/transactions')
+      const allInstallments = new URL(request.url).searchParams.get('all') === 'true'
       try {
-        await deleteTransaction(session.user.id, params.id)
+        await deleteTransaction(session.user.id, params.id, { allInstallments })
         return new Response(null, { status: 204 })
       } catch (err: unknown) {
         if (err instanceof Error && 'code' in err) {

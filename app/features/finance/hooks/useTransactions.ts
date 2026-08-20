@@ -36,8 +36,8 @@ export function useCreateTransaction() {
 export function useDeleteTransaction() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) =>
-      fetch(`/api/transactions/${id}`, { method: 'DELETE' }).then(async (r) => {
+    mutationFn: ({ id, allInstallments }: { id: string; allInstallments?: boolean }) =>
+      fetch(`/api/transactions/${id}${allInstallments ? '?all=true' : ''}`, { method: 'DELETE' }).then(async (r) => {
         if (!r.ok) {
           const err = await r.json().catch(() => ({ error: 'Erro ao excluir transação' }))
           throw new Error(err.error || 'Erro ao excluir transação')

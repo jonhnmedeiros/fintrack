@@ -39,7 +39,8 @@ interface TransactionTableProps {
 }
 
 export function TransactionTable({ transactions, showActions = true, onEdit }: TransactionTableProps) {
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; installmentGroupId: string | null; totalInstallments: number | null } | null>(null)
+  const [deleteAll, setDeleteAll] = useState(false)
   const deleteMutation = useDeleteTransaction()
 
   const columns = [
@@ -107,7 +108,11 @@ export function TransactionTable({ transactions, showActions = true, onEdit }: T
             variant="ghost"
             size="icon"
             aria-label="Excluir transação"
-            onClick={() => setPendingDeleteId(row.original.id)}
+            onClick={() => {
+              const { id, installmentGroupId, totalInstallments } = row.original
+              setPendingDelete({ id, installmentGroupId, totalInstallments })
+              setDeleteAll(false)
+            }}
             disabled={deleteMutation.isPending}
           >
             <Trash2 className="h-4 w-4 text-red-500" />
@@ -124,11 +129,12 @@ export function TransactionTable({ transactions, showActions = true, onEdit }: T
   })
 
   function handleDeleteConfirm() {
-    if (!pendingDeleteId) return
-    deleteMutation.mutate(pendingDeleteId, {
+    if (!pendingDelete) return
+    deleteMutation.mutate({ id: pendingDelete.id, allInstallments: deleteAll }, {
       onSuccess: () => {
-        toast.success('Transação excluída')
-        setPendingDeleteId(null)
+        toast.success(deleteAll ? 'Todas as parcelas foram excluídas' : 'Transação excluída')
+        setPendingDelete(null)
+        setDeleteAll(false)
       },
       onError: (err) => {
         toast.error(err instanceof Error ? err.message : 'Erro ao excluir transação')
@@ -138,7 +144,7 @@ export function TransactionTable({ transactions, showActions = true, onEdit }: T
 
   return (
     <>
-      <Dialog open={!!pendingDeleteId} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
+      <Dialog open={!!pendingDelete} onOpenChange={(open) => { if (!open) { setPendingDelete(null); setDeleteAll(false) } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Excluir transação</DialogTitle>
@@ -146,8 +152,22 @@ export function TransactionTable({ transactions, showActions = true, onEdit }: T
               Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
+          {pendingDelete?.installmentGroupId && pendingDelete.totalInstallments && pendingDelete.totalInstallments > 1 && (
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="deleteAllInstallments"
+                checked={deleteAll}
+                onChange={(e) => setDeleteAll(e.target.checked)}
+                className="h-4 w-4"
+              />
+              <label htmlFor="deleteAllInstallments" className="text-sm cursor-pointer">
+                Excluir as {pendingDelete.totalInstallments} parcelas
+              </label>
+            </div>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPendingDeleteId(null)}>
+            <Button variant="outline" onClick={() => { setPendingDelete(null); setDeleteAll(false) }}>
               Cancelar
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm} disabled={deleteMutation.isPending}>
@@ -227,7 +247,10 @@ export function TransactionTable({ transactions, showActions = true, onEdit }: T
                     size="icon"
                     className="h-7 w-7"
                     aria-label="Excluir transação"
-                    onClick={() => setPendingDeleteId(tx.id)}
+                    onClick={() => {
+                      setPendingDelete({ id: tx.id, installmentGroupId: tx.installmentGroupId, totalInstallments: tx.totalInstallments })
+                      setDeleteAll(false)
+                    }}
                     disabled={deleteMutation.isPending}
                   >
                     <Trash2 className="h-3.5 w-3.5 text-red-500" />
