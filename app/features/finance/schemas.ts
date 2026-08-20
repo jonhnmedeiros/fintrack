@@ -74,5 +74,13 @@ export const createTransactionSchema = refineWallet(refineTransfer(transactionSc
 export const updateTransactionSchema = refineWallet(refineTransfer(transactionSchema.omit({ id: true, userId: true })))
 export const createCategorySchema = categorySchema.omit({ id: true, userId: true })
 export const createCreditCardSchema = creditCardSchema.omit({ id: true, userId: true })
+// Edição: os 3 campos numéricos aceitam null explícito (ex: remover o
+// limite) — diferente da criação, onde "não informar" já basta.
+export const updateCreditCardSchema = z.object({
+  name: z.string().min(1).max(50),
+  billingDay: z.number().min(1).max(31).nullable().optional(),
+  closingDay: z.number().min(1).max(31).nullable().optional(),
+  limit: z.number().nullable().optional(),
+})
 export const createBudgetSchema = budgetSchema.omit({ id: true, userId: true })
 export const createWalletSchema = walletSchema.omit({ id: true, userId: true })

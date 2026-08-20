@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { CreditCard, Plus, Trash2, ChevronDown, ChevronUp, Receipt } from 'lucide-react'
+import { CreditCard, Plus, Trash2, Pencil, ChevronDown, ChevronUp, Receipt } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,6 +26,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import {
   useCreditCards,
   useCreateCreditCard,
+  useUpdateCreditCard,
   useDeleteCreditCard,
   useCreditCardInvoices,
   usePayInvoice,
@@ -84,29 +85,50 @@ const STATUS_CLASS: Record<Invoice['status'], string> = {
   paga: 'bg-green-100 text-green-700',
 }
 
-function NewCardDialog({
+function CardFormDialog({
   open,
   onOpenChange,
+  editCard,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
+  editCard?: CreditCardItem | null
 }) {
   const createCard = useCreateCreditCard()
+  const updateCard = useUpdateCreditCard()
+  const isEditing = !!editCard
 
   const { handleSubmit, formState: { errors }, watch, setValue, reset } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: '', limit: '', closingDay: '', billingDay: '' },
+    defaultValues: editCard
+      ? {
+          name: editCard.name,
+          limit: editCard.limit ? String(editCard.limit) : '',
+          closingDay: editCard.closingDay ? String(editCard.closingDay) : '',
+          billingDay: editCard.billingDay ? String(editCard.billingDay) : '',
+        }
+      : { name: '', limit: '', closingDay: '', billingDay: '' },
   })
 
   const onSubmit = async (data: FormData) => {
     try {
-      const payload: Record<string, unknown> = { name: data.name }
-      if (data.limit) payload.limit = parseFloat(data.limit.replace(',', '.'))
-      if (data.closingDay) payload.closingDay = parseInt(data.closingDay)
-      if (data.billingDay) payload.billingDay = parseInt(data.billingDay)
-
-      await createCard.mutateAsync(payload)
-      toast.success('Cartão criado com sucesso')
+      if (isEditing) {
+        await updateCard.mutateAsync({
+          id: editCard.id,
+          name: data.name,
+          limit: data.limit ? parseFloat(data.limit.replace(',', '.')) : null,
+          closingDay: data.closingDay ? parseInt(data.closingDay) : null,
+          billingDay: data.billingDay ? parseInt(data.billingDay) : null,
+        })
+        toast.success('Cartão atualizado com sucesso')
+      } else {
+        const payload: Record<string, unknown> = { name: data.name }
+        if (data.limit) payload.limit = parseFloat(data.limit.replace(',', '.'))
+        if (data.closingDay) payload.closingDay = parseInt(data.closingDay)
+        if (data.billingDay) payload.billingDay = parseInt(data.billingDay)
+        await createCard.mutateAsync(payload)
+        toast.success('Cartão criado com sucesso')
+      }
       reset()
       onOpenChange(false)
     } catch (err) {
@@ -119,7 +141,7 @@ function NewCardDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Novo Cartão de Crédito</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Cartão' : 'Novo Cartão de Crédito'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
@@ -167,8 +189,8 @@ function NewCardDialog({
               onChange={(e) => setValue('limit', e.target.value)}
             />
           </div>
-          <Button type="submit" className="w-full" disabled={createCard.isPending}>
-            {createCard.isPending ? 'Salvando...' : 'Criar'}
+          <Button type="submit" className="w-full" disabled={createCard.isPending || updateCard.isPending}>
+            {createCard.isPending || updateCard.isPending ? 'Salvando...' : isEditing ? 'Salvar' : 'Criar'}
           </Button>
         </form>
       </DialogContent>
@@ -364,8 +386,12 @@ function CreditCardsPage() {
   const { isVisualizador } = useUserRole()
 
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<CreditCardItem | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<CreditCardItem | null>(null)
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null)
+
+  const openCreate = () => { setEditTarget(null); setDialogOpen(true) }
+  const openEdit = (card: CreditCardItem) => { setEditTarget(card); setDialogOpen(true) }
 
   return (
     <div className="space-y-6">
@@ -378,7 +404,7 @@ function CreditCardsPage() {
           </div>
         </div>
         {!isVisualizador && (
-          <Button onClick={() => setDialogOpen(true)}>
+          <Button onClick={openCreate}>
             <Plus className="h-4 w-4 mr-2" />
             Novo Cartão
           </Button>
@@ -426,14 +452,25 @@ function CreditCardsPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       {!isVisualizador && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive"
-                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(card) }}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label={`Editar cartão ${card.name}`}
+                            onClick={(e) => { e.stopPropagation(); openEdit(card) }}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive"
+                            onClick={(e) => { e.stopPropagation(); setDeleteTarget(card) }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </>
                       )}
                       {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     </div>
@@ -467,7 +504,12 @@ function CreditCardsPage() {
         </div>
       )}
 
-      <NewCardDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <CardFormDialog
+        key={editTarget?.id ?? 'create'}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        editCard={editTarget}
+      />
 
       {deleteTarget && (
         <DeleteDialog

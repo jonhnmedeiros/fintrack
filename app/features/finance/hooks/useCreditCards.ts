@@ -26,6 +26,25 @@ export function useCreateCreditCard() {
   })
 }
 
+export function useUpdateCreditCard() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & Record<string, unknown>) =>
+      fetch(`/api/credit-cards/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({ error: 'Erro ao atualizar cartão' }))
+          throw new Error(err.error || 'Erro ao atualizar cartão')
+        }
+        return r.json()
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['credit-cards'] }),
+  })
+}
+
 export function useCreditCardInvoices(cardId: string | null) {
   return useQuery({
     queryKey: ['credit-card-invoices', cardId],

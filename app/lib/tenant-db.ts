@@ -28,6 +28,8 @@ export function userDb(userId: string) {
         prisma.creditCard.findMany({ ...args, where: { userId, ...args?.where } }),
       create: (args: Parameters<typeof prisma.creditCard.create>[0]) =>
         prisma.creditCard.create({ ...args, data: { ...args.data, userId } }),
+      update: (args: Parameters<typeof prisma.creditCard.update>[0]) =>
+        prisma.creditCard.update(args),
       delete: (args: Parameters<typeof prisma.creditCard.delete>[0]) =>
         prisma.creditCard.delete(args),
     },

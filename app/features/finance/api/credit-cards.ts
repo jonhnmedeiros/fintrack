@@ -1,6 +1,6 @@
 import { userDb } from '@/lib/tenant-db'
 import { prisma } from '@/lib/db'
-import { createCreditCardSchema } from '../schemas'
+import { createCreditCardSchema, updateCreditCardSchema } from '../schemas'
 
 export async function listCreditCards(userId: string) {
   const db = userDb(userId)
@@ -32,6 +32,12 @@ export async function createCreditCard(userId: string, data: unknown) {
   const validated = createCreditCardSchema.parse(data)
   const db = userDb(userId)
   return db.creditCard.create({ data: validated })
+}
+
+export async function updateCreditCard(userId: string, id: string, data: unknown) {
+  const validated = updateCreditCardSchema.parse(data)
+  const db = userDb(userId)
+  return db.creditCard.update({ where: { id }, data: validated })
 }
 
 export async function deleteCreditCard(userId: string, id: string) {
