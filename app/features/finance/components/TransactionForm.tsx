@@ -231,6 +231,10 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
         ...data,
         categoryId: data.categoryId || undefined,
         creditCardId: data.creditCardId || undefined,
+        // Compra no cartão não usa conta — se o campo ficou vazio (''), não
+        // pode ir assim pro banco (não bate com nenhuma conta e quebra a
+        // chave estrangeira). Omite, deixando null/ausente.
+        walletId: data.walletId || undefined,
         toWalletId: data.toWalletId || undefined,
         totalInstallments: data.totalInstallments || undefined,
         amount: Number(data.amount),
