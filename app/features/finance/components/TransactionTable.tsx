@@ -29,6 +29,7 @@ interface TransactionType {
   toWallet?: { name: string } | null
   installmentNumber: number | null
   totalInstallments: number | null
+  installmentGroupId: string | null
 }
 
 interface TransactionTableProps {

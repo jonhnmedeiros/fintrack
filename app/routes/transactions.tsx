@@ -43,6 +43,7 @@ function TransactionsPage() {
     toWalletId: string | null
     installmentNumber: number | null
     totalInstallments: number | null
+    installmentGroupId: string | null
   } | null>(null)
 
   const filters: Record<string, string | undefined> = {}

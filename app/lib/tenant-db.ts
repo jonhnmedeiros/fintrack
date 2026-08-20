@@ -10,6 +10,8 @@ export function userDb(userId: string) {
         prisma.transaction.create({ ...args, data: { ...args.data, userId } }),
       update: (args: Parameters<typeof prisma.transaction.update>[0]) =>
         prisma.transaction.update({ ...args, data: { ...args.data, userId } }),
+      updateMany: (args: Parameters<typeof prisma.transaction.updateMany>[0]) =>
+        prisma.transaction.updateMany({ ...args, where: { userId, ...args?.where } }),
       delete: (args: Parameters<typeof prisma.transaction.delete>[0]) =>
         prisma.transaction.delete(args),
     },

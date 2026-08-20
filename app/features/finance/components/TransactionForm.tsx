@@ -112,6 +112,7 @@ interface EditTransaction {
   toWalletId: string | null
   installmentNumber: number | null
   totalInstallments: number | null
+  installmentGroupId: string | null
 }
 
 interface TransactionFormProps {
@@ -149,6 +150,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
       })
       setAmountDisplay(Number(editTx.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }))
       setValue('amount', Number(editTx.amount))
+      setApplyToAll(false)
     }
     if (!editTx) {
       setPrevEditId(null)
@@ -169,6 +171,7 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
   const [newCatParentId, setNewCatParentId] = useState('')
   const [newCatColor, setNewCatColor] = useState(randomColor())
   const [amountDisplay, setAmountDisplay] = useState('')
+  const [applyToAll, setApplyToAll] = useState(false)
 
   const type = watch('type')
   const creditCardId = watch('creditCardId')
@@ -240,10 +243,12 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
         amount: Number(data.amount),
       }
       if (isEditing) {
-        await updateMutation.mutateAsync({ id: editTx.id, data: payload })
-        toast.success('Transação atualizada com sucesso')
+        const editPayload = applyToAll ? { ...payload, applyToAllInstallments: true } : payload
+        await updateMutation.mutateAsync({ id: editTx.id, data: editPayload })
+        toast.success(applyToAll ? 'Todas as parcelas foram atualizadas' : 'Transação atualizada com sucesso')
         setOpen(false)
         setAmountDisplay('')
+        setApplyToAll(false)
         onEditDone?.()
         reset( { date: DAY , type: undefined, description: '', categoryId: '', creditCardId: '', walletId: '', toWalletId: '', totalInstallments: undefined, amount: undefined })
       } else {
@@ -475,6 +480,21 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
                 </div>
               )}
             </>
+          )}
+
+          {isEditing && editTx?.installmentGroupId && editTx.totalInstallments && editTx.totalInstallments > 1 && (
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="applyToAll"
+                checked={applyToAll}
+                onChange={(e) => setApplyToAll(e.target.checked)}
+                className="h-4 w-4"
+              />
+              <Label htmlFor="applyToAll" className="font-normal cursor-pointer">
+                Aplicar descrição, categoria e cartão às {editTx.totalInstallments} parcelas
+              </Label>
+            </div>
           )}
 
           <Button type="submit" className="w-full" disabled={createMutation.isPending || updateMutation.isPending}>

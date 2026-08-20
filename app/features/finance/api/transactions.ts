@@ -66,6 +66,9 @@ export async function createTransaction(userId: string, data: unknown) {
 
   if (txData.creditCardId && txData.totalInstallments && txData.totalInstallments > 1) {
     const installmentAmount = txData.amount / txData.totalInstallments
+    // Mesmo id pra todas as parcelas dessa compra — permite editar
+    // descrição/categoria/cartão de uma vez só depois (ver updateTransaction).
+    const installmentGroupId = crypto.randomUUID()
     const transactions = []
     for (let i = 1; i <= txData.totalInstallments; i++) {
       const installmentDate = new Date(txData.date)
@@ -77,6 +80,7 @@ export async function createTransaction(userId: string, data: unknown) {
             ...txData,
             amount: installmentAmount,
             installmentNumber: i,
+            installmentGroupId,
             date: installmentDate,
           },
         })
@@ -94,13 +98,33 @@ export async function deleteTransaction(userId: string, id: string) {
 }
 
 export async function updateTransaction(userId: string, id: string, data: unknown) {
-  const validated = updateTransactionSchema.parse(data)
+  // applyToAllInstallments não é campo da Transaction — é só um flag de
+  // controle, extraído antes de validar o resto com o schema normal.
+  const { applyToAllInstallments, ...rest } = (data ?? {}) as Record<string, unknown> & {
+    applyToAllInstallments?: boolean
+  }
+  const validated = updateTransactionSchema.parse(rest)
   const db = userDb(userId)
-  return db.transaction.update({
+  const updated = await db.transaction.update({
     where: { id },
     data: {
       ...validated,
       date: new Date(validated.date + 'T00:00:00Z'),
     },
   })
+
+  if (applyToAllInstallments && updated.installmentGroupId) {
+    // Propaga só o que faz sentido pra compra toda — valor, data e número
+    // da parcela continuam individuais de cada parcela.
+    await db.transaction.updateMany({
+      where: { installmentGroupId: updated.installmentGroupId, id: { not: id } },
+      data: {
+        description: validated.description ?? null,
+        categoryId: validated.categoryId ?? null,
+        creditCardId: validated.creditCardId ?? null,
+      },
+    })
+  }
+
+  return updated
 }

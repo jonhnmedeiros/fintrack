@@ -148,6 +148,11 @@ model Transaction {
   toWallet          Wallet?      @relation("WalletTransfersIn", fields: [toWalletId], references: [id], onDelete: SetNull)
   installmentNumber Int?
   totalInstallments Int?
+  // Agrupa as parcelas de uma mesma compra parcelada (todas recebem o
+  // mesmo valor na criação) — permite editar descrição/categoria/cartão em
+  // todas de uma vez. NULL em transações sem parcela e em parcelas antigas
+  // criadas antes dessa coluna existir.
+  installmentGroupId String?
   userId            String
   user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   investmentTransaction InvestmentTransaction?
