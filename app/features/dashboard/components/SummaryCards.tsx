@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils'
-import { TrendingUp, TrendingDown, Wallet, PiggyBank } from 'lucide-react'
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, CreditCard } from 'lucide-react'
+import { useCreditCards } from '@/features/finance/hooks/useCreditCards'
 
 interface SummaryCardsProps {
   transactions: unknown[]
@@ -23,18 +24,22 @@ function SkeletonCard({ icon, label }: { icon: React.ReactNode; label: string })
 }
 
 export function SummaryCards({ transactions, assets, isLoading }: SummaryCardsProps) {
+  const { data: creditCardsData, isLoading: cardsLoading } = useCreditCards()
+  const creditCards = (Array.isArray(creditCardsData) ? creditCardsData : []) as Array<{ used: number }>
+
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <SkeletonCard icon={<TrendingUp className="h-4 w-4 text-green-500" />} label="Receitas" />
         <SkeletonCard icon={<TrendingDown className="h-4 w-4 text-red-500" />} label="Despesas" />
         <SkeletonCard icon={<Wallet className="h-4 w-4 text-blue-500" />} label="Saldo" />
         <SkeletonCard icon={<PiggyBank className="h-4 w-4 text-purple-500" />} label="Investido" />
+        <SkeletonCard icon={<CreditCard className="h-4 w-4 text-orange-500" />} label="Cartão de Crédito" />
       </div>
     )
   }
 
-  const txArray = transactions as Array<{ type: string; amount: number; walletId: string | null; _count?: { paidTransactions: number } }>
+  const txArray = transactions as Array<{ type: string; amount: number; walletId: string | null; creditCardId: string | null; _count?: { paidTransactions: number } }>
   // Pagamento de fatura de cartão: quita outras transações (paidTransactions
   // não-vazio). Não usar walletId+creditCardId como sinal — compras antigas
   // (antes desta funcionalidade) também têm walletId preenchido.
@@ -56,6 +61,13 @@ export function SummaryCards({ transactions, assets, isLoading }: SummaryCardsPr
   const cashExpense = txArray
     .filter((t) => t.type === 'EXPENSE' && !!t.walletId)
     .reduce((sum, t) => sum + Number(t.amount), 0)
+  // Gasto no cartão neste período (compras, não o pagamento da fatura).
+  const cardSpending = txArray
+    .filter((t) => t.type === 'EXPENSE' && !!t.creditCardId && !isInvoicePayment(t))
+    .reduce((sum, t) => sum + Number(t.amount), 0)
+  // Total em aberto em todos os cartões, independente do período — o que
+  // ainda está por pagar agora (fatura aberta + fechadas não pagas).
+  const cardOpenTotal = creditCards.reduce((sum, c) => sum + Number(c.used ?? 0), 0)
 
   const assetArray = assets as Array<{ type: string; transactions: Array<{ type: string; quantity: number | string; price: number | string }> }>
   const totalInvested = assetArray.reduce((sum, asset) => {
@@ -85,7 +97,7 @@ export function SummaryCards({ transactions, assets, isLoading }: SummaryCardsPr
   }, 0)
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${creditCards.length > 0 ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Receitas</CardTitle>
@@ -122,6 +134,18 @@ export function SummaryCards({ transactions, assets, isLoading }: SummaryCardsPr
           <p className="text-2xl font-bold">{formatCurrency(totalInvested)}</p>
         </CardContent>
       </Card>
+      {!cardsLoading && creditCards.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Cartão de Crédito</CardTitle>
+            <CreditCard className="h-4 w-4 text-orange-500" />
+          </CardHeader>
+          <CardContent className="space-y-0.5">
+            <p className="text-2xl font-bold text-orange-500">{formatCurrency(cardOpenTotal)}</p>
+            <p className="text-xs text-muted-foreground">em aberto · {formatCurrency(cardSpending)} no período</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
