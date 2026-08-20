@@ -29,7 +29,7 @@ export function SummaryCards({ transactions, assets, isLoading }: SummaryCardsPr
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         <SkeletonCard icon={<TrendingUp className="h-4 w-4 text-green-500" />} label="Receitas" />
         <SkeletonCard icon={<TrendingDown className="h-4 w-4 text-red-500" />} label="Despesas" />
         <SkeletonCard icon={<Wallet className="h-4 w-4 text-blue-500" />} label="Saldo" />
@@ -97,7 +97,7 @@ export function SummaryCards({ transactions, assets, isLoading }: SummaryCardsPr
   }, 0)
 
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${creditCards.length > 0 ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
+    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ${creditCards.length > 0 ? 'xl:grid-cols-5' : ''}`}>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Receitas</CardTitle>
