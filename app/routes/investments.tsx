@@ -122,6 +122,9 @@ interface AssetItem {
   issuer: string | null
   fixedIncomeCurrentValue: number | null
   principal: number | null
+  // Cotação atual real (B3, via brapi.dev) — null se o tipo não tem cotação
+  // consultável (cripto, "Outros") ou se a busca falhou.
+  currentPrice: number | null
   transactions: AssetTx[]
 }
 
@@ -780,12 +783,12 @@ function InvestmentsPage() {
             const pos = calcPosition(asset.transactions)
             const typeLabel: Record<string, string> = { STOCK: 'Ação', ETF: 'ETF', CRYPTO: 'Crypto', FIIS: 'FII', BOND: 'Renda Fixa', CDB: 'CDB', TESOURO: 'Tesouro Direto', OTHER: 'Outro' }
             const isFixedIncome = isFixedIncomeType(asset.type)
-            // Preço atual estimado: preço da compra/venda mais recente (a API
-            // já retorna as transações ordenadas por data desc) — não temos
-            // cotação ao vivo, então usamos essa aproximação, igual ao
-            // gráfico de rentabilidade (ver profitability.ts).
+            // Cotação real da B3 (brapi.dev), calculada no backend. Se não
+            // disponível (cripto, "Outros", falha na API), cai pro preço da
+            // compra/venda mais recente como aproximação.
             const lastPricedTx = asset.transactions.find((t) => t.type === 'BUY' || t.type === 'SELL')
-            const currentPrice = lastPricedTx ? Number(lastPricedTx.price) : null
+            const currentPrice = asset.currentPrice ?? (lastPricedTx ? Number(lastPricedTx.price) : null)
+            const isRealQuote = asset.currentPrice != null
             const marketValue = currentPrice != null && pos.quantity > 0 ? pos.quantity * currentPrice : null
             const profit = marketValue != null ? marketValue - pos.invested : null
             const profitPct = profit != null && pos.invested > 0 ? (profit / pos.invested) * 100 : null
@@ -888,7 +891,10 @@ function InvestmentsPage() {
                     </div>
                     {marketValue != null && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Valor atualizado</span>
+                        <span className="text-muted-foreground">
+                          Valor atualizado
+                          {!isRealQuote && <span title="Sem cotação da B3 disponível — aproximado pela última transação">*</span>}
+                        </span>
                         <span className="font-semibold">{formatCurrency(marketValue)}</span>
                       </div>
                     )}

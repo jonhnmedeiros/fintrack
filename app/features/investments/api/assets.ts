@@ -1,6 +1,7 @@
 import { userDb } from '@/lib/tenant-db'
 import { createAssetSchema } from '../schemas'
 import { getReferenceRates, calcFixedIncomeValue } from '@/lib/rates'
+import { getQuotes } from '@/lib/quotes'
 
 interface AssetWithRelations {
   id: string
@@ -15,6 +16,11 @@ interface AssetWithRelations {
 // compostos a partir da taxa contratada, em vez de "preço médio × quantidade".
 const isFixedIncomeType = (type: string) => type === 'CDB' || type === 'TESOURO'
 
+// Tipos com cotação consultável na B3 via brapi.dev — cripto (BTC, ETH) e
+// "Outros" não têm ticker de bolsa, então ficam de fora (o front usa o
+// preço da última transação como aproximação nesses casos).
+const QUOTE_ELIGIBLE_TYPES = ['STOCK', 'ETF', 'FIIS', 'BOND']
+
 export async function listAssets(userId: string) {
   const db = userDb(userId)
   // O wrapper multi-tenant (tenant-db.ts) não repassa o shape do `include` ao
@@ -28,18 +34,25 @@ export async function listAssets(userId: string) {
     },
   })) as unknown as AssetWithRelations[]
 
-  const hasFixedIncome = assets.some((a) => isFixedIncomeType(a.type))
-  if (!hasFixedIncome) return assets.map((a) => ({ ...a, fixedIncomeCurrentValue: null, principal: null }))
+  const fixedIncomeTickers = assets.some((a) => isFixedIncomeType(a.type))
+  const quotableTickers = assets.filter((a) => QUOTE_ELIGIBLE_TYPES.includes(a.type)).map((a) => a.ticker)
 
-  let rates: Awaited<ReturnType<typeof getReferenceRates>> | null = null
-  try {
-    rates = await getReferenceRates()
-  } catch (err) {
-    console.error('[assets] falha ao buscar taxas de referência (CDI/Selic/IPCA):', err)
-  }
+  const [rates, quotes] = await Promise.all([
+    fixedIncomeTickers
+      ? getReferenceRates().catch((err) => {
+          console.error('[assets] falha ao buscar taxas de referência (CDI/Selic/IPCA):', err)
+          return null
+        })
+      : Promise.resolve(null),
+    quotableTickers.length > 0 ? getQuotes(quotableTickers) : Promise.resolve({} as Record<string, number>),
+  ])
 
   return assets.map((asset) => {
-    if (!isFixedIncomeType(asset.type)) return { ...asset, fixedIncomeCurrentValue: null, principal: null }
+    const currentPrice = quotes[asset.ticker.toUpperCase()] ?? null
+
+    if (!isFixedIncomeType(asset.type)) {
+      return { ...asset, fixedIncomeCurrentValue: null, principal: null, currentPrice }
+    }
 
     // Principal = soma de aportes (BUY) - resgates (SELL), a valor de face
     // (quantity=1 sempre nessas transações; price = valor do aporte/resgate)
@@ -51,10 +64,10 @@ export async function listAssets(userId: string) {
     }, 0)
 
     if (!asset.rateType || asset.rate == null || !rates || principal <= 0) {
-      return { ...asset, fixedIncomeCurrentValue: null, principal }
+      return { ...asset, fixedIncomeCurrentValue: null, principal, currentPrice: null }
     }
     const firstBuy = [...asset.transactions].filter((t) => t.type === 'BUY').sort((a, b) => a.date.getTime() - b.date.getTime())[0]
-    if (!firstBuy) return { ...asset, fixedIncomeCurrentValue: null, principal }
+    if (!firstBuy) return { ...asset, fixedIncomeCurrentValue: null, principal, currentPrice: null }
 
     const fixedIncomeCurrentValue = calcFixedIncomeValue({
       principal,
@@ -65,7 +78,7 @@ export async function listAssets(userId: string) {
       selicAnnual: rates.selicAnnual,
       ipca12m: rates.ipca12m,
     })
-    return { ...asset, fixedIncomeCurrentValue, principal }
+    return { ...asset, fixedIncomeCurrentValue, principal, currentPrice: null }
   })
 }
 
