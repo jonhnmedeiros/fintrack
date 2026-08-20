@@ -55,5 +55,9 @@ export const alertSchema = z.object({
 })
 
 export const createAssetSchema = refineFixedIncomeRate(assetSchema.omit({ id: true, userId: true }))
+// Edição: mesmos campos, todos opcionais (atualização parcial) — sem o
+// refine de renda fixa, já que um PATCH pode alterar só o `type`, por
+// exemplo, sem reenviar taxa/vencimento.
+export const updateAssetSchema = assetSchema.omit({ id: true, userId: true }).partial()
 export const createInvestmentTransactionSchema = investmentTransactionSchema.omit({ id: true, userId: true })
 export const createAlertSchema = alertSchema.omit({ id: true, userId: true })

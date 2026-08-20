@@ -56,6 +56,8 @@ export function userDb(userId: string) {
         prisma.asset.findMany({ ...args, where: { userId, ...args?.where } }),
       create: (args: Parameters<typeof prisma.asset.create>[0]) =>
         prisma.asset.create({ ...args, data: { ...args.data, userId } }),
+      update: (args: Parameters<typeof prisma.asset.update>[0]) =>
+        prisma.asset.update(args),
       delete: (args: Parameters<typeof prisma.asset.delete>[0]) =>
         prisma.asset.delete(args),
     },

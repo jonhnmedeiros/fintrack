@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { TrendingUp, Plus, Trash2, Receipt, Bell, Upload, Download, PieChart as PieChartIcon } from 'lucide-react'
+import { TrendingUp, Plus, Trash2, Receipt, Bell, Upload, Download, PieChart as PieChartIcon, Pencil } from 'lucide-react'
 import { PieChart, Pie, Cell } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import type { ChartConfig } from '@/components/ui/chart'
@@ -33,7 +33,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useAssets, useCreateAsset, useDeleteAsset } from '@/features/investments/hooks/useAssets'
+import { useAssets, useCreateAsset, useUpdateAsset, useDeleteAsset } from '@/features/investments/hooks/useAssets'
 import { useInvestmentTransactions, useCreateInvestmentTransaction, useDeleteInvestmentTransaction } from '@/features/investments/hooks/useInvestmentTransactions'
 import { useAlerts, useCreateAlert, useDeleteAlert } from '@/features/investments/hooks/useAlerts'
 import { useRates } from '@/features/investments/hooks/useRates'
@@ -297,6 +297,63 @@ function CreateAssetDialog({
   )
 }
 
+const NON_FIXED_INCOME_TYPES = ASSET_TYPES.filter((t) => !isFixedIncomeType(t))
+
+// Diálogo simples pra corrigir o tipo de um ativo já cadastrado (ex: um FII
+// lançado como Ação por engano) — só troca entre tipos "não-renda-fixa"
+// (Ações/ETFs/Cripto/FIIs/Renda Fixa genérica/Outros), já que migrar de/pra
+// CDB ou Tesouro exigiria preencher taxa/vencimento/emissor também.
+function EditAssetTypeDialog({
+  asset,
+  open,
+  onOpenChange,
+}: {
+  asset: AssetItem
+  open: boolean
+  onOpenChange: (v: boolean) => void
+}) {
+  const updateAsset = useUpdateAsset()
+  const [type, setType] = useState(asset.type)
+
+  useEffect(() => {
+    if (open) setType(asset.type)
+  }, [open, asset.type])
+
+  const handleSave = async () => {
+    try {
+      await updateAsset.mutateAsync({ id: asset.id, type })
+      toast.success('Tipo do ativo atualizado')
+      onOpenChange(false)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro inesperado')
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Editar Tipo - {asset.ticker}</DialogTitle></DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Tipo</Label>
+            <Select value={type} onValueChange={(v) => setType(v as AssetItem['type'])}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {NON_FIXED_INCOME_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>{TYPE_LABELS[t] || t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button className="w-full" onClick={handleSave} disabled={updateAsset.isPending || type === asset.type}>
+            {updateAsset.isPending ? 'Salvando...' : 'Salvar'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function TransactionDialog({
   asset,
   open,
@@ -552,6 +609,7 @@ function InvestmentsPage() {
   const [deleteAssetId, setDeleteAssetId] = useState<string | null>(null)
   const [deleteTxId, setDeleteTxId] = useState<string | null>(null)
   const [alertsAsset, setAlertsAsset] = useState<AssetItem | null>(null)
+  const [editTypeAsset, setEditTypeAsset] = useState<AssetItem | null>(null)
   const [importOpen, setImportOpen] = useState(false)
 
   const handleExport = useCallback(async (format: 'csv' | 'json') => {
@@ -812,6 +870,17 @@ function InvestmentsPage() {
                     >
                       <Bell className="h-3.5 w-3.5" />
                     </Button>
+                    {!isVisualizador && !isFixedIncome && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        aria-label={`Editar tipo de ${asset.ticker}`}
+                        onClick={(e) => { e.stopPropagation(); setEditTypeAsset(asset) }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                     {!isVisualizador && (
                       <Button
                         variant="ghost"
@@ -1073,6 +1142,14 @@ function InvestmentsPage() {
           open={!!alertsAsset}
           onOpenChange={(o) => { if (!o) setAlertsAsset(null) }}
           isVisualizador={isVisualizador}
+        />
+      )}
+
+      {editTypeAsset && (
+        <EditAssetTypeDialog
+          asset={editTypeAsset}
+          open={!!editTypeAsset}
+          onOpenChange={(o) => { if (!o) setEditTypeAsset(null) }}
         />
       )}
 

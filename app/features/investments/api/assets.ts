@@ -1,5 +1,5 @@
 import { userDb } from '@/lib/tenant-db'
-import { createAssetSchema } from '../schemas'
+import { createAssetSchema, updateAssetSchema } from '../schemas'
 import { getReferenceRates, calcFixedIncomeValue } from '@/lib/rates'
 import { getQuotes } from '@/lib/quotes'
 
@@ -89,6 +89,20 @@ export async function createAsset(userId: string, data: unknown) {
     data: {
       ...validated,
       maturityDate: validated.maturityDate ? new Date(validated.maturityDate + 'T00:00:00Z') : undefined,
+    },
+  })
+}
+
+export async function updateAsset(userId: string, id: string, data: unknown) {
+  const validated = updateAssetSchema.parse(data)
+  const db = userDb(userId)
+  return db.asset.update({
+    where: { id },
+    data: {
+      ...validated,
+      maturityDate: validated.maturityDate !== undefined
+        ? (validated.maturityDate ? new Date(validated.maturityDate + 'T00:00:00Z') : null)
+        : undefined,
     },
   })
 }
