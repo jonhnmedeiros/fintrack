@@ -885,6 +885,15 @@ function InvestmentsPage() {
                       <span className="text-muted-foreground">Preço médio</span>
                       <span className="font-medium">{formatCurrency(pos.avgPrice)}</span>
                     </div>
+                    {currentPrice != null && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Cotação atual
+                          {!isRealQuote && <span title="Sem cotação da B3 disponível — aproximado pela última transação">*</span>}
+                        </span>
+                        <span className="font-medium">{formatCurrency(currentPrice)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Total investido</span>
                       <span className="font-semibold">{formatCurrency(pos.invested)}</span>
