@@ -179,14 +179,17 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
   ) ?? []
 
   const walletList = (wallets as { id: string; name: string }[] | undefined) ?? []
+  // Compra no cartão de crédito não debita conta na hora — só quando a
+  // fatura é paga (ver Cartões de Crédito) — então o campo "Conta" some.
+  const isCardExpense = type === 'EXPENSE' && !!creditCardId
 
   // Pré-seleciona a primeira conta ao abrir uma transação nova, assim que a
   // lista de contas carregar — evita deixar o campo obrigatório vazio.
   useEffect(() => {
-    if (open && !isEditing && !walletId && walletList.length > 0) {
+    if (open && !isEditing && !isCardExpense && !walletId && walletList.length > 0) {
       setValue('walletId', walletList[0].id)
     }
-  }, [open, isEditing, walletId, walletList])
+  }, [open, isEditing, isCardExpense, walletId, walletList])
 
   const handleCreateCategory = async () => {
     if (!newCatName.trim() || !type) return
@@ -361,23 +364,25 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
             <Input value={watch('description') || ''} onChange={(e) => setValue('description', e.target.value, { shouldDirty: true })} placeholder="Descrição da transação" />
           </div>
 
-          <div className="space-y-2">
-            <Label>{type === 'TRANSFER' ? 'Conta de origem' : 'Conta'}</Label>
-            {walletError && <p className="text-red-500 text-xs">Erro ao carregar contas</p>}
-            <Select value={watch('walletId') || ''} onValueChange={(v) => setValue('walletId', v, { shouldDirty: true })}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                {walletList.length === 0 ? (
-                  <SelectItem value="__no_wallet__" disabled>
-                    Nenhuma conta cadastrada
-                  </SelectItem>
-                ) : walletList.map((w) => (
-                  <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.walletId && <p className="text-red-500 text-sm">{errors.walletId.message}</p>}
-          </div>
+          {!isCardExpense && (
+            <div className="space-y-2">
+              <Label>{type === 'TRANSFER' ? 'Conta de origem' : 'Conta'}</Label>
+              {walletError && <p className="text-red-500 text-xs">Erro ao carregar contas</p>}
+              <Select value={watch('walletId') || ''} onValueChange={(v) => setValue('walletId', v, { shouldDirty: true })}>
+                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  {walletList.length === 0 ? (
+                    <SelectItem value="__no_wallet__" disabled>
+                      Nenhuma conta cadastrada
+                    </SelectItem>
+                  ) : walletList.map((w) => (
+                    <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.walletId && <p className="text-red-500 text-sm">{errors.walletId.message}</p>}
+            </div>
+          )}
 
           {type === 'TRANSFER' && (
             <div className="space-y-2">
@@ -442,7 +447,13 @@ export function TransactionForm({ editTx, onEditDone }: TransactionFormProps) {
               <div className="space-y-2">
                 <Label>Cartão de Crédito</Label>
                 {ccError && <p className="text-red-500 text-xs">Erro ao carregar cartões</p>}
-                <Select value={watch('creditCardId') || '__none__'} onValueChange={(v) => setValue('creditCardId', v === '__none__' ? '' : v, { shouldDirty: true })}>
+                <Select value={watch('creditCardId') || '__none__'} onValueChange={(v) => {
+                  const cardId = v === '__none__' ? '' : v
+                  setValue('creditCardId', cardId, { shouldDirty: true })
+                  // Compra no cartão não usa conta — limpa pra não ficar um
+                  // walletId "fantasma" de uma seleção anterior.
+                  if (cardId) setValue('walletId', '', { shouldDirty: true })
+                }}>
                   <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Nenhum</SelectItem>

@@ -26,6 +26,38 @@ export function useCreateCreditCard() {
   })
 }
 
+export function useCreditCardInvoices(cardId: string | null) {
+  return useQuery({
+    queryKey: ['credit-card-invoices', cardId],
+    queryFn: () => fetch(`/api/credit-card-invoices?cardId=${cardId}`).then((r) => r.json()),
+    enabled: !!cardId,
+  })
+}
+
+export function usePayInvoice() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { cardId: string; month: number; year: number; walletId: string; date: string; categoryId?: string }) =>
+      fetch('/api/credit-card-invoices/pay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).then(async (r) => {
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({ error: 'Erro ao pagar fatura' }))
+          throw new Error(err.error || 'Erro ao pagar fatura')
+        }
+        return r.json()
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['credit-card-invoices'] })
+      qc.invalidateQueries({ queryKey: ['credit-cards'] })
+      qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['wallets'] })
+    },
+  })
+}
+
 export function useDeleteCreditCard() {
   const qc = useQueryClient()
   return useMutation({

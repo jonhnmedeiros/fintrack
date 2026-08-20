@@ -151,6 +151,12 @@ model Transaction {
   userId            String
   user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   investmentTransaction InvestmentTransaction?
+  // Compra no cartão vinculada ao débito único gerado ao "pagar a fatura" —
+  // várias compras (muitas) apontam pro mesmo pagamento (um). Enquanto null,
+  // a compra está numa fatura em aberto ou fechada e ainda não paga.
+  invoicePaymentId String?
+  invoicePayment    Transaction?  @relation("InvoicePayment", fields: [invoicePaymentId], references: [id], onDelete: SetNull)
+  paidTransactions  Transaction[] @relation("InvoicePayment")
 }
 
 model CreditCard {

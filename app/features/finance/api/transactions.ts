@@ -34,7 +34,10 @@ export async function listTransactions(
   return db.transaction.findMany({
     where,
     orderBy: { date: 'desc' },
-    include: { category: true, wallet: true, toWallet: true },
+    // _count.paidTransactions > 0 identifica um pagamento de fatura de
+    // cartão (quita outras transações) — usado pelo Dashboard pra não
+    // contar a mesma despesa duas vezes (na compra e no pagamento).
+    include: { category: true, wallet: true, toWallet: true, _count: { select: { paidTransactions: true } } },
   })
 }
 
@@ -42,12 +45,24 @@ export async function createTransaction(userId: string, data: unknown) {
   const validated = createTransactionSchema.parse(data)
   const db = userDb(userId)
 
-  const txData = {
-    ...validated,
-    // Data-only (yyyy-MM-dd) sempre ancorada em UTC: evita que o timezone do
-    // servidor (local no dev, UTC em produção/Vercel) desloque o dia salvo.
-    date: new Date(validated.date + 'T00:00:00Z'),
+  // Data-only (yyyy-MM-dd) sempre ancorada em UTC: evita que o timezone do
+  // servidor (local no dev, UTC em produção/Vercel) desloque o dia salvo.
+  const baseDate = new Date(validated.date + 'T00:00:00Z')
+
+  if (validated.creditCardId) {
+    const card = await prisma.creditCard.findUnique({
+      where: { id: validated.creditCardId },
+      select: { closingDay: true },
+    })
+    // Compra feita no dia do fechamento ou depois: o ciclo atual já fechou,
+    // então ela (e cada parcela seguinte) cai na fatura do mês seguinte —
+    // `date` passa a representar o mês da fatura, não o dia exato da compra.
+    if (card?.closingDay && baseDate.getUTCDate() >= card.closingDay) {
+      baseDate.setUTCMonth(baseDate.getUTCMonth() + 1)
+    }
   }
+
+  const txData = { ...validated, date: baseDate }
 
   if (txData.creditCardId && txData.totalInstallments && txData.totalInstallments > 1) {
     const installmentAmount = txData.amount / txData.totalInstallments

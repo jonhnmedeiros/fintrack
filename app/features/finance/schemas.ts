@@ -27,17 +27,28 @@ export const transactionSchema = z.object({
   date: z.string(),
   categoryId: z.string().optional(),
   creditCardId: z.string().optional(),
-  walletId: z.string().min(1, 'Conta é obrigatória'),
+  // Compra no cartão de crédito não debita conta na hora — só quando a
+  // fatura é paga (ver features/finance/api/credit-cards.ts payInvoice) —
+  // então walletId só é obrigatório quando não há cartão selecionado
+  // (garantido pelo refineWallet abaixo).
+  walletId: z.string().optional(),
   toWalletId: z.string().optional(),
   installmentNumber: z.number().optional(),
   totalInstallments: z.number().int().min(1).max(48).optional(),
   userId: z.string(),
 })
 
-function refineTransfer<T extends z.ZodType<{ type: string; walletId: string; toWalletId?: string }>>(schema: T) {
+function refineTransfer<T extends z.ZodType<{ type: string; walletId?: string; toWalletId?: string }>>(schema: T) {
   return schema.refine(
     (data) => data.type !== 'TRANSFER' || (!!data.toWalletId && data.toWalletId !== data.walletId),
     { message: 'Selecione uma conta de destino diferente da conta de origem', path: ['toWalletId'] }
+  )
+}
+
+function refineWallet<T extends z.ZodType<{ walletId?: string; creditCardId?: string }>>(schema: T) {
+  return schema.refine(
+    (data) => !!data.walletId || !!data.creditCardId,
+    { message: 'Selecione uma conta ou um cartão de crédito', path: ['walletId'] }
   )
 }
 
@@ -59,8 +70,8 @@ export const budgetSchema = z.object({
   userId: z.string(),
 })
 
-export const createTransactionSchema = refineTransfer(transactionSchema.omit({ id: true, userId: true }))
-export const updateTransactionSchema = refineTransfer(transactionSchema.omit({ id: true, userId: true }))
+export const createTransactionSchema = refineWallet(refineTransfer(transactionSchema.omit({ id: true, userId: true })))
+export const updateTransactionSchema = refineWallet(refineTransfer(transactionSchema.omit({ id: true, userId: true })))
 export const createCategorySchema = categorySchema.omit({ id: true, userId: true })
 export const createCreditCardSchema = creditCardSchema.omit({ id: true, userId: true })
 export const createBudgetSchema = budgetSchema.omit({ id: true, userId: true })

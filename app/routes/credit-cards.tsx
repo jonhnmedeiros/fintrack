@@ -4,10 +4,17 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { CreditCard, Plus, Trash2 } from 'lucide-react'
+import { CreditCard, Plus, Trash2, ChevronDown, ChevronUp, Receipt } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -15,8 +22,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
-import { useCreditCards, useCreateCreditCard, useDeleteCreditCard } from '@/features/finance/hooks/useCreditCards'
+import { DatePicker } from '@/components/ui/date-picker'
+import {
+  useCreditCards,
+  useCreateCreditCard,
+  useDeleteCreditCard,
+  useCreditCardInvoices,
+  usePayInvoice,
+} from '@/features/finance/hooks/useCreditCards'
+import { useWallets } from '@/features/finance/hooks/useWallets'
 import { useUserRole } from '@/features/auth/hooks/useUserRole'
+import { formatCurrency, formatDate } from '@/lib/utils'
 
 export const Route = createFileRoute('/credit-cards')({
   component: CreditCardsPage,
@@ -39,6 +55,33 @@ interface CreditCardItem {
   limit: string | null
   closingDay: number | null
   billingDay: number | null
+  used: number
+  available: number | null
+}
+
+interface InvoiceTx {
+  id: string
+  amount: number
+  description: string | null
+  date: string
+  installmentNumber: number | null
+  totalInstallments: number | null
+}
+
+interface Invoice {
+  month: number
+  year: number
+  total: number
+  status: 'aberta' | 'fechada' | 'paga'
+  transactions: InvoiceTx[]
+}
+
+const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+const STATUS_LABEL: Record<Invoice['status'], string> = { aberta: 'Aberta', fechada: 'Fechada', paga: 'Paga' }
+const STATUS_CLASS: Record<Invoice['status'], string> = {
+  aberta: 'bg-blue-100 text-blue-700',
+  fechada: 'bg-yellow-100 text-yellow-700',
+  paga: 'bg-green-100 text-green-700',
 }
 
 function NewCardDialog({
@@ -178,10 +221,142 @@ function DeleteDialog({
   )
 }
 
-function formatCurrency(value: string | number | null) {
+function PayInvoiceDialog({
+  cardId,
+  cardName,
+  invoice,
+  open,
+  onOpenChange,
+}: {
+  cardId: string
+  cardName: string
+  invoice: Invoice
+  open: boolean
+  onOpenChange: (v: boolean) => void
+}) {
+  const payInvoice = usePayInvoice()
+  const { data: walletsData } = useWallets()
+  const walletList = (Array.isArray(walletsData) ? walletsData : []) as { id: string; name: string }[]
+  const [walletId, setWalletId] = useState('')
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+
+  const handlePay = async () => {
+    if (!walletId) {
+      toast.error('Selecione a conta de pagamento')
+      return
+    }
+    try {
+      const result = await payInvoice.mutateAsync({
+        cardId,
+        month: invoice.month,
+        year: invoice.year,
+        walletId,
+        date,
+      })
+      toast.success(`Fatura paga: ${result.paidCount} transaç${result.paidCount > 1 ? 'ões' : 'ão'} quitada${result.paidCount > 1 ? 's' : ''}`)
+      onOpenChange(false)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao pagar fatura')
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Pagar Fatura - {cardName} {String(invoice.month).padStart(2, '0')}/{invoice.year}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Isso vai lançar um único débito de <strong>{formatCurrency(invoice.total)}</strong> na
+            conta escolhida e marcar as {invoice.transactions.length} transações dessa fatura como pagas.
+          </p>
+          <div className="space-y-2">
+            <Label>Conta de pagamento</Label>
+            <Select value={walletId} onValueChange={setWalletId}>
+              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectContent>
+                {walletList.map((w) => (
+                  <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Data do pagamento</Label>
+            <DatePicker value={date} onChange={setDate} />
+          </div>
+          <Button className="w-full" onClick={handlePay} disabled={payInvoice.isPending}>
+            {payInvoice.isPending ? 'Pagando...' : 'Confirmar Pagamento'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function CardInvoices({ card, isVisualizador }: { card: CreditCardItem; isVisualizador: boolean }) {
+  const { data, isLoading } = useCreditCardInvoices(card.id)
+  const [payTarget, setPayTarget] = useState<Invoice | null>(null)
+  const invoices: Invoice[] = data?.invoices ?? []
+
+  if (isLoading) {
+    return <p className="text-xs text-muted-foreground p-3">Carregando faturas...</p>
+  }
+
+  if (invoices.length === 0) {
+    return <p className="text-xs text-muted-foreground p-3">Nenhuma compra lançada neste cartão ainda.</p>
+  }
+
+  return (
+    <div className="space-y-3 p-3 pt-0">
+      {[...invoices].reverse().map((inv) => (
+        <div key={`${inv.year}-${inv.month}`} className="rounded-lg border p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-sm">{MONTH_NAMES[inv.month - 1]}/{inv.year}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_CLASS[inv.status]}`}>{STATUS_LABEL[inv.status]}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm">{formatCurrency(inv.total)}</span>
+              {!isVisualizador && inv.status === 'fechada' && (
+                <Button size="sm" variant="outline" onClick={() => setPayTarget(inv)}>
+                  Pagar fatura
+                </Button>
+              )}
+            </div>
+          </div>
+          <div className="space-y-1">
+            {inv.transactions.map((t) => (
+              <div key={t.id} className="flex justify-between text-xs text-muted-foreground">
+                <span>
+                  {formatDate(t.date)} — {t.description || 'Sem descrição'}
+                  {t.totalInstallments && t.totalInstallments > 1 ? ` (${t.installmentNumber}/${t.totalInstallments})` : ''}
+                </span>
+                <span>{formatCurrency(t.amount)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {payTarget && (
+        <PayInvoiceDialog
+          cardId={card.id}
+          cardName={card.name}
+          invoice={payTarget}
+          open={!!payTarget}
+          onOpenChange={(o) => { if (!o) setPayTarget(null) }}
+        />
+      )}
+    </div>
+  )
+}
+
+function formatCurrencyOrNull(value: string | number | null) {
   if (value === null || value === undefined) return null
   const num = typeof value === 'string' ? parseFloat(value) : value
-  return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  return formatCurrency(num)
 }
 
 function CreditCardsPage() {
@@ -190,6 +365,7 @@ function CreditCardsPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<CreditCardItem | null>(null)
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null)
 
   return (
     <div className="space-y-6">
@@ -198,7 +374,7 @@ function CreditCardsPage() {
           <CreditCard className="h-8 w-8 text-muted-foreground" />
           <div>
             <h1 className="text-2xl font-bold">Cartões de Crédito</h1>
-            <p className="text-sm text-muted-foreground">Gerencie os cartões de crédito</p>
+            <p className="text-sm text-muted-foreground">Gerencie os cartões e as faturas</p>
           </div>
         </div>
         {!isVisualizador && (
@@ -233,28 +409,61 @@ function CreditCardsPage() {
 
       {!isLoading && !isError && cards && cards.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {cards.map((card) => (
-            <Card key={card.id} className="p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <CreditCard className="h-5 w-5 text-primary" />
+          {(cards as CreditCardItem[]).map((card) => {
+            const expanded = expandedCardId === card.id
+            return (
+              <Card key={card.id} className="overflow-hidden">
+                <div
+                  className="p-4 space-y-3 cursor-pointer hover:bg-accent/30 transition-colors"
+                  onClick={() => setExpandedCardId(expanded ? null : card.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <CreditCard className="h-5 w-5 text-primary" />
+                      </div>
+                      <span className="font-semibold">{card.name}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {!isVisualizador && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive"
+                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(card) }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                    </div>
                   </div>
-                  <span className="font-semibold">{card.name}</span>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    {card.closingDay && <p>Fecha dia {card.closingDay}</p>}
+                    {card.billingDay && <p>Vence dia {card.billingDay}</p>}
+                    {card.limit != null && (
+                      <>
+                        <p className="text-foreground font-medium">Limite: {formatCurrencyOrNull(card.limit)}</p>
+                        <p>
+                          Disponível: <span className={card.available != null && card.available < 0 ? 'text-red-500 font-medium' : 'text-foreground font-medium'}>
+                            {formatCurrencyOrNull(card.available)}
+                          </span>
+                        </p>
+                      </>
+                    )}
+                    {card.used > 0 && card.limit == null && (
+                      <p>Em aberto: <span className="text-foreground font-medium">{formatCurrency(card.used)}</span></p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-primary">
+                    <Receipt className="h-3.5 w-3.5" />
+                    <span>{expanded ? 'Ocultar faturas' : 'Ver faturas'}</span>
+                  </div>
                 </div>
-                {!isVisualizador && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(card)}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                )}
-              </div>
-              <div className="space-y-1 text-sm text-muted-foreground">
-                {card.closingDay && <p>Fecha dia {card.closingDay}</p>}
-                {card.billingDay && <p>Vence dia {card.billingDay}</p>}
-                {card.limit && <p className="text-foreground font-medium">Limite: {formatCurrency(card.limit)}</p>}
-              </div>
-            </Card>
-          ))}
+                {expanded && <CardInvoices card={card} isVisualizador={isVisualizador} />}
+              </Card>
+            )
+          })}
         </div>
       )}
 

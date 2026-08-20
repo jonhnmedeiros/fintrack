@@ -32,6 +32,7 @@ import { Route as ApiNotificationsIndexImport } from './routes/api/notifications
 import { Route as ApiInvitesIndexImport } from './routes/api/invites/index'
 import { Route as ApiInvestmentTransactionsIndexImport } from './routes/api/investment-transactions/index'
 import { Route as ApiCreditCardsIndexImport } from './routes/api/credit-cards/index'
+import { Route as ApiCreditCardInvoicesIndexImport } from './routes/api/credit-card-invoices/index'
 import { Route as ApiCategoriesIndexImport } from './routes/api/categories/index'
 import { Route as ApiBudgetsIndexImport } from './routes/api/budgets/index'
 import { Route as ApiBudgetCopyIndexImport } from './routes/api/budget-copy/index'
@@ -46,6 +47,7 @@ import { Route as ApiInvestmentsProfitabilityImport } from './routes/api/investm
 import { Route as ApiInvestmentsExportImport } from './routes/api/investments/export'
 import { Route as ApiInvestmentTransactionsIdImport } from './routes/api/investment-transactions/$id'
 import { Route as ApiCreditCardsIdImport } from './routes/api/credit-cards/$id'
+import { Route as ApiCreditCardInvoicesPayImport } from './routes/api/credit-card-invoices/pay'
 import { Route as ApiCategoriesIdImport } from './routes/api/categories/$id'
 import { Route as ApiBudgetsIdImport } from './routes/api/budgets/$id'
 import { Route as ApiBrokerageNotesParseImport } from './routes/api/brokerage-notes/parse'
@@ -183,6 +185,14 @@ const ApiCreditCardsIndexRoute = ApiCreditCardsIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ApiCreditCardInvoicesIndexRoute = ApiCreditCardInvoicesIndexImport.update(
+  {
+    id: '/api/credit-card-invoices/',
+    path: '/api/credit-card-invoices/',
+    getParentRoute: () => rootRoute,
+  } as any,
+)
+
 const ApiCategoriesIndexRoute = ApiCategoriesIndexImport.update({
   id: '/api/categories/',
   path: '/api/categories/',
@@ -266,6 +276,12 @@ const ApiInvestmentTransactionsIdRoute =
 const ApiCreditCardsIdRoute = ApiCreditCardsIdImport.update({
   id: '/api/credit-cards/$id',
   path: '/api/credit-cards/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ApiCreditCardInvoicesPayRoute = ApiCreditCardInvoicesPayImport.update({
+  id: '/api/credit-card-invoices/pay',
+  path: '/api/credit-card-invoices/pay',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -462,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCategoriesIdImport
       parentRoute: typeof rootRoute
     }
+    '/api/credit-card-invoices/pay': {
+      id: '/api/credit-card-invoices/pay'
+      path: '/api/credit-card-invoices/pay'
+      fullPath: '/api/credit-card-invoices/pay'
+      preLoaderRoute: typeof ApiCreditCardInvoicesPayImport
+      parentRoute: typeof rootRoute
+    }
     '/api/credit-cards/$id': {
       id: '/api/credit-cards/$id'
       path: '/api/credit-cards/$id'
@@ -560,6 +583,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCategoriesIndexImport
       parentRoute: typeof rootRoute
     }
+    '/api/credit-card-invoices/': {
+      id: '/api/credit-card-invoices/'
+      path: '/api/credit-card-invoices'
+      fullPath: '/api/credit-card-invoices'
+      preLoaderRoute: typeof ApiCreditCardInvoicesIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/api/credit-cards/': {
       id: '/api/credit-cards/'
       path: '/api/credit-cards'
@@ -636,6 +666,7 @@ export interface FileRoutesByFullPath {
   '/api/brokerage-notes/parse': typeof ApiBrokerageNotesParseRoute
   '/api/budgets/$id': typeof ApiBudgetsIdRoute
   '/api/categories/$id': typeof ApiCategoriesIdRoute
+  '/api/credit-card-invoices/pay': typeof ApiCreditCardInvoicesPayRoute
   '/api/credit-cards/$id': typeof ApiCreditCardsIdRoute
   '/api/investment-transactions/$id': typeof ApiInvestmentTransactionsIdRoute
   '/api/investments/export': typeof ApiInvestmentsExportRoute
@@ -650,6 +681,7 @@ export interface FileRoutesByFullPath {
   '/api/budget-copy': typeof ApiBudgetCopyIndexRoute
   '/api/budgets': typeof ApiBudgetsIndexRoute
   '/api/categories': typeof ApiCategoriesIndexRoute
+  '/api/credit-card-invoices': typeof ApiCreditCardInvoicesIndexRoute
   '/api/credit-cards': typeof ApiCreditCardsIndexRoute
   '/api/investment-transactions': typeof ApiInvestmentTransactionsIndexRoute
   '/api/invites': typeof ApiInvitesIndexRoute
@@ -681,6 +713,7 @@ export interface FileRoutesByTo {
   '/api/brokerage-notes/parse': typeof ApiBrokerageNotesParseRoute
   '/api/budgets/$id': typeof ApiBudgetsIdRoute
   '/api/categories/$id': typeof ApiCategoriesIdRoute
+  '/api/credit-card-invoices/pay': typeof ApiCreditCardInvoicesPayRoute
   '/api/credit-cards/$id': typeof ApiCreditCardsIdRoute
   '/api/investment-transactions/$id': typeof ApiInvestmentTransactionsIdRoute
   '/api/investments/export': typeof ApiInvestmentsExportRoute
@@ -695,6 +728,7 @@ export interface FileRoutesByTo {
   '/api/budget-copy': typeof ApiBudgetCopyIndexRoute
   '/api/budgets': typeof ApiBudgetsIndexRoute
   '/api/categories': typeof ApiCategoriesIndexRoute
+  '/api/credit-card-invoices': typeof ApiCreditCardInvoicesIndexRoute
   '/api/credit-cards': typeof ApiCreditCardsIndexRoute
   '/api/investment-transactions': typeof ApiInvestmentTransactionsIndexRoute
   '/api/invites': typeof ApiInvitesIndexRoute
@@ -727,6 +761,7 @@ export interface FileRoutesById {
   '/api/brokerage-notes/parse': typeof ApiBrokerageNotesParseRoute
   '/api/budgets/$id': typeof ApiBudgetsIdRoute
   '/api/categories/$id': typeof ApiCategoriesIdRoute
+  '/api/credit-card-invoices/pay': typeof ApiCreditCardInvoicesPayRoute
   '/api/credit-cards/$id': typeof ApiCreditCardsIdRoute
   '/api/investment-transactions/$id': typeof ApiInvestmentTransactionsIdRoute
   '/api/investments/export': typeof ApiInvestmentsExportRoute
@@ -741,6 +776,7 @@ export interface FileRoutesById {
   '/api/budget-copy/': typeof ApiBudgetCopyIndexRoute
   '/api/budgets/': typeof ApiBudgetsIndexRoute
   '/api/categories/': typeof ApiCategoriesIndexRoute
+  '/api/credit-card-invoices/': typeof ApiCreditCardInvoicesIndexRoute
   '/api/credit-cards/': typeof ApiCreditCardsIndexRoute
   '/api/investment-transactions/': typeof ApiInvestmentTransactionsIndexRoute
   '/api/invites/': typeof ApiInvitesIndexRoute
@@ -774,6 +810,7 @@ export interface FileRouteTypes {
     | '/api/brokerage-notes/parse'
     | '/api/budgets/$id'
     | '/api/categories/$id'
+    | '/api/credit-card-invoices/pay'
     | '/api/credit-cards/$id'
     | '/api/investment-transactions/$id'
     | '/api/investments/export'
@@ -788,6 +825,7 @@ export interface FileRouteTypes {
     | '/api/budget-copy'
     | '/api/budgets'
     | '/api/categories'
+    | '/api/credit-card-invoices'
     | '/api/credit-cards'
     | '/api/investment-transactions'
     | '/api/invites'
@@ -818,6 +856,7 @@ export interface FileRouteTypes {
     | '/api/brokerage-notes/parse'
     | '/api/budgets/$id'
     | '/api/categories/$id'
+    | '/api/credit-card-invoices/pay'
     | '/api/credit-cards/$id'
     | '/api/investment-transactions/$id'
     | '/api/investments/export'
@@ -832,6 +871,7 @@ export interface FileRouteTypes {
     | '/api/budget-copy'
     | '/api/budgets'
     | '/api/categories'
+    | '/api/credit-card-invoices'
     | '/api/credit-cards'
     | '/api/investment-transactions'
     | '/api/invites'
@@ -862,6 +902,7 @@ export interface FileRouteTypes {
     | '/api/brokerage-notes/parse'
     | '/api/budgets/$id'
     | '/api/categories/$id'
+    | '/api/credit-card-invoices/pay'
     | '/api/credit-cards/$id'
     | '/api/investment-transactions/$id'
     | '/api/investments/export'
@@ -876,6 +917,7 @@ export interface FileRouteTypes {
     | '/api/budget-copy/'
     | '/api/budgets/'
     | '/api/categories/'
+    | '/api/credit-card-invoices/'
     | '/api/credit-cards/'
     | '/api/investment-transactions/'
     | '/api/invites/'
@@ -908,6 +950,7 @@ export interface RootRouteChildren {
   ApiBrokerageNotesParseRoute: typeof ApiBrokerageNotesParseRoute
   ApiBudgetsIdRoute: typeof ApiBudgetsIdRoute
   ApiCategoriesIdRoute: typeof ApiCategoriesIdRoute
+  ApiCreditCardInvoicesPayRoute: typeof ApiCreditCardInvoicesPayRoute
   ApiCreditCardsIdRoute: typeof ApiCreditCardsIdRoute
   ApiInvestmentTransactionsIdRoute: typeof ApiInvestmentTransactionsIdRoute
   ApiInvestmentsExportRoute: typeof ApiInvestmentsExportRoute
@@ -922,6 +965,7 @@ export interface RootRouteChildren {
   ApiBudgetCopyIndexRoute: typeof ApiBudgetCopyIndexRoute
   ApiBudgetsIndexRoute: typeof ApiBudgetsIndexRoute
   ApiCategoriesIndexRoute: typeof ApiCategoriesIndexRoute
+  ApiCreditCardInvoicesIndexRoute: typeof ApiCreditCardInvoicesIndexRoute
   ApiCreditCardsIndexRoute: typeof ApiCreditCardsIndexRoute
   ApiInvestmentTransactionsIndexRoute: typeof ApiInvestmentTransactionsIndexRoute
   ApiInvitesIndexRoute: typeof ApiInvitesIndexRoute
@@ -953,6 +997,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBrokerageNotesParseRoute: ApiBrokerageNotesParseRoute,
   ApiBudgetsIdRoute: ApiBudgetsIdRoute,
   ApiCategoriesIdRoute: ApiCategoriesIdRoute,
+  ApiCreditCardInvoicesPayRoute: ApiCreditCardInvoicesPayRoute,
   ApiCreditCardsIdRoute: ApiCreditCardsIdRoute,
   ApiInvestmentTransactionsIdRoute: ApiInvestmentTransactionsIdRoute,
   ApiInvestmentsExportRoute: ApiInvestmentsExportRoute,
@@ -967,6 +1012,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBudgetCopyIndexRoute: ApiBudgetCopyIndexRoute,
   ApiBudgetsIndexRoute: ApiBudgetsIndexRoute,
   ApiCategoriesIndexRoute: ApiCategoriesIndexRoute,
+  ApiCreditCardInvoicesIndexRoute: ApiCreditCardInvoicesIndexRoute,
   ApiCreditCardsIndexRoute: ApiCreditCardsIndexRoute,
   ApiInvestmentTransactionsIndexRoute: ApiInvestmentTransactionsIndexRoute,
   ApiInvitesIndexRoute: ApiInvitesIndexRoute,
@@ -1007,6 +1053,7 @@ export const routeTree = rootRoute
         "/api/brokerage-notes/parse",
         "/api/budgets/$id",
         "/api/categories/$id",
+        "/api/credit-card-invoices/pay",
         "/api/credit-cards/$id",
         "/api/investment-transactions/$id",
         "/api/investments/export",
@@ -1021,6 +1068,7 @@ export const routeTree = rootRoute
         "/api/budget-copy/",
         "/api/budgets/",
         "/api/categories/",
+        "/api/credit-card-invoices/",
         "/api/credit-cards/",
         "/api/investment-transactions/",
         "/api/invites/",
@@ -1093,6 +1141,9 @@ export const routeTree = rootRoute
     "/api/categories/$id": {
       "filePath": "api/categories/$id.ts"
     },
+    "/api/credit-card-invoices/pay": {
+      "filePath": "api/credit-card-invoices/pay.ts"
+    },
     "/api/credit-cards/$id": {
       "filePath": "api/credit-cards/$id.ts"
     },
@@ -1134,6 +1185,9 @@ export const routeTree = rootRoute
     },
     "/api/categories/": {
       "filePath": "api/categories/index.ts"
+    },
+    "/api/credit-card-invoices/": {
+      "filePath": "api/credit-card-invoices/index.ts"
     },
     "/api/credit-cards/": {
       "filePath": "api/credit-cards/index.ts"

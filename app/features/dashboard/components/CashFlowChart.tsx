@@ -6,7 +6,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { formatCurrency } from '@/lib/utils'
 
 interface CashFlowChartProps {
-  transactions: Array<{ type: string; amount: number; date: string }>
+  transactions: Array<{ type: string; amount: number; date: string; walletId: string | null }>
   isLoading?: boolean
 }
 
@@ -21,7 +21,9 @@ export function CashFlowChart({ transactions, isLoading }: CashFlowChartProps) {
     const key = format(d, 'yyyy-MM')
     if (!acc[key]) acc[key] = { month: key, label: format(d, 'MMM', { locale: ptBR }), income: 0, expense: 0 }
     if (tx.type === 'INCOME') acc[key].income += Number(tx.amount)
-    if (tx.type === 'EXPENSE') acc[key].expense += Number(tx.amount)
+    // Fluxo de caixa = dinheiro que de fato saiu da conta — compra no
+    // cartão ainda não paga não entra aqui (só quando a fatura é paga).
+    if (tx.type === 'EXPENSE' && tx.walletId) acc[key].expense += Number(tx.amount)
     return acc
   }, {} as Record<string, { month: string; label: string; income: number; expense: number }>)
 

@@ -34,12 +34,27 @@ export function SummaryCards({ transactions, assets, isLoading }: SummaryCardsPr
     )
   }
 
-  const txArray = transactions as Array<{ type: string; amount: number }>
+  const txArray = transactions as Array<{ type: string; amount: number; walletId: string | null; _count?: { paidTransactions: number } }>
+  // Pagamento de fatura de cartão: quita outras transações (paidTransactions
+  // não-vazio). Não usar walletId+creditCardId como sinal — compras antigas
+  // (antes desta funcionalidade) também têm walletId preenchido.
+  const isInvoicePayment = (t: { _count?: { paidTransactions: number } }) => (t._count?.paidTransactions ?? 0) > 0
+
   const income = txArray
     .filter((t) => t.type === 'INCOME')
     .reduce((sum, t) => sum + Number(t.amount), 0)
+  // "Despesas" é por competência (categoria): conta a compra no cartão na
+  // hora, mesmo sem debitar conta ainda — é o que importa pra saber quanto
+  // se gastou por categoria. O pagamento da fatura já foi contado em cada
+  // compra que ele quita, então não soma de novo aqui.
   const expense = txArray
-    .filter((t) => t.type === 'EXPENSE')
+    .filter((t) => t.type === 'EXPENSE' && !isInvoicePayment(t))
+    .reduce((sum, t) => sum + Number(t.amount), 0)
+  // "Saldo" é por caixa (o que realmente entra/sai da conta): só conta
+  // despesas com walletId — inclui despesas normais e pagamentos de fatura,
+  // mas não compras no cartão ainda não pagas (essas não tocam a conta).
+  const cashExpense = txArray
+    .filter((t) => t.type === 'EXPENSE' && !!t.walletId)
     .reduce((sum, t) => sum + Number(t.amount), 0)
 
   const assetArray = assets as Array<{ type: string; transactions: Array<{ type: string; quantity: number | string; price: number | string }> }>
@@ -95,7 +110,7 @@ export function SummaryCards({ transactions, assets, isLoading }: SummaryCardsPr
           <Wallet className="h-4 w-4 text-blue-500" />
         </CardHeader>
         <CardContent>
-          <p className={`text-2xl font-bold ${income - expense >= 0 ? '' : 'text-red-500'}`}>{formatCurrency(income - expense)}</p>
+          <p className={`text-2xl font-bold ${income - cashExpense >= 0 ? '' : 'text-red-500'}`}>{formatCurrency(income - cashExpense)}</p>
         </CardContent>
       </Card>
       <Card>
